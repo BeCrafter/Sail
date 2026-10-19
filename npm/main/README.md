@@ -83,9 +83,9 @@ profiles:
 ```
 
 `sail config setup` guides these fields interactively, in layers: which services to configure
-(`webdav` | `smb` | `both`), then the settings they share, then each service's own — including the
-`serve.smb` sub-block and a generated, validated multi-user table. Fields it does not ask are kept as
-written in the config file.
+(`webdav` | `smb` | `web` | `both` | `all`), then the settings they share, then each service's own —
+including the `serve.smb`/`serve.web` sub-blocks and a generated, validated multi-user table. Fields
+it does not ask are kept as written in the config file.
 
 ## Common commands
 
@@ -111,6 +111,7 @@ written in the config file.
 | Checksum & access | `sail url` | Generate a CDN access URL |
 | Server | `sail serve webdav` | Share a bucket as a mountable network drive over WebDAV (macOS Finder / Windows Explorer) |
 | Server | `sail serve smb` | Share a bucket as a mountable network drive over SMB2 |
+| Server | `sail serve web` | Open a bucket in a browser: built-in media library with previews and uploads |
 | Config | `sail config` | Manage configuration (`config setup` wizard) |
 
 All commands support `--help` for detailed usage and examples; that output is the complete flag reference (every flag, its default, and its semantics). The table above is a summary, and the [repo README](https://github.com/BeCrafter/sail#readme) is the full guide.
@@ -246,6 +247,42 @@ result), so the data is correctly not written but the client does not find out u
 
 See the [repo README](https://github.com/BeCrafter/sail#smb-gateway-sail-serve-smb) for the full
 list of differences and limitations.
+
+## Web gateway (`sail serve web`)
+
+The same bucket opened in a browser. The UI is compiled into the binary (no Node, no npm) and serves
+a media library over the same protocol-independent core as the other gateways, so prefix isolation,
+quota, chunked storage and deletion behave identically.
+
+```bash
+# Start (defaults to :9090; HTTPS recommended outside loopback)
+sail serve web --profile prod --listen :9090 --user alice --password '***'
+
+# Share only a prefix inside the bucket, then open http://host:9090/
+sail serve web --profile prod --prefix shared --user alice --password '***'
+```
+
+- **Browse** in a thumbnail grid or list, with breadcrumbs, per-folder search and a usage bar.
+- **Transfer** by drag-and-drop or picker (progress queue), and download single files or selections.
+- **Operate**: rename (files and directories), delete, new folder, and copy link (CDN public URL when
+  `cdn-domain` is set, otherwise a presigned URL).
+- **Preview** images (zoom/pan), video, audio, PDF, CSV, Markdown, sandboxed HTML, highlighted source
+  code and plain text. Office documents, 3D models, archives and PSD/TIFF/HEIC show a "coming in a
+  later release" placeholder and can be downloaded.
+
+| Flag | Default | Description |
+|---|---|---|
+| `--listen` | `:9090` | Listen address; deliberately not inherited from `serve.listen` (`serve.web.listen`) |
+| `--tls-cert` / `--tls-key` | empty | Supplying both enables HTTPS (`serve.web.tls-cert`/`serve.web.tls-key`) |
+| `--prefix` / `--user` / `--password` / `--staging-dir` / `--chunked-upload` / `--chunk-size` / `--dir-cache-ttl` / `--prewarm` | as in WebDAV | Identical semantics |
+
+Authentication is HTTP Basic against the same `serve.users` table; the browser never receives
+storage credentials. In multi-user mode each user sees only their own prefix and quota. The reserved
+`.sail/` prefix is hidden, and "copy link" refuses for chunked objects (a presigned URL would return
+the manifest).
+
+See the [repo README](https://github.com/BeCrafter/sail#web-gateway-sail-serve-web) for the full
+boundaries.
 
 ## Documentation
 

@@ -21,6 +21,7 @@
 - **Checksum & auth**: `checksum` (md5/sha256 computation and comparison), `presign` presigned URLs, public access URLs based on a CDN domain
 - **WebDAV gateway**: `serve webdav` mounts a bucket as a network drive — macOS Finder / Windows Explorer read and write directly, with zero client install
 - **SMB gateway**: `serve smb` exports a bucket (or a prefix of it) as an SMB2 share — the same zero-install story over the protocol Finder and Explorer mount natively
+- **Web media library**: `serve web` opens a bucket in the browser — thumbnail grid/list, upload/download, rename/delete, new folder, search, and previews of common image/video/audio/PDF/Office/archive formats, with the same users, quotas and prefix isolation as the other gateways
 - **Multi-profile config**: prod / test / staging environment switching, keys can reference env vars to avoid plaintext
 - **Cross-platform**: macOS / Linux, single binary, download and use; shell auto-completion (zsh / bash / fish)
 
@@ -152,12 +153,13 @@ profiles:
       # prewarm: [/bigdir]        # directories to keep hot in the background
 ```
 
-Each `serve` field maps one-to-one to the same-named `serve webdav` flag (size fields use the same string format as the flags, e.g. `5TiB`). `user`/`password` accept plaintext or a `${VAR}` environment-variable reference, matching the access-key/secret-key key-security mechanism; empty fields fall back to the flag defaults. The optional `users` list enables multi-user mode — see "Multi-user" under the WebDAV gateway. `sail config setup` guides these fields interactively (including generating and validating the `users` table, and the `serve.smb` sub-block — it asks which protocols you want when you configure the block); fields it does not ask are kept as written in the file.
+Each `serve` field maps one-to-one to the same-named `serve webdav` flag (size fields use the same string format as the flags, e.g. `5TiB`). `user`/`password` accept plaintext or a `${VAR}` environment-variable reference, matching the access-key/secret-key key-security mechanism; empty fields fall back to the flag defaults. The optional `users` list enables multi-user mode — see "Multi-user" under the WebDAV gateway. `sail config setup` guides these fields interactively (including generating and validating the `users` table, plus the `serve.smb` and `serve.web` sub-blocks — it asks which protocols you want when you configure the block); fields it does not ask are kept as written in the file.
 
-`sail serve smb` reads the same `serve:` block for everything protocol-agnostic (prefix, users, quota,
-staging, size limits, chunking, cache TTL, prewarm) — one bucket's sharing layout does not have to be
-written twice — and adds a small `serve.smb` sub-block for what is SMB-specific. `sail config setup` asks
-for that sub-block too: pick `smb` (or `both`) when it asks which protocols to configure.
+`sail serve smb` and `sail serve web` read the same `serve:` block for everything protocol-agnostic
+(prefix, users, quota, staging, size limits, chunking, cache TTL, prewarm) — one bucket's sharing
+layout does not have to be written three times — and add a small sub-block for what is
+protocol-specific. `sail config setup` asks for those sub-blocks too: pick `smb`/`web` (or `all`) when
+it asks which protocols to configure.
 
 ```yaml
     serve:
@@ -170,6 +172,10 @@ for that sub-block too: pick `smb` (or `both`) when it asks which protocols to c
         listen: ":1445"     # SMB's own port, deliberately not inherited from serve.listen
         share: sail         # share name in single-user mode; ignored in multi-user mode
         server-name: SAIL   # the name this server calls itself in the NTLM challenge
+      web:
+        listen: ":9090"     # Web library's own port, also not inherited from serve.listen
+        # tls-cert: /etc/cert.pem   # with tls-key enables HTTPS for the browser UI
+        # tls-key: /etc/key.pem
 ```
 
 ### cdn-domain notes
@@ -637,6 +643,63 @@ sees — see the silent-refusal bullet under "SMB-specific limitations" below.
 The trade-off that makes all of this work is that `internal/smbfs/` is a thin shell over the same
 protocol-independent kernel the WebDAV shell uses: quota, prefix isolation, chunked storage and the
 delete path are the same code, and swapping the SMB library touches nothing below this package.
+
+## Web gateway (`sail serve web`)
+
+Open a bucket in a browser. `sail serve web` serves a self-contained media library: the UI is
+compiled into the binary (no Node, no npm, no static files to deploy) and talks to the same
+protocol-independent core as the other gateways, so prefix isolation, quota, chunked storage and
+the delete path are one implementation, not three.
+
+```bash
+# Start (defaults to :9090; HTTPS recommended outside loopback)
+sail serve web --profile prod --listen :9090 \
+  --user alice --password '***' --tls-cert cert.pem --tls-key key.pem
+
+# Share only a prefix inside the bucket (mapped to /, out-of-prefix paths are always rejected)
+sail serve web --profile prod --prefix shared --user alice --password '***'
+
+# Then open http://host:9090/ (or https://… when TLS is on)
+```
+
+What you get in the browser:
+
+- **Browse**: thumbnail grid or list, breadcrumbs, per-folder search, sortable entries, and a usage
+  bar driven by the same quota the other gateways enforce.
+- **Transfer**: drag-and-drop or picker uploads with a progress queue, streaming straight into the
+  core (no staging copy), and download of one file or a selection.
+- **Operate**: rename (files and directories), delete, new folder, and "copy link" — a CDN public
+  URL when `cdn-domain` is configured, otherwise a presigned URL.
+- **Preview**: images (zoom/pan), video, audio, PDF (rendered by the browser's built-in viewer),
+  CSV tables, Markdown, sandboxed HTML, syntax-highlighted source code, and plain text.
+  Office documents, 3D models, archives and PSD/TIFF/HEIC currently show a "coming in a later
+  release" placeholder; they can still be downloaded.
+
+### Flags
+
+Everything protocol-agnostic is shared with `serve webdav` and has identical semantics
+(`--prefix`, `--user`/`--password`, `serve.users`, `--staging-dir`, `--backend-max-object-size`,
+`--max-upload-size`, `--chunked-upload`, `--chunk-size`, `--dir-cache-ttl`, `--prewarm`).
+The Web-specific ones:
+
+| Flag | Default | Notes (`serve.web.*` config key) |
+|---|---|---|
+| `--listen` | `:9090` | Listen address; deliberately not inherited from `serve.listen` (`serve.web.listen`) |
+| `--tls-cert` / `--tls-key` | empty | Supplying both enables HTTPS for the browser UI (`serve.web.tls-cert`/`serve.web.tls-key`) |
+
+### Boundaries
+
+- **Authentication is HTTP Basic** against the same `serve.users` table as WebDAV; the browser keeps
+  the credentials for the session, and there is no logout short of closing the browser. Put the
+  gateway behind TLS whenever it is not on loopback.
+- **The browser never receives storage credentials** — it only talks to this server.
+- **One user = one space**: in multi-user mode each user sees only their own prefix, and the quota
+  shown in the UI is that user's `serve.users` quota.
+- **Chunked objects are hidden and non-linkable**: the reserved `.sail/` prefix is filtered from
+  listings, and "copy link" refuses for a chunked object because a presigned URL would return the
+  manifest instead of the file.
+- **Listings are cached** for `--dir-cache-ttl` (default 60s); your own writes invalidate at once,
+  changes made elsewhere become visible within one TTL.
 
 ## Cross-check with AWS CLI
 

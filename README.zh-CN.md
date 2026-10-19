@@ -21,6 +21,7 @@
 - **校验与鉴权**:`checksum`(md5/sha256 计算与比对)、`presign` 预签名 URL、基于 CDN 域名的公开访问地址
 - **WebDAV 网关**:`serve webdav` 把 bucket 挂成网络盘,macOS Finder / Windows 资源管理器直接读写,零客户端安装
 - **SMB 网关**:`serve smb` 把 bucket(或其中某个前缀)导出为 SMB2 共享——同一个「零客户端安装」的故事,换成 Finder / 资源管理器原生挂载的协议
+- **Web 媒体库**:`serve web` 在浏览器里打开 bucket——缩略图网格/列表、上传/下载、重命名/删除、新建文件夹、搜索,以及常见图片/视频/音频/PDF/CSV/Markdown/HTML/代码格式的预览;用户表、配额与前缀隔离与其它网关完全一致
 - **多 profile 配置**:prod / test / staging 等多环境切换,密钥可引用环境变量避免明文
 - **跨平台**:macOS / Linux,单二进制下载即用;支持 shell 自动补全(zsh / bash / fish)
 
@@ -149,9 +150,9 @@ profiles:
       # prewarm: [/bigdir]        # 需要后台保热的目录
 ```
 
-`serve` 块各字段与 `serve webdav` 的同名 flag 一一对应(大小类字段用与 flag 相同的字符串格式,如 `5TiB`)。`user`/`password` 可写明文或 `${VAR}` 引用环境变量,与 access-key/secret-key 的密钥安全机制一致;空字段由 flag 默认值兜底。可选的 `users` 列表开启多用户模式——见 WebDAV 网关一节的「多用户」。`sail config setup` 会交互式引导上述字段(含生成并校验 `users` 表,以及 `serve.smb` 子块——配置该块时它会先问你要哪些协议);它不提问的字段按文件原样保留。
+`serve` 块各字段与 `serve webdav` 的同名 flag 一一对应(大小类字段用与 flag 相同的字符串格式,如 `5TiB`)。`user`/`password` 可写明文或 `${VAR}` 引用环境变量,与 access-key/secret-key 的密钥安全机制一致;空字段由 flag 默认值兜底。可选的 `users` 列表开启多用户模式——见 WebDAV 网关一节的「多用户」。`sail config setup` 会交互式引导上述字段(含生成并校验 `users` 表,以及 `serve.smb`、`serve.web` 子块——配置该块时它会先问你要哪些协议);它不提问的字段按文件原样保留。
 
-`sail serve smb` 复用同一个 `serve:` 块里与协议无关的部分(前缀、用户表、配额、暂存、大小上限、分片、缓存、预热)——同一个桶的共享布局不必写两遍;SMB 独有的参数放在 `serve.smb` 子块里,该子块同样可由 `sail config setup` 引导:在它问「要配置哪些协议」时选 `smb`(或 `both`)。
+`sail serve smb` 与 `sail serve web` 复用同一个 `serve:` 块里与协议无关的部分(前缀、用户表、配额、暂存、大小上限、分片、缓存、预热)——同一个桶的共享布局不必写三遍;各协议独有的参数放在自己的子块里,同样可由 `sail config setup` 引导:在它问「要配置哪些协议」时选 `smb`/`web`(或 `all`)。
 
 ```yaml
     serve:
@@ -164,6 +165,10 @@ profiles:
         listen: ":1445"     # SMB 自己的端口,刻意不继承 serve.listen
         share: sail         # 单用户模式下的共享名;多用户模式下不使用
         server-name: SAIL   # 服务端在 NTLM 挑战里自称的名字
+      web:
+        listen: ":9090"     # Web 媒体库自己的端口,同样不继承 serve.listen
+        # tls-cert: /etc/cert.pem   # 与 tls-key 同时提供即为浏览器启用 HTTPS
+        # tls-key: /etc/key.pem
 ```
 
 ### cdn-domain 说明
@@ -586,6 +591,58 @@ sail serve smb --profile prod --listen :1445   # serve.users: alice、bob
 
 这套取舍能成立的前提是:`internal/smbfs/` 只是同一个协议无关内核之上的薄壳——配额、前缀隔离、
 分片存储、删除路径都是同一份代码,换 SMB 服务端库也动不到这一层以下。
+
+## Web 网关(`sail serve web`)
+
+在浏览器里打开一个 bucket。`sail serve web` 提供一套自包含的媒体库:界面已编译进二进制
+(不需要 Node、npm,也没有要部署的静态文件),并与其它网关共用同一套协议无关内核,因此
+前缀隔离、配额、分片存储与删除路径都只有一份实现,而不是三份。
+
+```bash
+# 启动(默认 :9090;不在回环地址上时建议开 HTTPS)
+sail serve web --profile prod --listen :9090 \
+  --user alice --password '***' --tls-cert cert.pem --tls-key key.pem
+
+# 只共享桶内某个前缀(映射为 /,越界路径一律拒绝)
+sail serve web --profile prod --prefix shared --user alice --password '***'
+
+# 然后打开 http://host:9090/(开了 TLS 则是 https://…)
+```
+
+浏览器里能做什么:
+
+- **浏览**:缩略图网格或列表、面包屑、当前目录搜索、可排序条目,以及一条与其它网关同口径的
+  配额用量条。
+- **传输**:拖拽或选择上传,带进度队列,直接流进内核(不落暂存副本);支持单文件或选中项下载。
+- **操作**:重命名(文件与目录)、删除、新建文件夹、复制链接——配置了 `cdn-domain` 时给 CDN
+  公开地址,否则给预签名 URL。
+- **预览**:图片(缩放/平移)、视频、音频、PDF(交给浏览器内置查看器)、CSV 表格、Markdown、
+  沙箱 HTML、带语法高亮的源代码、纯文本。
+  Office 文档、3D 模型、压缩包与 PSD/TIFF/HEIC 目前显示「后续版本提供」的占位提示,
+  仍可下载。
+
+### 参数
+
+与协议无关的那部分和 `serve webdav` 完全共用、语义一致(`--prefix`、`--user`/`--password`、
+`serve.users`、`--staging-dir`、`--backend-max-object-size`、`--max-upload-size`、
+`--chunked-upload`、`--chunk-size`、`--dir-cache-ttl`、`--prewarm`)。Web 专属参数:
+
+| 参数 | 默认值 | 说明(`serve.web.*` 配置键) |
+|---|---|---|
+| `--listen` | `:9090` | 监听地址;刻意不继承 `serve.listen`(`serve.web.listen`) |
+| `--tls-cert` / `--tls-key` | 空 | 同时提供即为浏览器界面启用 HTTPS(`serve.web.tls-cert`/`serve.web.tls-key`) |
+
+### 边界
+
+- **认证是与 WebDAV 同一张 `serve.users` 表的 HTTP Basic**;浏览器会在会话内保留凭据,除非关闭
+  浏览器否则没有登出。只要不跑在回环地址上,就应把网关放到 TLS 之后。
+- **浏览器永远拿不到存储凭据**——它只与本服务通信。
+- **一个用户一个空间**:多用户模式下每人只能看到自己的前缀,界面显示的配额就是该用户
+  `serve.users` 里的配额。
+- **分片对象会隐藏且不可外链**:列表会过滤保留前缀 `.sail/`;对分片对象「复制链接」会拒绝,
+  因为预签名 URL 只会给出 manifest 而不是文件本身。
+- **目录列表有缓存**(`--dir-cache-ttl`,默认 60s);自己的写操作立即失效,别处改动最长一个
+  TTL 后可见。
 
 ## 限制
 
