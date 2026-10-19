@@ -164,3 +164,39 @@ func TestRenderProfileServeBlockSMBRoundtrip(t *testing.T) {
 		t.Errorf("SMB 配置往返错误: %+v", got)
 	}
 }
+
+// Web 资源库块同样必须能完整往返:serveBlock / serveBlockEmpty 漏掉 Web 字段
+// 会让「只配了 serve.web」的块被整块丢弃。
+func TestRenderProfileServeBlockWebRoundtrip(t *testing.T) {
+	cfg := &config.Config{
+		DefaultProfile: "prod",
+		Profiles: map[string]config.Profile{
+			"prod": {
+				Endpoint: "https://s3.example.com", AccessKey: "ak", SecretKey: "sk", Bucket: "b",
+				Serve: config.ServeConfig{Web: config.WebConfig{
+					Listen: ":9090", TLSCert: "/wc.pem", TLSKey: "/wk.pem",
+				}},
+			},
+		},
+	}
+	rendered := renderConfigFile(cfg)
+	if !strings.Contains(rendered, "      web:\n") || !strings.Contains(rendered, `        listen: ":9090"`) {
+		t.Fatalf("Web 配置块未渲染:\n%s", rendered)
+	}
+
+	p := t.TempDir() + "/config.yaml"
+	if err := os.WriteFile(p, []byte(rendered), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := config.Load(p)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	r, err := loaded.Resolve("prod")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got := r.Serve.Web; got.Listen != ":9090" || got.TLSCert != "/wc.pem" || got.TLSKey != "/wk.pem" {
+		t.Errorf("Web 配置往返错误: %+v", got)
+	}
+}

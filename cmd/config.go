@@ -377,7 +377,8 @@ func serveBlockEmpty(s config.ServeConfig) bool {
 		s.BackendMaxSize == "" && s.MaxUploadSize == "" &&
 		!s.ChunkedUpload && s.ChunkSize == "" &&
 		s.DirCacheTTL == "" && len(s.Prewarm) == 0 &&
-		s.SMB.Listen == "" && s.SMB.Share == "" && s.SMB.ServerName == ""
+		s.SMB.Listen == "" && s.SMB.Share == "" && s.SMB.ServerName == "" &&
+		s.Web.Listen == "" && s.Web.TLSCert == "" && s.Web.TLSKey == ""
 }
 
 // yamlQuote 把用户自由输入的值渲染成 YAML 双引号标量:值里的 "#"、":"、
@@ -482,6 +483,18 @@ func serveBlock(s config.ServeConfig) string {
 		b.WriteString(smbf("share", s.SMB.Share))
 		b.WriteString(smbf("server-name", s.SMB.ServerName))
 	}
+	if s.Web.Listen != "" || s.Web.TLSCert != "" || s.Web.TLSKey != "" {
+		b.WriteString("      web:\n")
+		webf := func(key, val string) string {
+			if val == "" {
+				return fmt.Sprintf("        # %s:\n", key)
+			}
+			return fmt.Sprintf("        %s: %s\n", key, yamlScalar(val))
+		}
+		b.WriteString(webf("listen", s.Web.Listen))
+		b.WriteString(webf("tls-cert", s.Web.TLSCert))
+		b.WriteString(webf("tls-key", s.Web.TLSKey))
+	}
 	return b.String()
 }
 
@@ -536,8 +549,8 @@ func firstProfileName(m map[string]config.Profile) string {
 }
 
 // serveSummaryLines 返回 serve 块的分层摘要行(每行 "层名: 内容"),按
-// 「通用 / WebDAV / SMB」三层展开,只输出有内容的层;空块返回 nil。
-// 绝不显示密码。两种协议共用这个块,故通用层不偏向任一方。
+// 「通用 / WebDAV / SMB / Web」四层展开,只输出有内容的层;空块返回 nil。
+// 绝不显示密码。三种协议共用这个块,故通用层不偏向任一方。
 func serveSummaryLines(s config.ServeConfig) []string {
 	if serveBlockEmpty(s) {
 		return nil
@@ -551,6 +564,7 @@ func serveSummaryLines(s config.ServeConfig) []string {
 	add("shared", sharedSummary(s))
 	add("webdav", webdavSummary(s))
 	add("smb", smbSummary(s))
+	add("web", webSummary(s))
 	return lines
 }
 
@@ -627,6 +641,18 @@ func smbSummary(s config.ServeConfig) string {
 	return strings.Join(parts, " ")
 }
 
+// webSummary 渲染 Web 资源库层:监听地址与是否启用 TLS。
+func webSummary(s config.ServeConfig) string {
+	var parts []string
+	if s.Web.Listen != "" {
+		parts = append(parts, "listen="+s.Web.Listen)
+	}
+	if s.Web.TLSCert != "" {
+		parts = append(parts, "tls")
+	}
+	return strings.Join(parts, " ")
+}
+
 // setupSummary 生成写盘后的配置摘要,空字段明确标注;密钥留空时
 // 追加需 export 的环境变量指引(未设置时的报错一并说明)。
 // 明文密钥只显示"已填写"不回显值,避免泄漏到终端/日志。
@@ -669,7 +695,7 @@ func setupSummary(prof string, isDefault bool, p config.Profile) string {
 			fmt.Fprintf(&b, "    %s\n", l)
 		}
 	} else {
-		fmt.Fprintf(&b, "  serve:      %s\n", i18n.T("(unset; serve webdav / smb use flag defaults)"))
+		fmt.Fprintf(&b, "  serve:      %s\n", i18n.T("(unset; the serve commands use flag defaults)"))
 	}
 	if !serveBlockEmpty(p.Serve) {
 		b.WriteString(i18n.T("note: backend-max-object-size / max-upload-size / chunk-size / dir-cache-ttl / prewarm are kept as configured (not asked here); edit the config file to change them") + "\n")

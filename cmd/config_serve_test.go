@@ -316,9 +316,13 @@ func TestParseProtocols(t *testing.T) {
 		{" w ", serveProtocols{webdav: true}},
 		{"smb", serveProtocols{smb: true}},
 		{"S", serveProtocols{smb: true}},
+		{"web", serveProtocols{web: true}},
+		{"browser", serveProtocols{web: true}},
 		{"both", serveProtocols{webdav: true, smb: true}},
-		{"all", serveProtocols{webdav: true, smb: true}},
 		{"smb+webdav", serveProtocols{webdav: true, smb: true}},
+		{"all", serveProtocols{webdav: true, smb: true, web: true}},
+		{"webdav+web", serveProtocols{webdav: true, web: true}},
+		{"w+s+ui", serveProtocols{webdav: true, smb: true, web: true}},
 	}
 	for _, c := range ok {
 		got, recognized := parseProtocols(c.in)
@@ -326,19 +330,20 @@ func TestParseProtocols(t *testing.T) {
 			t.Errorf("%q 应解析为 %+v,得到 %+v(识别=%v)", c.in, c.want, got, recognized)
 		}
 	}
-	for _, bad := range []string{"", "ftp", "webdav smb", "y", "n", "1"} {
+	for _, bad := range []string{"", "ftp", "webdav smb", "y", "n", "1", "web+ftp"} {
 		if _, recognized := parseProtocols(bad); recognized {
 			t.Errorf("%q 不该被识别为协议选择", bad)
 		}
 	}
 }
 
-// 默认协议只认协议专属字段:serve.listen/tls-* 属 WebDAV,serve.smb.* 属 SMB;
-// 只配共享字段或全新配置时默认 WebDAV(延续向导既有行为)。
+// 默认协议只认协议专属字段:serve.listen/tls-* 属 WebDAV,serve.smb.* 属 SMB,
+// serve.web.* 属 Web;只配共享字段或全新配置时默认 WebDAV(延续向导既有行为)。
 func TestDefaultProtocols(t *testing.T) {
 	both := serveProtocols{webdav: true, smb: true}
 	webdavOnly := serveProtocols{webdav: true}
 	smbOnly := serveProtocols{smb: true}
+	webOnly := serveProtocols{web: true}
 	cases := []struct {
 		name     string
 		existing config.ServeConfig
@@ -348,8 +353,10 @@ func TestDefaultProtocols(t *testing.T) {
 		{"只配 WebDAV(IPv6 省略)", config.ServeConfig{Listen: ":8443"}, webdavOnly},
 		{"只配 TLS 也算 WebDAV", config.ServeConfig{TLSCert: "/c.pem", TLSKey: "/k.pem"}, webdavOnly},
 		{"只配 SMB", config.ServeConfig{SMB: config.SMBConfig{Listen: ":2445"}}, smbOnly},
-		{"两者都有", config.ServeConfig{Listen: ":8443", SMB: config.SMBConfig{Share: "team"}}, both},
-		// 共享字段不表态:用户表/前缀是两种协议共用的,不能据此推断
+		{"只配 Web", config.ServeConfig{Web: config.WebConfig{Listen: ":9090"}}, webOnly},
+		{"WebDAV + SMB", config.ServeConfig{Listen: ":8443", SMB: config.SMBConfig{Share: "team"}}, both},
+		{"三者都有", config.ServeConfig{Listen: ":8443", SMB: config.SMBConfig{Share: "team"}, Web: config.WebConfig{Listen: ":9090"}}, serveProtocols{webdav: true, smb: true, web: true}},
+		// 共享字段不表态:用户表/前缀是各协议共用的,不能据此推断
 		{"只配共享字段", config.ServeConfig{Prefix: "team/", Users: []config.UserConfig{{Name: "a"}}}, webdavOnly},
 	}
 	for _, c := range cases {
@@ -384,6 +391,36 @@ func TestCollectServeSMBOnly(t *testing.T) {
 	}
 	if got.SMB.Listen != ":2445" || got.SMB.Share != "team-share" || got.SMB.ServerName != "SAIL-TEST" {
 		t.Errorf("SMB 字段不符: %+v", got.SMB)
+	}
+}
+
+// 只配 Web:不碰 WebDAV/SMB 字段,Web 专属字段落库。
+func TestCollectServeWebOnly(t *testing.T) {
+	in := []string{
+		"y",      // 配置 serve 块
+		"web",    // 服务:只配内置 Web 资源库
+		"",       // prefix(通用)
+		"single", // 认证模式
+		"alice", "pw",
+		"", "", // chunked-upload / staging-dir
+		":9191", // web listen
+		"",      // tls-cert 空
+	}
+	got, err := collectServeConfig(newReader(in...), config.ServeConfig{})
+	if err != nil {
+		t.Fatalf("不应报错: %v", err)
+	}
+	if got.Listen != "" || got.TLSCert != "" {
+		t.Errorf("未选 WebDAV 时不该问出 listen/tls: %+v", got)
+	}
+	if got.SMB != (config.SMBConfig{}) {
+		t.Errorf("未选 SMB 时不该写出 smb 块: %+v", got.SMB)
+	}
+	if got.User != "alice" || got.Password != "pw" {
+		t.Errorf("凭据是共享字段,应照样问: %+v", got)
+	}
+	if got.Web.Listen != ":9191" || got.Web.TLSCert != "" || got.Web.TLSKey != "" {
+		t.Errorf("Web 字段不符: %+v", got.Web)
 	}
 }
 
@@ -557,18 +594,22 @@ func TestServeSummaryLines(t *testing.T) {
 		BackendMaxSize: "5TiB", DirCacheTTL: "60s", Prewarm: []string{"/hot", "/cold"},
 		Listen: ":8443", TLSCert: "/c.pem",
 		SMB: config.SMBConfig{Listen: ":2445", Share: "team-share", ServerName: "SAIL-TEST"},
+		Web: config.WebConfig{Listen: ":9090", TLSCert: "/wc.pem"},
 	}
 	lines := serveSummaryLines(s)
-	if len(lines) != 3 {
-		t.Fatalf("应输出 shared/webdav/smb 三层,得到 %d 行: %v", len(lines), lines)
+	if len(lines) != 4 {
+		t.Fatalf("应输出 shared/webdav/smb/web 四层,得到 %d 行: %v", len(lines), lines)
 	}
-	for i, layer := range []string{"shared:", "webdav:", "smb:"} {
+	for i, layer := range []string{"shared:", "webdav:", "smb:", "web:"} {
 		if !strings.HasPrefix(lines[i], layer) {
 			t.Errorf("第 %d 层应以 %q 开头: %q", i, layer, lines[i])
 		}
 		if lines[i][len(layer)] != ' ' {
 			t.Errorf("第 %d 层的层名应对齐到同一列: %q", i, lines[i])
 		}
+	}
+	if want := "web:    listen=:9090 tls"; lines[3] != want {
+		t.Errorf("Web 层摘要 = %q,期望 %q", lines[3], want)
 	}
 	joined := strings.Join(lines, "\n")
 	for _, want := range []string{
@@ -593,6 +634,12 @@ func TestServeSummaryLines(t *testing.T) {
 	}
 	if len(lines) != 2 {
 		t.Errorf("只配 SMB 时应是 shared+smb 两层,得到 %v", lines)
+	}
+
+	// 只配 Web:只有 shared + web 两层
+	lines = serveSummaryLines(config.ServeConfig{Web: config.WebConfig{Listen: ":9090"}})
+	if len(lines) != 2 || !strings.HasPrefix(lines[1], "web:") || !strings.Contains(lines[1], "listen=:9090") {
+		t.Errorf("只配 Web 时应是 shared+web 两层,得到 %v", lines)
 	}
 
 	// 无凭据时明确提示 serve 会拒绝启动
