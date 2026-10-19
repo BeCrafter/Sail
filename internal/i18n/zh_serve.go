@@ -168,11 +168,13 @@ Which bucket is shared comes from the profile, so name it with --profile (the gl
 --bucket flag and SAIL_BUCKET still override it when needed).
 
   serve webdav  -- share over the WebDAV protocol (HTTPS optional)
-  serve smb     -- share over the SMB2 protocol (clients mount a network drive)`: `把某个 bucket 共享给系统自带的文件管理器,客户端零安装。
+  serve smb     -- share over the SMB2 protocol (clients mount a network drive)
+  serve web     -- open the bucket in a browser (built-in media library)`: `把某个 bucket 共享给系统自带的文件管理器,客户端零安装。
 共享哪个 bucket 由 profile 决定,用 --profile 指定(全局 --bucket 与 SAIL_BUCKET 需要时仍可覆盖)。
 
   serve webdav  —— 以 WebDAV 协议共享(HTTPS 可选)
-  serve smb     —— 以 SMB2 协议共享(客户端挂载网络盘)`,
+  serve smb     —— 以 SMB2 协议共享(客户端挂载网络盘)
+  serve web     —— 在浏览器中打开 bucket(内置媒体库)`,
 
 		// serve_smb.go — command help metadata
 		"Share a bucket over SMB2 (mountable directly by macOS Finder / Windows Explorer)": "以 SMB2 协议共享 bucket(macOS Finder / Windows 资源管理器可直接挂载)",
@@ -260,5 +262,79 @@ Examples:
 		"invalid SMB share name %q": "无效的 SMB 共享名 %q",
 		"invalid SMB user name %q":  "无效的 SMB 用户名 %q",
 		"SMB users %q and %q resolve to the same share %q; share names must differ": "SMB 用户 %q 与 %q 映射到同一个共享 %q;共享名必须不同",
+
+		// serve_web.go — 命令帮助元信息
+		"Serve a browser UI for a bucket (built-in media library)": "以浏览器界面共享 bucket(内置媒体库)",
+		`Share a bucket with a browser: open http://host:port/ and you get a media library
+(thumbnail grid or list, upload/download, rename/delete, new folder, search, preview of common
+image/video/audio/PDF/CSV/Markdown/HTML/code formats, and a usage bar). Which bucket is served
+comes from the profile, so name it with --profile (the global --bucket flag and SAIL_BUCKET still
+override it when needed) — one process serves one bucket, exactly like serve webdav/smb.
+
+The UI is compiled into the binary (no Node, no npm, no static files to deploy) and talks to
+the same protocol-independent core the other gateways use, so prefix isolation, quotas, chunked
+storage and the delete path are one implementation, not three.
+
+Design boundaries:
+  - Authentication is HTTP Basic against the same serve.users table as WebDAV; browsers keep the
+    credentials for the session, and there is no logout short of closing the browser. Put the
+    gateway behind TLS (--tls-cert/--tls-key) whenever it is not on loopback.
+  - One user = one space: in multi-user mode each user sees only their own prefix, and the quota
+    reported in the UI is that user's serve.users quota.
+  - The browser never receives storage credentials: it only talks to this server.
+  - Uploads stream straight into the core (no staging copy); with --chunked-upload on, files
+    larger than --chunk-size are stored as chunks under the reserved .sail/ prefix, which the UI
+    hides and which makes "copy public link" refuse (a presigned URL would return the manifest).
+  - Directory listings are cached for --dir-cache-ttl; your own writes invalidate them at once,
+    changes made elsewhere become visible within one TTL.
+  - Office documents, 3D models, archives and PSD/TIFF/HEIC files currently show a "coming in a
+    later release" placeholder and can still be downloaded; dedicated previewers are planned.
+
+Examples:
+  sail serve web --profile prod --listen :9090 --user alice --password '***'
+  sail serve web --profile prod --prefix shared --listen :9090 \
+    --user alice --password '***' --tls-cert c.pem --tls-key k.pem`: `用浏览器共享某个 bucket:打开 http://主机:端口/ 就是一个媒体库
+(缩略图网格或列表、上传/下载、重命名/删除、新建文件夹、搜索、常见图片/视频/音频/PDF/CSV/
+Markdown/HTML/代码格式预览,以及一条用量条)。共享哪个 bucket 由 profile 决定,用 --profile
+指定(全局 --bucket 与 SAIL_BUCKET 需要时仍可覆盖)—— 一个进程服务一个 bucket,与 serve
+webdav/smb 完全一致。
+
+界面已编译进二进制(不需要 Node、npm,也没有要部署的静态文件),并与其它网关共用同一套
+协议无关内核,因此前缀隔离、配额、分片存储与删除路径都只有一份实现,而不是三份。
+
+设计边界:
+  - 认证是与 WebDAV 同一张 serve.users 表的 HTTP Basic;浏览器会在会话内保留凭据,
+    除非关闭浏览器否则没有登出。只要不跑在回环地址上,就应把网关放到 TLS 之后
+    (--tls-cert/--tls-key)。
+  - 一个用户一个空间:多用户模式下每人只能看到自己的前缀,界面里显示的配额就是该用户
+    serve.users 里的配额。
+  - 浏览器永远拿不到存储凭据:它只与本服务通信。
+  - 上传直接流进内核(不落暂存副本);开启 --chunked-upload 后,超过 --chunk-size 的文件
+    以保留前缀 .sail/ 下的分片存储,界面会隐藏它,且「复制公开链接」会拒绝
+    (预签名 URL 只会给出 manifest)。
+  - 目录列表按 --dir-cache-ttl 缓存;自己的写操作立即失效,别处做的改动最长一个 TTL 后可见。
+  - Office 文档、3D 模型、压缩包与 PSD/TIFF/HEIC 目前显示「后续版本提供」的占位提示,仍可
+    下载;专用预览器在计划中。
+
+示例:
+  sail serve web --profile prod --listen :9090 --user alice --password '***'
+  sail serve web --profile prod --prefix shared --listen :9090 \
+    --user alice --password '***' --tls-cert c.pem --tls-key k.pem`,
+
+		// serve_web.go — flags
+		"listen address for the web library (serve.web.listen)":                                             "Web 资源库的监听地址(serve.web.listen)",
+		"HTTP Basic user name (required)":                                                                   "HTTP Basic 用户名(必填)",
+		"HTTP Basic password (required)":                                                                    "HTTP Basic 密码(必填)",
+		"TLS certificate; supply together with --tls-key to serve HTTPS (serve.web.tls-cert)":               "TLS 证书;与 --tls-key 同时提供即启用 HTTPS(serve.web.tls-cert)",
+		"TLS private key; supply together with --tls-cert (serve.web.tls-key)":                              "TLS 私钥;与 --tls-cert 同时提供(serve.web.tls-key)",
+		"per-file size limit, defaults to --backend-max-object-size (serve.max-upload-size)":                "单文件大小上限,默认取 --backend-max-object-size(serve.max-upload-size)",
+		"staging directory used by the core when it has to buffer a write, defaults to the system temp dir": "核心在需要缓冲写入时使用的暂存目录,默认系统临时目录",
+		"how long a directory listing is cached (e.g. 60s, 10m; 0 disables); your own writes invalidate at once, changes made elsewhere take up to one TTL to appear":                              "目录列表缓存时长(如 60s、10m;0 关闭);自己的写操作立即失效,别处的改动最长一个 TTL 后可见",
+		"directories to keep hot in the background (comma-separated logical paths, e.g. /yiche,/modelImage); each is listed once at startup so the first visit does not pay the full listing cost": "需要后台保热的目录(逗号分隔的逻辑路径,如 /yiche,/modelImage);启动时各列一次,首次访问不再承担完整列举的开销",
+
+		// serve_web.go — 运行期文案
+		"sail web started: %s://%s  bucket=%s profile=%s%s user=%s max-object-size=%s chunked=%s\n": "sail web 已启动: %s://%s  bucket=%s profile=%s%s user=%s 单对象上限=%s 分片=%s\n",
+		"  open in a browser: %s\n": "  在浏览器中打开: %s\n",
+		"no bucket to serve: pass --bucket, set SAIL_BUCKET, or add \"bucket\" to profile %q in the config file — the web library serves a whole bucket, and without one there is nothing to show": "没有可共享的 bucket:请传 --bucket、设置 SAIL_BUCKET,或在配置文件里给 profile %q 添加 \"bucket\" —— Web 资源库展示的是整桶,没有桶就无从展示",
 	})
 }

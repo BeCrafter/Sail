@@ -70,6 +70,21 @@ type ServeConfig struct {
 	// 同名字段 —— 同一个 bucket 的共享方式换协议时,用户表与空间划分不该跟着
 	// 重写一遍;只有端口、共享名这类协议特有的才分家。
 	SMB SMBConfig `mapstructure:"smb"`
+	// Web 是 `serve web` 独有的参数(内置 Web 资源库)。与 SMB 同理,
+	// 协议无关的共享布局留在上面的同名字段。
+	Web WebConfig `mapstructure:"web"`
+}
+
+// WebConfig 是 serve.web 块:`sail serve web` 的专属参数落点。
+type WebConfig struct {
+	// Listen 是内置 Web 资源库的监听地址。刻意不继承 serve.listen:
+	// WebDAV 是给 Finder/资源管理器挂载的,Web 是给浏览器打开的,两者
+	// 各跑各的进程,不该抢同一个端口。
+	Listen string `mapstructure:"listen"`
+	// TLSCert / TLSKey 同时提供即为浏览器启用 HTTPS。与 WebDAV 同语义
+	// (浏览器对 Basic 凭据在明文 HTTP 上的态度各版本不一,公网部署建议开)。
+	TLSCert string `mapstructure:"tls-cert"`
+	TLSKey  string `mapstructure:"tls-key"`
 }
 
 // SMBConfig 是 serve.smb 块:`sail serve smb` 的专属参数落点。字段语义与
@@ -237,6 +252,11 @@ func (c *Config) Resolve(profile string) (*Resolved, error) {
 				Listen:     expandEnv(p.Serve.SMB.Listen),
 				Share:      expandEnv(p.Serve.SMB.Share),
 				ServerName: expandEnv(p.Serve.SMB.ServerName),
+			},
+			Web: WebConfig{
+				Listen:  expandEnv(p.Serve.Web.Listen),
+				TLSCert: expandEnv(p.Serve.Web.TLSCert),
+				TLSKey:  expandEnv(p.Serve.Web.TLSKey),
 			},
 		},
 	}

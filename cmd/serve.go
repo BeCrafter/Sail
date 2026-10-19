@@ -20,6 +20,7 @@ import (
 	"github.com/BeCrafter/sail/internal/client"
 	"github.com/BeCrafter/sail/internal/config"
 	"github.com/BeCrafter/sail/internal/i18n"
+	"github.com/BeCrafter/sail/internal/vfs"
 	"github.com/BeCrafter/sail/internal/vfs/quotafs"
 	"github.com/BeCrafter/sail/internal/vfs/s3fs"
 	"github.com/BeCrafter/sail/internal/webdavfs"
@@ -29,9 +30,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// serveFlags 是两个 serve 子命令共用的 flag 落点。命令各自只注册自己那部分:
-// WebDAV 有 --tls-cert/--tls-key/--print-windows-setup,SMB 有 --share/--server-name。
-// 未注册的字段保持零值,changed() 恒为 false,故共用的合并逻辑不必知道是哪条命令。
+// serveFlags 是 serve 子命令共用的 flag 落点。命令各自只注册自己那部分:
+// WebDAV 有 --tls-cert/--tls-key/--print-windows-setup,SMB 有 --share/--server-name,
+// Web 有 --listen/--tls-cert/--tls-key。未注册的字段保持零值,changed() 恒为 false,
+// 故共用的合并逻辑不必知道是哪条命令。
 type serveFlags struct {
 	listen         string
 	prefix         string
@@ -64,7 +66,8 @@ Which bucket is shared comes from the profile, so name it with --profile (the gl
 --bucket flag and SAIL_BUCKET still override it when needed).
 
   serve webdav  -- share over the WebDAV protocol (HTTPS optional)
-  serve smb     -- share over the SMB2 protocol (clients mount a network drive)`,
+  serve smb     -- share over the SMB2 protocol (clients mount a network drive)
+  serve web     -- open the bucket in a browser (built-in media library)`,
 }
 
 var serveWebdavCmd = &cobra.Command{
@@ -233,6 +236,93 @@ type serveSettings struct {
 	prewarm       []string
 }
 
+// shellEntry 是协议壳的用户条目:凭据 + 该用户已建好的内核栈 + 协议壳对象。
+//
+// 两种协议壳对「壳」的形态要求不同(WebDAV 要 webdavfs.FileSystem 包一层
+// 目录缓存;Web 要 webfs.FileSystem 包一层缓存与目录语义),但都要同一份
+// 协议无关栈(qfs)。Shell 由各协议的 newShell 生产,FS 恒为内核栈本身。
+type shellEntry struct {
+	Name        string
+	Password    string
+	Shell       any
+	FS          vfs.FileSystem
+	Prefix      string
+	PrewarmDirs []string
+}
+
+// serveGateway 是协议壳在 cmd 侧的最小契约:原子替换用户表(热加载)。
+// 各协议壳的 SwapUsers 参数类型不同,由各自实现的适配器在这里归一。
+type serveGateway interface {
+	swapUsers(entries []shellEntry) error
+}
+
+// serveProtocol 是一套协议壳的装配方式。三种协议(webdav/smb/web)共用
+// serveRuntime 的建栈、校验、配额、热加载,差异只在这三个函数上。
+type serveProtocol struct {
+	// merge 重算生效参数(热加载时按运行中的冷区设置重读)。
+	merge func(serveFlags, *config.Resolved, func(string) bool) (serveSettings, error)
+	// newShell 把一个内核栈包成协议壳(只在栈新建时调用一次:壳持有缓存,
+	// 重建等于把缓存丢掉)。
+	newShell func(rt *serveRuntime, st *userStack) any
+	// newGateway 用首批条目构建网关(启动时调用一次)。
+	newGateway func(rt *serveRuntime, entries []shellEntry) (http.Handler, serveGateway, error)
+}
+
+// webdavProtocolShell 是 WebDAV 壳的装配方式。
+var webdavProtocolShell = serveProtocol{
+	merge: mergeServe,
+	newShell: func(rt *serveRuntime, st *userStack) any {
+		dfs := webdavfs.NewWithListingCache(st.qfs, rt.settings.dirCacheTTL)
+		dfs.SetLogger(rt.logger) // 后台刷新失败的告警走同一条日志
+		return dfs
+	},
+	newGateway: func(rt *serveRuntime, entries []shellEntry) (http.Handler, serveGateway, error) {
+		out, err := webdavEntries(entries)
+		if err != nil {
+			return nil, nil, err
+		}
+		gw, err := webdavfs.NewServer(webdavfs.Config{
+			Users:             out,
+			MaxUploadSize:     rt.settings.maxUpload,
+			MaxUploadSizeText: humanSize(rt.settings.maxUpload),
+			Logger:            rt.logger,
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+		return gw, webdavGateway{gw}, nil
+	},
+}
+
+// webdavEntries 把归一后的壳条目翻译成 webdavfs 的用户表。
+func webdavEntries(entries []shellEntry) ([]webdavfs.UserEntry, error) {
+	out := make([]webdavfs.UserEntry, 0, len(entries))
+	for _, e := range entries {
+		dfs, ok := e.Shell.(*webdavfs.FileSystem)
+		if !ok {
+			return nil, fmt.Errorf("serve: 用户 %q 的协议壳不是 WebDAV 文件系统", e.Name)
+		}
+		out = append(out, webdavfs.UserEntry{
+			Name:        e.Name,
+			Password:    e.Password,
+			FileSystem:  dfs,
+			PrewarmDirs: e.PrewarmDirs,
+		})
+	}
+	return out, nil
+}
+
+// webdavGateway 把 webdavfs.Server 的换表接口适配成 serveGateway。
+type webdavGateway struct{ srv *webdavfs.Server }
+
+func (g webdavGateway) swapUsers(entries []shellEntry) error {
+	out, err := webdavEntries(entries)
+	if err != nil {
+		return err
+	}
+	return g.srv.SwapUsers(out)
+}
+
 // mergeServeBase 合并两种协议壳共用的那部分参数,并做与协议无关的校验
 // (用户表互斥与语义、大小/分片/缓存时长语法)。监听地址不在这里解析:它的
 // 配置落点按协议分(serve.listen / serve.smb.listen),由各自的 merge 负责。
@@ -358,8 +448,18 @@ type serveRuntime struct {
 	bucket   string
 	profile  string
 	s3c      *s3.Client
-	gw       *webdavfs.Server
-	logger   *log.Logger
+	// gw 是生效中的协议壳(只以 http.Handler 露出:WebDAV 的 DAV 分发、
+	// Web 的 JSON API 都藏在各自的 ServeHTTP 里)。
+	gw http.Handler
+	// gwi 是同一壳对象的换表接口;nil 表示壳尚未构建(首次 applyUserTable)。
+	gwi serveGateway
+	// proto 是本次进程装配的协议壳(建壳、热加载重算参数都用它)。
+	proto serveProtocol
+	// presign / publicURL 只在 Web 壳上被消费:外链生成需要 S3 客户端与
+	// CDN 配置,协议壳不认识 S3,故由 cmd 侧注入。
+	presign   func(ctx context.Context, effectivePrefix, logical string, expires time.Duration) (string, error)
+	publicURL func(effectivePrefix, logical string) (string, bool)
+	logger    *log.Logger
 
 	// reloadMu 序列化 reload 本身(两次配置变更不并发应用);applyUserTable
 	// 在持锁期间被调用,故它内部不得再取本锁(不可重入)。ensured 另有专人
@@ -398,21 +498,47 @@ func effectiveUserTable(s serveSettings) []config.UserConfig {
 }
 
 // newServeRuntime 构建共享 S3 client、初始用户栈与网关。
+// WebDAV 与 Web 共用本函数;protocol 决定建哪套壳(SMB 不走这里:
+// 它不需要目录缓存,注册的是库自己的服务对象)。
 func newServeRuntime(o serveFlags, r *config.Resolved, s serveSettings, changed func(string) bool, logger *log.Logger) (*serveRuntime, error) {
+	return newServeRuntimeProto(o, r, s, changed, logger, webdavProtocolShell)
+}
+
+func newServeRuntimeProto(o serveFlags, r *config.Resolved, s serveSettings, changed func(string) bool, logger *log.Logger, proto serveProtocol) (*serveRuntime, error) {
+	return newServeRuntimeWith(o, r, s, changed, logger, proto, serveRuntimeOptions{})
+}
+
+// serveRuntimeOptions 是只有 Web 壳需要的注入项:外链生成要 S3 客户端与
+// CDN 配置,二者属于命令行侧。别的协议传零值。
+type serveRuntimeOptions struct {
+	// presignUsing 在共享 S3 client 建好后调用,返回实际的预签名函数
+	// (复用同一个 client,不额外建连接池)。
+	presignUsing func(*s3.Client) func(ctx context.Context, effectivePrefix, logical string, expires time.Duration) (string, error)
+	publicURL    func(effectivePrefix, logical string) (string, bool)
+}
+
+func newServeRuntimeWith(o serveFlags, r *config.Resolved, s serveSettings, changed func(string) bool, logger *log.Logger, proto serveProtocol, opt serveRuntimeOptions) (*serveRuntime, error) {
 	s3c, err := client.New(context.Background(), r)
 	if err != nil {
 		return nil, err
 	}
+	var presign func(ctx context.Context, effectivePrefix, logical string, expires time.Duration) (string, error)
+	if opt.presignUsing != nil {
+		presign = opt.presignUsing(s3c)
+	}
 	rt := &serveRuntime{
-		o:        o,
-		changed:  changed,
-		settings: s,
-		bucket:   r.Bucket,
-		profile:  r.ProfileName,
-		s3c:      s3c,
-		logger:   logger,
-		stacks:   map[string]*userStack{},
-		ensured:  map[string]bool{},
+		o:         o,
+		changed:   changed,
+		settings:  s,
+		bucket:    r.Bucket,
+		profile:   r.ProfileName,
+		s3c:       s3c,
+		presign:   presign,
+		publicURL: opt.publicURL,
+		logger:    logger,
+		proto:     proto,
+		stacks:    map[string]*userStack{},
+		ensured:   map[string]bool{},
 	}
 	if err := rt.applyUserTable(effectiveUserTable(s)); err != nil {
 		return nil, err
@@ -424,24 +550,25 @@ func newServeRuntime(o serveFlags, r *config.Resolved, s serveSettings, changed 
 // (共享同一 S3 client,构建是内存操作),并按用户配置原子设定配额
 // (复用栈时即配额热更新)。前缀基点用运行中的 settings.prefix——base
 // 属冷区,热加载按它解释用户前缀。
-func (rt *serveRuntime) buildEntries(users []config.UserConfig) ([]webdavfs.UserEntry, error) {
-	entries := make([]webdavfs.UserEntry, 0, len(users))
+//
+// 协议壳对象(Shell)只在栈新建时建一次:它持有目录列表缓存,重建等于
+// 把缓存丢掉。
+func (rt *serveRuntime) buildEntries(users []config.UserConfig) ([]shellEntry, error) {
+	entries := make([]shellEntry, 0, len(users))
 	for _, u := range users {
 		st, err := rt.coreStack(u)
 		if err != nil {
 			return nil, err
 		}
-		dfs, ok := st.shell.(*webdavfs.FileSystem)
-		if !ok {
-			// 壳只在栈新建时建一次:它持有目录列表缓存,重建等于把缓存丢掉。
-			dfs = webdavfs.NewWithListingCache(st.qfs, rt.settings.dirCacheTTL)
-			dfs.SetLogger(rt.logger) // 后台刷新失败的告警走同一条日志
-			st.shell = dfs
+		if st.shell == nil {
+			st.shell = rt.proto.newShell(rt, st)
 		}
-		entries = append(entries, webdavfs.UserEntry{
+		entries = append(entries, shellEntry{
 			Name:        u.Name,
 			Password:    u.Password,
-			FileSystem:  dfs,
+			Shell:       st.shell,
+			FS:          st.qfs,
+			Prefix:      config.EffectivePrefix(rt.settings.prefix, u.Prefix),
 			PrewarmDirs: rt.settings.prewarm,
 		})
 	}
@@ -504,21 +631,16 @@ func (rt *serveRuntime) applyUserTable(users []config.UserConfig) error {
 	if err := config.ValidateUsers(corePrefix(rt.settings.prefix), users); err != nil {
 		return err
 	}
-	if rt.gw == nil {
+	if rt.gwi == nil {
 		entries, err := rt.buildEntries(users)
 		if err != nil {
 			return err
 		}
-		gw, err := webdavfs.NewServer(webdavfs.Config{
-			Users:             entries,
-			MaxUploadSize:     rt.settings.maxUpload,
-			MaxUploadSizeText: humanSize(rt.settings.maxUpload),
-			Logger:            rt.logger,
-		})
+		gw, gwi, err := rt.proto.newGateway(rt, entries)
 		if err != nil {
 			return err
 		}
-		rt.gw = gw
+		rt.gw, rt.gwi = gw, gwi
 	} else {
 		old := make(map[string]bool, len(rt.stacks))
 		for eff := range rt.stacks {
@@ -528,7 +650,7 @@ func (rt *serveRuntime) applyUserTable(users []config.UserConfig) error {
 		if err != nil {
 			return err
 		}
-		if err := rt.gw.SwapUsers(entries); err != nil {
+		if err := rt.gwi.swapUsers(entries); err != nil {
 			for eff := range rt.stacks {
 				if !old[eff] {
 					delete(rt.stacks, eff)
@@ -577,7 +699,7 @@ func (rt *serveRuntime) reload() {
 		rt.logger.Print(i18n.Tf("reload rejected, keeping previous user table: %v", err))
 		return
 	}
-	s2, err := mergeServe(rt.o, r2, rt.changed)
+	s2, err := rt.proto.merge(rt.o, r2, rt.changed)
 	if err != nil {
 		rt.logger.Print(i18n.Tf("reload rejected, keeping previous user table: %v", err))
 		return
