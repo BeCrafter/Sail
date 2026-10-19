@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f7f7f8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b0d11" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Sail 资源库</title>
+  <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/app.css" />
+  <script>
+    // 主题必须在首帧前定下来,否则深色模式下会闪一下白底。
+    // auto(默认)= 跟随系统;存过 light/dark 就按用户的来。
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem("sail.theme"); } catch (e) {}
+      var theme = saved === "light" || saved === "dark"
+        ? saved
+        : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+</head>
+<body>
+  <div id="app" v-cloak></div>
+  <script src="/lib/vue.global.prod.js"></script>
+  <script src="/lib/highlight.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
