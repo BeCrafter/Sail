@@ -173,6 +173,7 @@
     reset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4v6h6"/><path d="M4.5 13a8 8 0 1 0 1.8-6.4L4 10"/></svg>',
     thumbnails: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="18" rx="1.2"/></svg>',
     github: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.75.41-1.27.74-1.56-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.79 1.08.79 2.18 0 1.57-.01 2.84-.01 3.23 0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>',
+    language: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
     folderOpen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H6.5L3 19z"/><path d="M3 19h15l3-9H6.5z"/></svg>',
     menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg>',
@@ -586,6 +587,9 @@
           <button class="seg-btn" :class="{ on: listMode }" :title="tt.list" @click="setListMode(true)" v-html="icons.list"></button>
         </div>
         <button class="tb-ico only-wide" :title="tt.refresh" @click="reload" v-html="icons.refresh"></button>
+        <button class="tb-ico tb-lang" :title="tt.language" @click="toggleLang">
+          <span class="tb-lang-ico" v-html="icons.language"></span><span class="tb-lang-text">{{ tt.language }}</span>
+        </button>
         <button class="tb-ico" :title="themeTitle" @click="toggleTheme" v-html="theme === 'dark' ? icons.sun : icons.moon"></button>
       </div>
 
@@ -693,12 +697,14 @@
           <span>{{ fmtSize(quota.used) }}<template v-if="quota.limit > 0"> / {{ fmtSize(quota.limit) }}</template></span>
           <span class="quota-bar" :class="quotaClass" v-if="quota.limit > 0"><i :style="{ width: usedPct + '%' }"></i></span>
         </span>
-        <button class="sb-link" @click="toggleLang">{{ tt.language }}</button>
         <span class="grow"></span>
-        <a class="repo-link" href="https://github.com/BeCrafter/Sail" target="_blank" rel="noopener" :title="tt.openSource">
-          <span v-html="icons.github"></span><span>BeCrafter / Sail</span>
-        </a>
-        <span class="sb-version" v-if="versionLabel">{{ versionLabel }}</span>
+        <span class="sb-right">
+          <a class="repo-link" href="https://github.com/BeCrafter/Sail" target="_blank" rel="noopener" :title="tt.openSource">
+            <span v-html="icons.github"></span><span>BeCrafter / Sail</span>
+          </a>
+          <i class="sb-dot" aria-hidden="true"></i>
+          <span class="sb-version" v-if="versionLabel">{{ versionLabel }}</span>
+        </span>
       </div>
     </div>
 

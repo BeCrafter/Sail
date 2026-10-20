@@ -168,7 +168,7 @@ button, input { font-family: inherit; }
   border-top: 1px solid var(--line); font-size: 11px; color: var(--fg-faint);
 }
 .conn-btn {
-  appearance: none; display: inline-flex; align-items: center;
+  appearance: none; display: inline-flex; align-items: center; gap: 7px;
   padding: 0; border: 0; background: transparent; color: var(--fg-dim);
   font-size: 11px; cursor: pointer; transition: color var(--dur);
 }
@@ -183,7 +183,9 @@ button, input { font-family: inherit; }
 }
 .repo-link:hover { color: var(--accent); background: var(--bg-hover); }
 .repo-link svg { width: 13px; height: 13px; display: block; flex: none; }
+.statusbar .sb-right { flex: none; display: inline-flex; align-items: center; gap: 7px; }
 .statusbar .repo-link { flex: none; font-size: 11px; }
+.statusbar .sb-dot { flex: none; width: 3px; height: 3px; border-radius: 50%; background: var(--fg-faint); }
 .statusbar .sb-version { flex: none; color: var(--fg-faint); font-variant-numeric: tabular-nums; }
 
 /* ---------- 主区 ---------- */
@@ -219,6 +221,9 @@ button, input { font-family: inherit; }
 .tb-ico:hover { background: var(--bg-hover); color: var(--fg); }
 .tb-ico:disabled, .tb-ico.at-root { color: var(--fg-faint); border-color: var(--line); background: transparent; cursor: default; }
 .tb-ico svg { width: 15px; height: 15px; display: block; }
+.tb-ico.tb-lang { width: auto; min-width: 38px; padding: 0 9px; gap: 5px; font-size: 11.5px; font-weight: 600; }
+.tb-ico.tb-lang svg { width: 14px; height: 14px; }
+.tb-lang-ico { display: inline-flex; }
 
 .search { display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-input); color: var(--fg-dim); width: 200px; flex: none; transition: border-color var(--dur), width var(--dur); }
 .search:focus-within { border-color: var(--accent); }
@@ -864,6 +869,8 @@ body.no-scroll { overflow: hidden; }
   .seg-btn { width: 28px; }
   .seg-toggle { height: 32px; }
   .tb-ico { width: 32px; height: 32px; }
+  .tb-ico.tb-lang { width: 32px; min-width: 32px; padding: 0; gap: 0; }
+  .tb-lang-text { display: none; }
   .list-row { gap: 8px; padding: 8px; }
   .list-row .sz, .list-row .tm { display: none; }
   .row-actions { gap: 2px; }

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 BINARY := sail
-VERSION ?= dev
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
 .DEFAULT_GOAL := help
 
