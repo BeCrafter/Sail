@@ -206,6 +206,8 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
   padding: 4px 10px calc(4px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line); font-size: 11px; color: var(--fg-faint);
 }
+.side-foot .grow { flex: 1; }
+.side-gear-bottom { width: 21px; height: 21px; margin: 0; }
 .conn-btn {
   appearance: none; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
   padding: 0; border: 0; background: transparent; color: var(--fg-dim);
@@ -575,6 +577,8 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
 .settings-advanced summary::before { content: "+"; display: inline-block; width: 16px; color: var(--fg-faint); }
 .settings-advanced[open] summary::before { content: "−"; }
 .settings-advanced-grid { margin-top: 2px; }
+.settings-chunk-row { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; margin-top: 14px; }
+.settings-chunk-row .field { width: 190px; max-width: 100%; }
 .settings-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .settings-form-actions .spin { width: 14px; height: 14px; border-width: 2px; }
 

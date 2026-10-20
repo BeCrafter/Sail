@@ -83,9 +83,7 @@ func TestSettingsStoreListAndSave(t *testing.T) {
 		Bucket: "bucket-new", Region: "ap-southeast-1", CDNBucketPath: "yes",
 		CDNDomain: "https://cdn.example.com",
 		Serve: &settingsServeInput{
-			Prefix: "newteam/", MaxUploadSize: "1GiB", ChunkedUpload: true,
-			ChunkSize: "8MiB", DirCacheTTL: "30s", Prewarm: []string{"/hot", " /warm "},
-			TLSCert: "/c.pem", TLSKey: "/k.pem", WebRequireAuth: true,
+			MaxUploadSize: "1GiB", ChunkedUpload: true, ChunkSize: "8MiB", DirCacheTTL: "30s",
 		},
 	}); err != nil {
 		t.Fatal(err)
@@ -95,10 +93,13 @@ func TestSettingsStoreListAndSave(t *testing.T) {
 		t.Fatal(err)
 	}
 	a = cfg.Profiles["alpha"]
-	if a.CDNBucketPath == nil || !*a.CDNBucketPath || a.Serve.Prefix != "newteam/" ||
+	if a.CDNBucketPath == nil || !*a.CDNBucketPath ||
 		a.Serve.MaxUploadSize != "1GiB" || !a.Serve.ChunkedUpload || a.Serve.ChunkSize != "8MiB" ||
-		a.Serve.DirCacheTTL != "30s" || len(a.Serve.Prewarm) != 2 || !a.Serve.Web.RequireAuth {
+		a.Serve.DirCacheTTL != "30s" {
 		t.Fatalf("advanced fields not saved: %+v", a)
+	}
+	if a.Serve.Prefix != "team/" {
+		t.Fatalf("unexposed serve prefix should be preserved: %+v", a.Serve)
 	}
 	if len(a.Serve.Users) != 1 {
 		t.Fatalf("unexposed users table should be preserved: %+v", a.Serve.Users)

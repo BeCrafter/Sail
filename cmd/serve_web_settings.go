@@ -25,17 +25,11 @@ type sourceSettingsStore struct {
 }
 
 type settingsServeView struct {
-	Prefix         string   `json:"prefix"`
-	MaxUploadSize  string   `json:"maxUploadSize"`
-	BackendMaxSize string   `json:"backendMaxSize"`
-	StagingDir     string   `json:"stagingDir"`
-	ChunkSize      string   `json:"chunkSize"`
-	DirCacheTTL    string   `json:"dirCacheTTL"`
-	Prewarm        []string `json:"prewarm"`
-	TLSCert        string   `json:"tlsCert"`
-	TLSKey         string   `json:"tlsKey"`
-	ChunkedUpload  bool     `json:"chunkedUpload"`
-	WebRequireAuth bool     `json:"webRequireAuth"`
+	MaxUploadSize  string `json:"maxUploadSize"`
+	BackendMaxSize string `json:"backendMaxSize"`
+	ChunkSize      string `json:"chunkSize"`
+	DirCacheTTL    string `json:"dirCacheTTL"`
+	ChunkedUpload  bool   `json:"chunkedUpload"`
 }
 
 type settingsSourceView struct {
@@ -59,17 +53,11 @@ type settingsSourcesResponse struct {
 }
 
 type settingsServeInput struct {
-	Prefix         string   `json:"prefix"`
-	MaxUploadSize  string   `json:"maxUploadSize"`
-	BackendMaxSize string   `json:"backendMaxSize"`
-	StagingDir     string   `json:"stagingDir"`
-	ChunkSize      string   `json:"chunkSize"`
-	DirCacheTTL    string   `json:"dirCacheTTL"`
-	Prewarm        []string `json:"prewarm"`
-	TLSCert        string   `json:"tlsCert"`
-	TLSKey         string   `json:"tlsKey"`
-	ChunkedUpload  bool     `json:"chunkedUpload"`
-	WebRequireAuth bool     `json:"webRequireAuth"`
+	MaxUploadSize  string `json:"maxUploadSize"`
+	BackendMaxSize string `json:"backendMaxSize"`
+	ChunkSize      string `json:"chunkSize"`
+	DirCacheTTL    string `json:"dirCacheTTL"`
+	ChunkedUpload  bool   `json:"chunkedUpload"`
 }
 
 type settingsSourceInput struct {
@@ -143,12 +131,9 @@ func (s *sourceSettingsStore) list() (settingsSourcesResponse, error) {
 			PathStyle: p.PathStyle, CDNDomain: p.CDNDomain, CDNBucketPath: cdp,
 			Default: cfg.DefaultProfile == name,
 			Serve: settingsServeView{
-				Prefix: p.Serve.Prefix, MaxUploadSize: p.Serve.MaxUploadSize,
-				BackendMaxSize: p.Serve.BackendMaxSize, StagingDir: p.Serve.StagingDir,
+				MaxUploadSize: p.Serve.MaxUploadSize, BackendMaxSize: p.Serve.BackendMaxSize,
 				ChunkSize: p.Serve.ChunkSize, DirCacheTTL: p.Serve.DirCacheTTL,
-				Prewarm: append([]string(nil), p.Serve.Prewarm...),
-				TLSCert: p.Serve.TLSCert, TLSKey: p.Serve.TLSKey,
-				ChunkedUpload: p.Serve.ChunkedUpload, WebRequireAuth: p.Serve.Web.RequireAuth,
+				ChunkedUpload: p.Serve.ChunkedUpload,
 			},
 		})
 	}
@@ -199,17 +184,11 @@ func (s *sourceSettingsStore) save(in settingsSourceInput) error {
 		p.CDNBucketPath = nil
 	}
 	if in.Serve != nil {
-		p.Serve.Prefix = strings.TrimSpace(in.Serve.Prefix)
 		p.Serve.MaxUploadSize = strings.TrimSpace(in.Serve.MaxUploadSize)
 		p.Serve.BackendMaxSize = strings.TrimSpace(in.Serve.BackendMaxSize)
-		p.Serve.StagingDir = strings.TrimSpace(in.Serve.StagingDir)
 		p.Serve.ChunkSize = strings.TrimSpace(in.Serve.ChunkSize)
 		p.Serve.DirCacheTTL = strings.TrimSpace(in.Serve.DirCacheTTL)
-		p.Serve.Prewarm = cleanSettingsList(in.Serve.Prewarm)
-		p.Serve.TLSCert = strings.TrimSpace(in.Serve.TLSCert)
-		p.Serve.TLSKey = strings.TrimSpace(in.Serve.TLSKey)
 		p.Serve.ChunkedUpload = in.Serve.ChunkedUpload
-		p.Serve.Web.RequireAuth = in.Serve.WebRequireAuth
 	}
 	cfg.Profiles[name] = p
 	if in.Default || cfg.DefaultProfile == "" {
@@ -226,17 +205,6 @@ func (s *sourceSettingsStore) save(in settingsSourceInput) error {
 		cfg.DefaultProfile = names[0]
 	}
 	return s.write(cfg)
-}
-
-func cleanSettingsList(in []string) []string {
-	out := make([]string, 0, len(in))
-	for _, v := range in {
-		v = strings.TrimSpace(v)
-		if v != "" {
-			out = append(out, v)
-		}
-	}
-	return out
 }
 
 func (s *sourceSettingsStore) remove(name string) error {
