@@ -455,6 +455,8 @@ button, input { font-family: inherit; }
 .preview .stage iframe { width: 100%; height: 100%; border: none; background: var(--surface-page); }
 .preview .stage .frame-wrap { width: 100%; height: 100%; padding: 10px; }
 .preview .stage .frame-wrap iframe { border-radius: 10px; }
+/* HTML 与 Markdown 一样按阅读宽度居中,不在宽屏上铺满整行。 */
+.preview .stage .frame-wrap.html-frame { width: min(100%, 960px); max-width: 960px; margin: 0 auto; }
 .preview .stage .code-box {
   width: 100%; height: 100%; margin: 0; overflow: auto; padding: 14px 18px; background: var(--surface-page);
   font: 12.5px/1.65 var(--mono); color: var(--fg); text-align: left;

@@ -741,7 +741,7 @@
         </div>
       </div>
       <div class="frame-wrap" v-else-if="preview.kind === 'pdf'"><iframe :src="preview.url" :title="preview.entry.name"></iframe></div>
-      <div class="frame-wrap" v-else-if="preview.kind === 'html'">
+      <div class="frame-wrap html-frame" v-else-if="preview.kind === 'html'">
         <iframe :src="preview.url" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
                 :title="preview.entry.name"></iframe>
       </div>
@@ -1235,8 +1235,10 @@
 
         // HTML 直接交给 iframe 流式加载:不经过 fetch/srcdoc,页面里的相对
         // CSS/JS/图片才能保持原有目录关系,页面脚本也能正常执行。
+        // sail-preview=1 让服务端只在预览时注入滚动条样式(不改原文件);
+        // theme 用于让 iframe 内部的滚动条与应用主题保持一致。
         if (kind === "html") {
-          preview.value.url = rawURL(it.path);
+          preview.value.url = rawURL(it.path) + "?sail-preview=1&theme=" + encodeURIComponent(theme.value);
           return;
         }
 

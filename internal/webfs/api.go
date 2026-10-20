@@ -1,6 +1,7 @@
 package webfs
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"mime"
@@ -14,6 +15,10 @@ import (
 	"github.com/BeCrafter/sail/internal/mimetype"
 	"github.com/BeCrafter/sail/internal/vfs"
 )
+
+// 超过这个大小的 HTML 仍可预览,但不做样式注入,避免为了改滚动条把
+// 整个超大页面读进内存。正常页面远小于此值。
+const maxHTMLPreviewInject = 8 << 20
 
 // entryJSON 是返回给前端的条目形态。时间用毫秒时间戳:浏览器侧直接
 // new Date(ms),不必各自解析格式。
@@ -260,7 +265,65 @@ func (r *request) serveFile(w http.ResponseWriter, logical string, download, raw
 	} else {
 		w.Header().Set("Content-Disposition", contentDisposition("inline", name))
 	}
+	// HTML 预览的滚动条在 iframe 自己的文档里,父页面样式够不到。只在
+	// 预览请求上注入一小段样式(不修改原文件,也不影响直接打开/下载)。
+	if raw && !download && strings.HasPrefix(ct, "text/html") &&
+		r.raw.URL.Query().Get("sail-preview") == "1" &&
+		fi.Size <= maxHTMLPreviewInject &&
+		r.raw.Header.Get("Range") == "" {
+		body, err := io.ReadAll(rc)
+		if err != nil {
+			fail(w, err)
+			return
+		}
+		body = injectHTMLPreviewStyle(body, r.raw.URL.Query().Get("theme"))
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+		if r.raw.Method == http.MethodHead {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(body)
+		return
+	}
 	http.ServeContent(w, r.raw, name, fi.ModTime, rc)
+}
+
+// injectHTMLPreviewStyle 把与应用一致的滚动条样式插到预览文档里。
+// 优先放在 </head> 前,让页面自身的样式先加载;没有 head 时退到 </body>,
+// 再没有就追加到文档末尾。
+func injectHTMLPreviewStyle(data []byte, theme string) []byte {
+	style := []byte(htmlPreviewStyle(theme))
+	lower := bytes.ToLower(data)
+	for _, marker := range [][]byte{[]byte("</head>"), []byte("</body>")} {
+		if i := bytes.Index(lower, marker); i >= 0 {
+			out := make([]byte, 0, len(data)+len(style))
+			out = append(out, data[:i]...)
+			out = append(out, style...)
+			out = append(out, data[i:]...)
+			return out
+		}
+	}
+	return append(data, style...)
+}
+
+func htmlPreviewStyle(theme string) string {
+	thumb := "rgba(18, 25, 38, 0.1)"
+	scheme := "light"
+	if strings.EqualFold(theme, "dark") {
+		thumb = "rgba(255, 255, 255, 0.12)"
+		scheme = "dark"
+	}
+	return `<style id="sail-preview-scrollbars">` +
+		`:root{color-scheme:` + scheme + `;}` +
+		`html{scrollbar-width:thin;scrollbar-color:` + thumb + ` transparent;}` +
+		`::-webkit-scrollbar{width:10px;height:10px;}` +
+		`::-webkit-scrollbar-track{background:transparent;}` +
+		`::-webkit-scrollbar-thumb{background-color:` + thumb + `;border-radius:5px;border:3px solid transparent;background-clip:content-box;}` +
+		`::-webkit-scrollbar-thumb:hover{border-width:2px;}` +
+		`::-webkit-scrollbar-corner{background:transparent;}` +
+		`</style>`
 }
 
 // handleUpload 接收一次 PUT 上传:直接流式写入内核(内核按配置决定是否

@@ -231,6 +231,15 @@ func TestRawPathServesRelativeAssets(t *testing.T) {
 	if !strings.Contains(resp.Header.Get("Content-Security-Policy"), "sandbox") {
 		t.Fatalf("raw HTML 缺少沙箱 CSP: %q", resp.Header.Get("Content-Security-Policy"))
 	}
+	// HTML 预览请求会注入与应用一致的滚动条样式,但不改动原始响应。
+	resp, body = g.do(t, http.MethodGet, "/api/raw/site/index.html?sail-preview=1&theme=dark", nil, nil)
+	if resp.StatusCode != http.StatusOK || !strings.Contains(string(body), "sail-preview-scrollbars") ||
+		!strings.Contains(string(body), "color-scheme:dark") {
+		t.Fatalf("HTML 预览没有注入滚动条样式: %d %q", resp.StatusCode, body)
+	}
+	if got := resp.Header.Get("Cache-Control"); got != "no-cache" {
+		t.Fatalf("HTML 预览应 no-cache,得到 %q", got)
+	}
 	for _, p := range []string{"/api/raw/site/app.css", "/api/raw/site/app.js"} {
 		resp, body = g.do(t, http.MethodGet, p, nil, nil)
 		if resp.StatusCode != http.StatusOK || len(body) == 0 {
