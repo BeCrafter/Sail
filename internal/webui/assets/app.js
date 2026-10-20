@@ -696,44 +696,38 @@
     </div>
 
     <div class="detail-scrim" v-if="selected" @click="select(null)"></div>
-    <aside class="detail" :class="{ empty: !selected }">
-      <template v-if="selected">
-        <div class="detail-preview" :class="thumbClass(selected)">
-          <span v-if="selected.dir" class="thumb-ico" v-html="icons.folder"></span>
-          <template v-else>
-            <span class="thumb-ico" v-if="!selected._thumb || !selected._thumbLoaded || selected._thumbFailed" v-html="iconFor(selected)"></span>
-            <img v-if="selected._thumb" :src="selected._thumb" :alt="selected.name"
-                 :class="{ loaded: selected._thumbLoaded && !selected._thumbFailed }"
-                 @load="selected._thumbLoaded = true" @error="selected._thumbFailed = true" />
-          </template>
+    <aside class="detail" v-if="selected">
+      <div class="detail-preview" :class="thumbClass(selected)">
+        <span v-if="selected.dir" class="thumb-ico" v-html="icons.folder"></span>
+        <template v-else>
+          <span class="thumb-ico" v-if="!selected._thumb || !selected._thumbLoaded || selected._thumbFailed" v-html="iconFor(selected)"></span>
+          <img v-if="selected._thumb" :src="selected._thumb" :alt="selected.name"
+               :class="{ loaded: selected._thumbLoaded && !selected._thumbFailed }"
+               @load="selected._thumbLoaded = true" @error="selected._thumbFailed = true" />
+        </template>
+      </div>
+      <div class="detail-head">
+        <button class="btn ico detail-close" :title="tt.close" @click="select(null)" v-html="icons.close"></button>
+        <div class="nm">{{ selected.name }}</div>
+        <div class="kind">{{ kindLabel(selected) }}</div>
+      </div>
+      <div class="detail-body">
+        <div class="kv" v-if="!selected.dir"><span class="k">{{ tt.size }}</span><span class="v">{{ fmtSize(selected.size) }}</span></div>
+        <div class="kv"><span class="k">{{ tt.modified }}</span><span class="v">{{ fmtTime(selected.mtime) || '—' }}</span></div>
+        <div class="kv"><span class="k">{{ tt.path }}</span><span class="v mono">{{ selected.path }}</span></div>
+        <div class="kv" v-if="selected.contentType"><span class="k">Content-Type</span><span class="v mono">{{ selected.contentType }}</span></div>
+        <div class="link-row" v-if="!selected.dir && canLink" @click="copyLink(selected)">
+          <span v-html="icons.link"></span><span class="txt">{{ tt.publicLink }}</span>
         </div>
-        <div class="detail-head">
-          <button class="btn ico detail-close" :title="tt.close" @click="select(null)" v-html="icons.close"></button>
-          <div class="nm">{{ selected.name }}</div>
-          <div class="kind">{{ kindLabel(selected) }}</div>
-        </div>
-        <div class="detail-body">
-          <div class="kv" v-if="!selected.dir"><span class="k">{{ tt.size }}</span><span class="v">{{ fmtSize(selected.size) }}</span></div>
-          <div class="kv"><span class="k">{{ tt.modified }}</span><span class="v">{{ fmtTime(selected.mtime) || '—' }}</span></div>
-          <div class="kv"><span class="k">{{ tt.path }}</span><span class="v mono">{{ selected.path }}</span></div>
-          <div class="kv" v-if="selected.contentType"><span class="k">Content-Type</span><span class="v mono">{{ selected.contentType }}</span></div>
-          <div class="link-row" v-if="!selected.dir && canLink" @click="copyLink(selected)">
-            <span v-html="icons.link"></span><span class="txt">{{ tt.publicLink }}</span>
-          </div>
-          <div class="side-note" v-else-if="!selected.dir">{{ coarse ? tt.selectHintTouch : tt.selectHint }}</div>
-        </div>
-        <div class="detail-actions">
-          <button class="btn primary" @click="open(selected)">
-            <span v-html="selected.dir ? icons.folderOpen : icons.eye"></span>{{ selected.dir ? tt.open : tt.preview }}
-          </button>
-          <button class="btn" v-if="!selected.dir" :title="tt.download" @click="downloadEntry(selected)" v-html="icons.download"></button>
-          <button class="btn" :title="tt.rename" @click="renameEntry(selected)" v-html="icons.edit"></button>
-          <button class="btn danger" :title="tt.del" @click="deleteEntry(selected)" v-html="icons.trash"></button>
-        </div>
-      </template>
-      <div class="detail-empty" v-else>
-        <span class="empty-ico" v-html="icons.file"></span>
-        <div>{{ tt.detailEmpty }}</div>
+        <div class="side-note" v-else-if="!selected.dir">{{ coarse ? tt.selectHintTouch : tt.selectHint }}</div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn primary" @click="open(selected)">
+          <span v-html="selected.dir ? icons.folderOpen : icons.eye"></span>{{ selected.dir ? tt.open : tt.preview }}
+        </button>
+        <button class="btn" v-if="!selected.dir" :title="tt.download" @click="downloadEntry(selected)" v-html="icons.download"></button>
+        <button class="btn" :title="tt.rename" @click="renameEntry(selected)" v-html="icons.edit"></button>
+        <button class="btn danger" :title="tt.del" @click="deleteEntry(selected)" v-html="icons.trash"></button>
       </div>
     </aside>
   </div>
