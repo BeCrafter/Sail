@@ -873,17 +873,15 @@
           </div>
           <details class="settings-advanced">
             <summary>{{ tt.settingsAdvanced }}</summary>
+            <label class="checkline settings-chunk-toggle"><input type="checkbox" v-model="settingsForm.serveChunkedUpload" />{{ tt.settingsChunkedUpload }}</label>
             <div class="settings-form-grid settings-advanced-grid">
               <label class="field"><span>{{ tt.settingsMaxUpload }}</span><input v-model="settingsForm.serveMaxUploadSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
               <label class="field"><span>{{ tt.settingsBackendMax }}</span><input v-model="settingsForm.serveBackendMaxSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
-              <label class="field"><span>{{ tt.settingsDirCacheTTL }}</span><input v-model="settingsForm.serveDirCacheTTL" autocomplete="off" spellcheck="false" placeholder="60s" /></label>
-            </div>
-            <div class="settings-chunk-row">
-              <label class="checkline"><input type="checkbox" v-model="settingsForm.serveChunkedUpload" />{{ tt.settingsChunkedUpload }}</label>
               <label class="field"><span>{{ tt.settingsChunkSize }}</span>
                 <input v-model="settingsForm.serveChunkSize" :disabled="!settingsForm.serveChunkedUpload"
                        autocomplete="off" spellcheck="false" placeholder="4GiB" />
               </label>
+              <label class="field"><span>{{ tt.settingsDirCacheTTL }}</span><input v-model="settingsForm.serveDirCacheTTL" autocomplete="off" spellcheck="false" placeholder="60s" /></label>
             </div>
           </details>
           <div class="settings-form-actions">

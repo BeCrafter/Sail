@@ -578,10 +578,8 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
 .settings-advanced summary::before { content: "+"; display: inline-block; width: 16px; color: var(--fg-faint); }
 .settings-advanced[open] summary::before { content: "−"; }
 .settings-advanced-grid { margin-top: 2px; }
-.settings-chunk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: end; margin-top: 14px; }
-.settings-chunk-row .checkline { min-height: 36px; padding: 0 2px; }
-.settings-chunk-row .field { width: auto; max-width: 100%; }
-.settings-chunk-row .field input:disabled { background: var(--bg-soft); }
+.settings-chunk-toggle { margin-bottom: 10px; min-height: 24px; }
+.settings-advanced-grid .field input:disabled { background: var(--bg-soft); }
 .settings-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .settings-form-actions .spin { width: 14px; height: 14px; border-width: 2px; }
 
@@ -1049,7 +1047,7 @@ body.no-scroll { overflow: hidden; }
   .settings-form { padding: 15px; }
   .settings-form-grid { grid-template-columns: 1fr; gap: 12px; }
   .settings-form .field-wide { grid-column: auto; }
-  .settings-chunk-row { grid-template-columns: 1fr; gap: 10px; }
+  .settings-chunk-toggle { margin-bottom: 8px; }
   .list-row { gap: 8px; padding: 8px; }
   .list-row .sz, .list-row .tm { display: none; }
   .row-actions { gap: 2px; }
