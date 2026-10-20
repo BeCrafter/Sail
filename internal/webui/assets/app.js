@@ -24,7 +24,7 @@
     "zh-CN": {
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
-      source: "数据源", menu: "侧栏", sourceDefault: "默认", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
+      source: "数据源", menu: "侧栏", sourceDefault: "默认", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
       profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
@@ -82,7 +82,7 @@
     en: {
       appTitle: "Sail Media",
       appSub: "S3 media library",
-      source: "Source", menu: "Sidebar", sourceDefault: "Default", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
+      source: "Source", menu: "Sidebar", sourceDefault: "Default", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
       profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
@@ -507,7 +507,7 @@
   <div class="body">
     <div class="scrim" v-if="drawer" @click="drawer = false"></div>
 
-    <aside class="sidebar" :class="{ open: drawer }">
+    <aside class="sidebar" :class="{ open: drawer }" :style="!drawerMode ? { width: sidebarWidth + 'px' } : null">
       <div class="side-scroll">
         <div class="side-title">
           <img class="logo" src="/logo.svg" alt="" />
@@ -550,6 +550,7 @@
           <i class="dot"></i><span>{{ connText }}</span>
         </button>
       </div>
+      <div class="side-resizer" :title="tt.resizeSidebar" @pointerdown="startSidebarResize"></div>
     </aside>
 
     <div class="main">
@@ -709,7 +710,8 @@
     </div>
 
     <div class="detail-scrim" v-if="selected" @click="select(null)"></div>
-    <aside class="detail" v-if="selected">
+    <aside class="detail" v-if="selected" :style="winW > 1100 ? { width: detailWidth + 'px' } : null">
+      <div class="detail-resizer" :title="tt.resizeSidebar" @pointerdown="startDetailResize"></div>
       <div class="detail-preview" :class="thumbClass(selected)">
         <span v-if="selected.dir" class="thumb-ico" v-html="icons.folder"></span>
         <template v-else>
@@ -721,7 +723,7 @@
       </div>
       <div class="detail-head">
         <button class="btn ico detail-close" :title="tt.close" @click="select(null)" v-html="icons.close"></button>
-        <div class="nm">{{ selected.name }}</div>
+        <div class="nm" :title="selected.name">{{ selected.name }}</div>
         <div class="kind">{{ kindLabel(selected) }}</div>
       </div>
       <div class="detail-body">
@@ -813,7 +815,7 @@
       <button class="pbtn" :title="tt.close" @click="closePreview" v-html="icons.close"></button>
     </div>
 
-    <div class="stage" :class="{ light: preview.kind !== 'image' || !!preview.arc, 'arc-split': !!preview.arc, 'arc-previewing': !!(preview.arc && preview.arcEntry) }" @wheel="onWheel"
+    <div class="stage" :style="{ '--arc-side-w': arcSideWidth + 'px' }" :class="{ light: preview.kind !== 'image' || !!preview.arc, 'arc-split': !!preview.arc, 'arc-previewing': !!(preview.arc && preview.arcEntry) }" @wheel="onWheel"
          @touchstart.passive="onTouchStart" @touchend="onTouchEnd" @dblclick="preview.kind === 'image' && toggleZoom()"
          @click.self="closePreview">
       <aside class="pv-archive-side" v-if="preview.arc">
@@ -832,6 +834,7 @@
           <div v-if="!arcRows.length" class="pv-archive-empty">{{ tt.archiveEmpty }}</div>
         </div>
         <div v-if="arcTruncated" class="pv-archive-note">{{ tt.archiveTooMany.replace('{n}', '2000') }}</div>
+        <div class="arc-resizer" :title="tt.resizeSidebar" @pointerdown="startArchiveResize"></div>
       </aside>
       <div class="pv-archive-placeholder" v-if="preview.arc && !preview.arcEntry">
         <div class="empty-ico" v-html="icons.archive"></div>
@@ -946,6 +949,16 @@
       const search = ref("");
       const listMode = ref(localStorage.getItem("sail.listMode") === "1");
       const selected = ref(null);
+      function storedWidth(key, def, min, max) {
+        try {
+          const n = Number(localStorage.getItem(key));
+          if (Number.isFinite(n) && n > 0) return Math.min(max, Math.max(min, n));
+        } catch { /* ignore */ }
+        return def;
+      }
+      const sidebarWidth = ref(storedWidth("sail.sidebarWidth", 248, 220, 380));
+      const arcSideWidth = ref(storedWidth("sail.arcSideWidth", 300, 240, 480));
+      const detailWidth = ref(storedWidth("sail.detailWidth", 300, 280, 460));
       const sources = ref([]);
       const activeSource = ref("");
       const dragOver = ref(false);
@@ -3010,6 +3023,37 @@
       }
       function onImgUp() { pv.dragging = false; }
 
+      // ---- 侧栏拖动 ----
+      function beginResize(e, kind) {
+        if (!e || e.button !== 0) return;
+        e.preventDefault();
+        const state = kind === "detail"
+          ? { ref: detailWidth, min: 280, max: 460, key: "sail.detailWidth", dir: -1 }
+          : kind === "archive"
+            ? { ref: arcSideWidth, min: 240, max: 480, key: "sail.arcSideWidth", dir: 1 }
+            : { ref: sidebarWidth, min: 220, max: 380, key: "sail.sidebarWidth", dir: 1 };
+        const startX = e.clientX;
+        const startW = state.ref.value;
+        const move = (ev) => {
+          const w = startW + (ev.clientX - startX) * state.dir;
+          state.ref.value = Math.max(state.min, Math.min(state.max, Math.round(w)));
+        };
+        const stop = () => {
+          document.body.classList.remove("col-resizing");
+          window.removeEventListener("pointermove", move);
+          window.removeEventListener("pointerup", stop);
+          window.removeEventListener("pointercancel", stop);
+          try { localStorage.setItem(state.key, String(state.ref.value)); } catch { /* ignore */ }
+        };
+        document.body.classList.add("col-resizing");
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", stop);
+        window.addEventListener("pointercancel", stop);
+      }
+      function startSidebarResize(e) { beginResize(e, "sidebar"); }
+      function startArchiveResize(e) { beginResize(e, "archive"); }
+      function startDetailResize(e) { beginResize(e, "detail"); }
+
       // ---- 动作 ----
       function downloadEntry(it) {
         const a = document.createElement("a");
@@ -3350,14 +3394,14 @@
         icons, tt, session, sources, activeSource, path, entries, loading, error, search, listMode, selected,
         dragOver, menu, dialog, picker, dlgInput, toasts, uploads, preview, quota, pv, version,
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
-        drawer, searchOpen, searchBox, theme, themeTitle,
+        drawer, searchOpen, searchBox, theme, themeTitle, sidebarWidth, arcSideWidth, detailWidth, winW,
         atRoot, crumbs, filtered, previewables, previewIndex, usedPct, quotaClass, connClass, connText, canLink,
         arcRows, arcCrumbs, arcTopCrumb, arcTopTitle, canArcUp, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad, pdfThumbnails,
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
         go, goUp, setListMode, reload, open, openPreview, select, switchSource, onCardClick, onPressStart, cancelPress,
         closePreview, stepPreview, zoom, resetZoom, toggleZoom, onWheel, onImgDown, onImgMove, onImgUp,
-        onTouchStart, onTouchEnd, toggleTheme, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,
+        onTouchStart, onTouchEnd, toggleTheme, startSidebarResize, startArchiveResize, startDetailResize, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,
         downloadCurrent, arcOpen, arcBack, arcGoUp, arcGoCrumb, backToArchive, pdfGo, pdfZoom, pdfFit, pdfSearch,
         downloadEntry, askMkdir, renameEntry, deleteEntry, copyLink, openMenu, runMenu,
         pickFiles, onPicked, onDragOver, onDragLeave, onDrop, closeDialog, confirmDialog, toggleLang,
