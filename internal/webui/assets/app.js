@@ -549,7 +549,7 @@
 
     <div class="main">
       <div class="main-toolbar">
-        <button class="tb-ico" :disabled="atRoot" :title="tt.up" @click="goUp" v-html="icons.up"></button>
+        <button class="tb-ico" :disabled="atRoot" :title="atRoot ? tt.home : tt.up" @click="goUp" v-html="atRoot ? icons.home : icons.up"></button>
         <button class="btn ico only-narrow" :title="tt.menu" @click="drawer = !drawer" v-html="icons.menu"></button>
 
         <div class="crumb" v-if="!crumbCompact">
@@ -770,7 +770,7 @@
     <div class="preview-top">
       <button class="pbtn" v-if="preview.arc && (preview.arcEntry || canArcUp)" :title="preview.arcEntry ? tt.archiveBack : tt.archiveUp" @click="arcBack" v-html="icons.chevronLeft"></button>
       <div v-if="preview.arc" ref="arcTopCrumb" class="nm arc-top-crumb" :title="arcTopTitle">
-        <span class="arc-top-ico" v-html="icons.home"></span>
+        <span class="arc-top-ico" v-html="icons.archive"></span>
         <template v-for="(c, i) in arcCrumbs" :key="i">
           <span v-if="i" class="arc-sep">/</span>
           <button class="arc-crumb-btn" :class="{ cur: i === arcCrumbs.length - 1 }" :title="c.name" @click="arcGoCrumb(i)">{{ c.name }}</button>
