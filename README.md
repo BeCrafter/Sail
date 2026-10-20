@@ -695,7 +695,7 @@ What you get in the browser:
   original folder, without gaining same-origin access to the app), syntax-highlighted source code
   and plain text; Office documents (DOCX/XLSX/XLSM/PPTX, with XLSX formula results; legacy
   .doc/.xls/.ppt prompt you to re-save), 3D models (GLB/GLTF/OBJ/STL), archives
-  (ZIP/TAR/TAR.GZ/TGZ/GZ directory navigation, nested-archive drill-down, and inline preview of supported entries), PSD, multi-page TIFF and HEIC/HEIF.
+  (ZIP/TAR/TAR.GZ/TGZ/GZ with a left directory pane and right-hand preview of supported entries; nested archives can be entered layer by layer), PSD, multi-page TIFF and HEIC/HEIF.
   The parsers are lazy-loaded, so the first page still ships only the UI itself; formats without a
   preview (e.g. RAR/7z) fall back to a download button.
 

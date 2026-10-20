@@ -636,7 +636,7 @@ sail serve web --profile prod --prefix shared
   沙箱 HTML(脚本可执行,相对资源按原目录解析,但拿不到本应用的同源权限)、带语法高亮的
   源代码、纯文本;Office 文档(DOCX/XLSX/XLSM/PPTX,其中 XLSX 会计算结果;旧版
   .doc/.xls/.ppt 会提示另存为新格式)、3D 模型(GLB/GLTF/OBJ/STL)、压缩包
-  (ZIP/TAR/TAR.GZ/TGZ/GZ 目录导航、嵌套压缩包逐层进入,以及包内受支持文件的直接预览)、PSD、多页 TIFF 与 HEIC/HEIF。
+  (ZIP/TAR/TAR.GZ/TGZ/GZ 左侧目录、右侧内容预览;嵌套压缩包可逐层进入)、PSD、多页 TIFF 与 HEIC/HEIF。
   这些解析库按需懒加载,首屏仍然只加载界面本身;不支持的格式(如 RAR/7z)给出下载入口。
 
 ### 参数

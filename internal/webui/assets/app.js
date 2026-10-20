@@ -59,7 +59,8 @@
       xlsxReady: "就绪", xlsxSum: "求和={sum}", xlsxAvg: "平均={avg}", xlsxCount: "计数={count}", xlsxNumCount: "数值={n}",
       archiveUnsupported: "此压缩格式暂不支持在线预览,可先下载后用本地工具解压",
       archiveEmpty: "压缩包为空", archiveSummary: "{n} 个文件 · 解压后 {size}", archiveTooMany: "条目过多,仅显示前 {n} 个",
-      archiveBack: "返回压缩包", archiveUp: "上一级目录", archiveRoot: "压缩包根目录",
+      archiveBack: "返回目录", archiveUp: "上一级目录", archiveRoot: "压缩包根目录",
+      archiveSelectFile: "选择左侧文件查看内容", archiveSelectFileHint: "文件夹在左侧展开,压缩包可继续进入",
       archiveEntryUnsupported: "此文件格式暂不支持在线预览,可下载后查看",
       archiveEntryFailed: "压缩包内的文件读取失败", archiveLoading: "正在读取压缩包…",
       archiveOpen: "打开", archiveContents: "压缩包内容", archiveNested: "压缩包内的压缩包",
@@ -116,7 +117,8 @@
       xlsxReady: "Ready", xlsxSum: "Sum={sum}", xlsxAvg: "Avg={avg}", xlsxCount: "Count={count}", xlsxNumCount: "Numeric={n}",
       archiveUnsupported: "This archive format cannot be previewed here; download it and extract it locally",
       archiveEmpty: "The archive is empty", archiveSummary: "{n} files · {size} uncompressed", archiveTooMany: "Too many entries; showing the first {n}",
-      archiveBack: "Back to archive", archiveUp: "Parent folder", archiveRoot: "Archive root",
+      archiveBack: "Back to files", archiveUp: "Parent folder", archiveRoot: "Archive root",
+      archiveSelectFile: "Select a file on the left to preview it", archiveSelectFileHint: "Open folders in the directory tree; nested archives can be entered too",
       archiveEntryUnsupported: "Preview is not available for this format; download the file to open it",
       archiveEntryFailed: "Could not read the file inside this archive", archiveLoading: "Reading archive…",
       archiveOpen: "Open", archiveContents: "Archive contents", archiveNested: "Nested archive",
@@ -783,7 +785,7 @@
         <span class="cnt pv-page">{{ preview.page + 1 }} / {{ preview.pages }}</span>
         <button class="pbtn" :title="tt.next" @click="previewGo(1)" v-html="icons.chevronRight"></button>
       </template>
-      <span class="cnt" v-else-if="previewIndex >= 0 && !preview.arcEntry">{{ previewIndex + 1 }} / {{ previewables.length }}</span>
+      <span class="cnt" v-else-if="previewIndex >= 0 && !preview.arcEntry && !preview.arc">{{ previewIndex + 1 }} / {{ previewables.length }}</span>
       <button class="pbtn pct" v-if="preview.kind === 'image'" :title="tt.reset" @click="resetZoom">{{ Math.round(pv.zoom * 100) }}%</button>
       <button class="pbtn" v-if="preview.kind === 'model'" :title="tt.resetView" @click="resetModelCamera" v-html="icons.reset"></button>
       <button class="pbtn" v-if="preview.kind === 'image'" :title="tt.zoomOut" @click="zoom(0.8)" v-html="icons.zoomOut"></button>
@@ -793,9 +795,44 @@
       <button class="pbtn" :title="tt.close" @click="closePreview" v-html="icons.close"></button>
     </div>
 
-    <div class="stage" :class="{ light: preview.kind !== 'image' }" @wheel="onWheel"
+    <div class="stage" :class="{ light: preview.kind !== 'image' || !!preview.arc, 'arc-split': !!preview.arc, 'arc-previewing': !!(preview.arc && preview.arcEntry) }" @wheel="onWheel"
          @touchstart.passive="onTouchStart" @touchend="onTouchEnd" @dblclick="preview.kind === 'image' && toggleZoom()"
          @click.self="closePreview">
+      <aside class="pv-archive-side" v-if="preview.arc">
+        <div class="pv-archive-head">
+          <button v-if="canArcUp" class="arc-up" :title="tt.archiveUp" @click="arcGoUp" v-html="icons.chevronLeft"></button>
+          <span class="ico" v-html="icons.archive"></span>
+          <div class="arc-bar">
+            <div class="arc-crumb">
+              <template v-for="(c, i) in arcCrumbs" :key="i">
+                <span v-if="i" class="arc-sep">/</span>
+                <button class="arc-crumb-btn" :class="{ cur: i === arcCrumbs.length - 1 }" :title="c.name" @click="arcGoCrumb(i)">{{ c.name }}</button>
+              </template>
+            </div>
+            <div class="arc-sum">{{ arcSummary }}</div>
+          </div>
+        </div>
+        <div class="pv-archive-list">
+          <div v-for="(e, i) in arcRows" :key="i" class="pv-archive-row" tabindex="0"
+               :class="{ dir: e.isDir, nested: e.isArchive, active: !!preview.arcEntry && preview.arcEntry.fullName === e.fullName }"
+               :aria-current="preview.arcEntry && preview.arcEntry.fullName === e.fullName ? 'true' : null"
+               @click="arcOpen(e)" @keydown.enter.prevent="arcOpen(e)">
+            <span class="ico" v-html="e.isDir ? icons.folder : iconFor({ name: e.base, dir: false })"></span>
+            <span class="nm" :title="e.fullName">{{ e.base }}</span>
+            <span class="sz" v-if="!e.isDir">{{ fmtSize(e.size) }}</span>
+            <span class="arc-actions">
+              <button v-if="!e.isDir" class="lnk arc-action" :title="tt.download" @click.stop="downloadArchiveEntry(e)" v-html="icons.download"></button>
+            </span>
+          </div>
+          <div v-if="!arcRows.length" class="pv-archive-empty">{{ tt.archiveEmpty }}</div>
+        </div>
+        <div v-if="arcTruncated" class="pv-archive-note">{{ tt.archiveTooMany.replace('{n}', '2000') }}</div>
+      </aside>
+      <div class="pv-archive-placeholder" v-if="preview.arc && !preview.arcEntry">
+        <div class="empty-ico" v-html="icons.archive"></div>
+        <div class="t">{{ tt.archiveSelectFile }}</div>
+        <div class="s">{{ tt.archiveSelectFileHint }}</div>
+      </div>
       <div class="pv-empty" v-if="preview.message">
         <div class="empty-ico" v-html="icons.warn"></div>
         <div>{{ preview.message }}</div>
@@ -841,34 +878,6 @@
         <canvas ref="modelCanvas" class="pv-canvas" :title="coarse ? tt.modelHintTouch : tt.modelHint" @dblclick="resetModelCamera"></canvas>
         <div class="pv-model-hint">{{ coarse ? tt.modelHintTouch : tt.modelHint }}</div>
       </div>
-      <div class="pv-archive" v-else-if="preview.kind === 'archive'">
-        <div class="pv-archive-head">
-          <button v-if="canArcUp" class="arc-up" :title="tt.archiveUp" @click="arcGoUp" v-html="icons.chevronLeft"></button>
-          <span class="ico" v-html="icons.archive"></span>
-          <div class="arc-bar">
-            <div class="arc-crumb">
-              <template v-for="(c, i) in arcCrumbs" :key="i">
-                <span v-if="i" class="arc-sep">/</span>
-                <button class="arc-crumb-btn" :class="{ cur: i === arcCrumbs.length - 1 }" :title="c.name" @click="arcGoCrumb(i)">{{ c.name }}</button>
-              </template>
-            </div>
-            <div class="arc-sum">{{ arcSummary }}</div>
-          </div>
-        </div>
-        <div class="pv-archive-list">
-          <div v-for="(e, i) in arcRows" :key="i" class="pv-archive-row" tabindex="0"
-               :class="{ dir: e.isDir, nested: e.isArchive }" @click="arcOpen(e)" @keydown.enter.prevent="arcOpen(e)">
-            <span class="ico" v-html="e.isDir ? icons.folder : iconFor({ name: e.base, dir: false })"></span>
-            <span class="nm" :title="e.fullName">{{ e.base }}</span>
-            <span class="sz" v-if="!e.isDir">{{ fmtSize(e.size) }}</span>
-            <span class="arc-actions">
-              <button v-if="!e.isDir" class="lnk arc-action" :title="tt.download" @click.stop="downloadArchiveEntry(e)" v-html="icons.download"></button>
-            </span>
-          </div>
-          <div v-if="!arcRows.length" class="pv-archive-empty">{{ tt.archiveEmpty }}</div>
-        </div>
-        <div v-if="arcTruncated" class="pv-archive-note">{{ tt.archiveTooMany.replace('{n}', '2000') }}</div>
-      </div>
       <div class="table-wrap" v-else-if="preview.kind === 'csv' && preview.table">
         <table>
           <thead><tr><th v-for="(c, i) in preview.table[0]" :key="i">{{ c }}</th></tr></thead>
@@ -892,8 +901,8 @@
       <div class="trunc" v-if="preview.truncated">{{ tt.textTruncated }}</div>
     </div>
 
-    <button class="pv-nav left" v-if="!preview.arcEntry && previewIndex > 0 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.prev" @click="stepPreview(-1)" v-html="icons.chevronLeft"></button>
-    <button class="pv-nav right" v-if="!preview.arcEntry && previewIndex >= 0 && previewIndex < previewables.length - 1 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.next" @click="stepPreview(1)" v-html="icons.chevronRight"></button>
+    <button class="pv-nav left" v-if="!preview.arc && !preview.arcEntry && previewIndex > 0 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.prev" @click="stepPreview(-1)" v-html="icons.chevronLeft"></button>
+    <button class="pv-nav right" v-if="!preview.arc && !preview.arcEntry && previewIndex >= 0 && previewIndex < previewables.length - 1 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.next" @click="stepPreview(1)" v-html="icons.chevronRight"></button>
   </div>
 
   <!-- 上传队列 -->
@@ -2278,6 +2287,7 @@
         const pvNow = preview.value;
         if (!pvNow || !pvNow.arc || !row) return;
         if (row.isDir) {
+          if (pvNow.arcEntry) backToArchive();
           pvNow.arc.dir = row.fullName;
           return;
         }
@@ -2298,6 +2308,7 @@
       }
 
       function arcGoUp() {
+        if (preview.value && preview.value.arcEntry) backToArchive();
         const arc = preview.value && preview.value.arc;
         if (!arc) return;
         if (arc.dir) {
@@ -2311,6 +2322,7 @@
 
       function arcGoCrumb(index) {
         const crumb = arcCrumbs.value[index];
+        if (preview.value && preview.value.arcEntry) backToArchive();
         const arc = preview.value && preview.value.arc;
         if (!crumb || !arc) return;
         arc.levels.splice(crumb.level + 1);
@@ -2318,6 +2330,7 @@
       }
 
       async function enterNestedArchive(row) {
+        if (preview.value && preview.value.arcEntry) backToArchive();
         const pvNow = preview.value;
         const level = currentArcLevel();
         if (!pvNow || !level || !row.entry) return;
@@ -2357,7 +2370,7 @@
           html: "", htmlSrcdoc: "", table: null, truncated: false, error: false, mediaError: false,
           loading: false, message: "", page: 0, pages: 0, progress: -1, progressText: "",
           decoded: false, pdfScale: 1, pdfSidebarOpen: false,
-          arcEntry: { level, entry, base: row.base },
+          arcEntry: { level, entry, base: row.base, fullName: row.fullName },
         });
         pv.zoom = 1; pv.x = 0; pv.y = 0;
         return virtual;

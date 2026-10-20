@@ -268,8 +268,8 @@ sail serve web --profile prod --prefix shared --user alice --password '***'
   `cdn-domain` is set, otherwise a presigned URL).
 - **Preview** images (zoom/pan), video, audio, PDF (built-in PDF.js viewer with page, zoom, find and thumbnail sidebar), CSV, Markdown, sandboxed HTML with
   working scripts and relative assets, highlighted source code and plain text. Office documents
-  (DOCX/XLSX/XLSM/PPTX), 3D models (GLB/GLTF/OBJ/STL), ZIP/TAR/TAR.GZ/TGZ/GZ archives (directory
-  navigation, nested archives and inline preview of supported entries), PSD, multi-page TIFF and
+  (DOCX/XLSX/XLSM/PPTX), 3D models (GLB/GLTF/OBJ/STL), ZIP/TAR/TAR.GZ/TGZ/GZ archives (left directory pane,
+  right-hand preview of supported entries, and nested archives), PSD, multi-page TIFF and
   HEIC/HEIF are supported inline; parsers load on demand, and formats without a preview fall back
   to download.
 

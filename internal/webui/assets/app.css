@@ -639,11 +639,36 @@ button, input { font-family: inherit; }
   color: rgba(255, 255, 255, 0.78); font-size: 11px; white-space: nowrap; pointer-events: none;
 }
 
-/* 压缩包:可导航目录 + 内层文件预览 + 嵌套压缩包。 */
-.preview .stage .pv-archive {
-  flex: 1; align-self: stretch; min-height: 0; display: flex; flex-direction: column;
+/* 压缩包:左侧目录树 + 右侧内容,与文件管理器结构一致。 */
+.preview .stage.arc-split {
+  display: grid;
+  grid-template-columns: clamp(240px, 26vw, 320px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+  justify-content: stretch;
   background: var(--surface-page);
 }
+.preview .stage.arc-split > *:not(.pv-archive-side):not(.pv-loading):not(.trunc) {
+  grid-column: 2; grid-row: 1; min-width: 0; min-height: 0;
+}
+.preview .stage.arc-split > img { justify-self: center; align-self: center; }
+.preview .stage.arc-split > .pv-media {
+  position: relative; inset: auto; grid-column: 2; grid-row: 1;
+}
+.pv-archive-side {
+  grid-column: 1; grid-row: 1;
+  display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden;
+  background: var(--surface-panel); border-right: 1px solid var(--line);
+}
+.pv-archive-side .pv-archive-head { background: var(--bg-soft); }
+.pv-archive-side .pv-archive-list { background: var(--surface-page); }
+.pv-archive-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 24px; text-align: center; background: var(--surface-page); color: var(--fg-faint);
+}
+.pv-archive-placeholder .empty-ico { width: 54px; height: 54px; color: var(--accent); opacity: .75; }
+.pv-archive-placeholder .t { font-size: 13.5px; font-weight: 600; color: var(--fg-dim); }
+.pv-archive-placeholder .s { max-width: 360px; font-size: 12px; line-height: 1.65; }
 .pv-archive-head {
   flex: none; display: flex; align-items: center; gap: 9px; padding: 9px 14px;
   border-bottom: 1px solid var(--line); color: var(--fg-dim); font-size: 12px;
@@ -675,6 +700,9 @@ button, input { font-family: inherit; }
   cursor: pointer; user-select: none;
 }
 .pv-archive-row:hover, .pv-archive-row:focus-visible { background: var(--bg-soft); }
+.pv-archive-row.active { background: var(--accent-soft); }
+.pv-archive-row.active .ico, .pv-archive-row.active .nm { color: var(--accent); }
+.pv-archive-row.active .nm { font-weight: 600; }
 .pv-archive-row .ico { flex: none; display: inline-flex; color: var(--fg-faint); }
 .pv-archive-row .ico svg { width: 16px; height: 16px; display: block; }
 .pv-archive-row.dir .ico { color: var(--accent); }
@@ -833,6 +861,11 @@ body.no-scroll { overflow: hidden; }
   .pbtn { min-width: 26px; height: 24px; padding: 0 6px; }
   .pbtn.pct { width: 42px; }
   .pbtn.pdf-zoom { display: none; }
+  .preview .stage.arc-split { grid-template-columns: minmax(0, 1fr); }
+  .preview .stage.arc-split > *:not(.pv-archive-side):not(.pv-loading):not(.trunc) { grid-column: 1; }
+  .preview .stage.arc-split > .pv-archive-side { grid-column: 1; border-right: 0; }
+  .preview .stage.arc-split.arc-previewing > .pv-archive-side { display: none; }
+  .preview .stage.arc-split:not(.arc-previewing) > .pv-archive-placeholder { display: none; }
   .pv-archive-head { gap: 7px; padding: 7px 10px; }
   .arc-sum { display: none; }
   .pv-archive-row { padding: 6px 10px; }
