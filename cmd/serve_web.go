@@ -114,7 +114,9 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	// 一个进程展示配置里的全部 profile;浏览器用 Cookie 选择当前数据源,
 	// 未选择时落到 default-profile(--profile 显式指定时以它为准)。
 	sources := buildWebSources(cfg, o, cmd.Flags().Changed, rt, r, logger)
-	httpSrv := newServeHTTPServer(s.listen, newWebMultiHandler(sources, defaultWebSourceName(cfg, r.ProfileName), webui.Handler()))
+	multi := newWebMultiHandler(sources, defaultWebSourceName(cfg, r.ProfileName), webui.Handler())
+	multi.settings = newSourceSettingsStore(serveWatchTarget())
+	httpSrv := newServeHTTPServer(s.listen, multi)
 
 	scheme := "http"
 	if s.tlsCert != "" {

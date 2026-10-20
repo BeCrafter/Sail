@@ -24,7 +24,7 @@
     "zh-CN": {
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
-      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
+      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件;重启 serve web 后,数据源列表的变更才会在资源库中生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已写入配置文件,重启 serve web 后生效", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
       profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
@@ -82,7 +82,7 @@
     en: {
       appTitle: "Sail Media",
       appSub: "S3 media library",
-      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
+      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written to the config file immediately; restart serve web to apply structural changes to the library.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved to the config file; restart serve web to apply", settingsRequired: "Name, endpoint and bucket are required", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
       profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
@@ -174,6 +174,7 @@
     thumbnails: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="18" rx="1.2"/></svg>',
     github: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.75.41-1.27.74-1.56-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.79 1.08.79 2.18 0 1.57-.01 2.84-.01 3.23 0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>',
     language: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
+    settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
     folderOpen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H6.5L3 19z"/><path d="M3 19h15l3-9H6.5z"/></svg>',
     menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg>',
@@ -371,6 +372,10 @@
   const API = {
     sources: () => request("/api/sources"),
     selectSource: (id) => request("/api/source", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }),
+    settingsSources: () => request("/api/settings/sources"),
+    saveSettingsSource: (body) => request("/api/settings/sources", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
+    deleteSettingsSource: (name) => request("/api/settings/sources?name=" + encPath(name), { method: "DELETE" }),
+    setDefaultSettingsSource: (name) => request("/api/settings/default", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) }),
     session: () => request("/api/session"),
     list: (p) => request("/api/list?path=" + encPath(p)),
     usage: () => request("/api/usage"),
@@ -518,7 +523,10 @@
         </div>
 
         <div class="side-group" v-if="sources.length">
-          <div class="side-group-head">{{ tt.source }}</div>
+          <div class="side-group-head">
+            <span>{{ tt.source }}</span>
+            <button v-if="canManageSources" class="side-gear" :title="tt.settings" @click="openSettings" v-html="icons.settings"></button>
+          </div>
           <div v-for="s in sources" :key="s.id" class="profile-item"
                :class="{ active: s.selected, disabled: !s.available }"
                :title="s.available ? (s.name + ' · ' + (s.bucket || '')) : (s.error || tt.sourceUnavailable)"
@@ -781,6 +789,98 @@
     </div>
   </div>
 
+  <!-- 数据源设置 -->
+  <div v-if="settingsOpen" class="settings-page">
+    <div class="settings-head">
+      <button class="pbtn settings-back" :title="settingsMode === 'edit' ? tt.settingsTitle : tt.settingsBack"
+              @click="settingsMode === 'edit' ? (settingsMode = 'list') : closeSettings()" v-html="icons.chevronLeft"></button>
+      <div class="settings-title">
+        <div class="t">{{ settingsMode === 'edit' ? (settingsEditName ? tt.settingsEdit : tt.settingsNew) : tt.settingsTitle }}</div>
+        <div class="s">{{ tt.settingsSub }}</div>
+      </div>
+      <span class="grow"></span>
+      <button v-if="settingsMode === 'list'" class="btn primary" @click="newSettingsSource">
+        <span v-html="icons.plus"></span>{{ tt.settingsNew }}
+      </button>
+    </div>
+    <div class="settings-scroll">
+      <div class="settings-wrap">
+        <div v-if="settingsLoading" class="settings-loading"><span class="spin"></span>{{ tt.loadingPreview }}</div>
+        <template v-else-if="settingsMode === 'list'">
+          <div class="settings-path" v-if="settingsPath">
+            <span>{{ tt.settingsConfigPath }}</span><code>{{ settingsPath }}</code>
+          </div>
+          <div class="settings-note">{{ tt.settingsRestartNote }}</div>
+          <div class="settings-cards" v-if="settingsList.length">
+            <article v-for="s in settingsList" :key="s.name" class="settings-card" :class="{ def: s.default }">
+              <div class="settings-card-head">
+                <div class="settings-card-title">
+                  <div class="nm">{{ s.name }}</div>
+                  <div class="ep">{{ s.endpoint }}</div>
+                </div>
+                <span v-if="s.default" class="src-badge">{{ tt.sourceDefault }}</span>
+              </div>
+              <div class="settings-meta">
+                <div><span>Bucket</span><b>{{ s.bucket }}</b></div>
+                <div><span>Region</span><b>{{ s.region || '—' }}</b></div>
+                <div><span>Access Key</span><b>{{ s.accessKey || '—' }}</b></div>
+                <div><span>Secret Key</span><b>{{ s.hasSecret ? '••••••••' : '—' }}</b></div>
+              </div>
+              <div class="settings-card-actions">
+                <button class="btn" @click="editSettingsSource(s)"><span v-html="icons.edit"></span>{{ tt.edit }}</button>
+                <button v-if="!s.default" class="btn" @click="setDefaultSettingsSource(s)">{{ tt.sourceDefault }}</button>
+                <button class="detail-danger settings-delete" @click="deleteSettingsSource(s)">
+                  <span v-html="icons.trash"></span>{{ tt.del }}
+                </button>
+              </div>
+            </article>
+          </div>
+          <div v-else class="settings-empty">
+            <div class="empty-ico" v-html="icons.folder"></div>
+            <div>{{ tt.settingsNoSources }}</div>
+          </div>
+        </template>
+        <form v-else class="settings-form" @submit.prevent="saveSettingsSource">
+          <div class="settings-form-grid">
+            <label class="field"><span>{{ tt.settingsName }}</span>
+              <input v-model="settingsForm.name" :disabled="!!settingsEditName" autocomplete="off" spellcheck="false" />
+            </label>
+            <label class="field"><span>{{ tt.settingsEndpoint }}</span>
+              <input v-model="settingsForm.endpoint" autocomplete="off" spellcheck="false" placeholder="https://s3.example.com" />
+            </label>
+            <label class="field"><span>{{ tt.settingsBucket }}</span>
+              <input v-model="settingsForm.bucket" autocomplete="off" spellcheck="false" />
+            </label>
+            <label class="field"><span>{{ tt.settingsRegion }}</span>
+              <input v-model="settingsForm.region" autocomplete="off" spellcheck="false" placeholder="us-east-1" />
+            </label>
+            <label class="field"><span>{{ tt.settingsAccessKey }}</span>
+              <input v-model="settingsForm.accessKey" autocomplete="off" spellcheck="false" />
+            </label>
+            <label class="field"><span>{{ tt.settingsSecret }}</span>
+              <input v-model="settingsForm.secretKey" type="password" autocomplete="new-password"
+                     :placeholder="settingsEditName ? (settingsHasSecret ? tt.settingsSecretKeep : tt.settingsSecretHint) : tt.settingsSecretHint" />
+            </label>
+            <label class="field field-wide"><span>{{ tt.settingsCDN }}</span>
+              <input v-model="settingsForm.cdnDomain" autocomplete="off" spellcheck="false" placeholder="https://cdn.example.com" />
+            </label>
+          </div>
+          <div class="settings-checks">
+            <label class="checkline"><input type="checkbox" v-model="settingsForm.pathStyle" />{{ tt.settingsPathStyle }}</label>
+            <label class="checkline"><input type="checkbox" v-model="settingsForm.default" />{{ tt.settingsDefaultSource }}</label>
+          </div>
+          <div class="settings-note">{{ tt.settingsRestartNote }}</div>
+          <div class="settings-form-actions">
+            <button type="button" class="btn" @click="settingsMode = 'list'">{{ tt.cancel }}</button>
+            <button class="btn primary" :disabled="settingsSaving">
+              <span v-if="settingsSaving" class="spin"></span>{{ tt.settingsSave }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- 预览 -->
   <div v-if="preview" class="preview">
     <div class="preview-top">
@@ -968,6 +1068,20 @@
       const detailWidth = ref(storedWidth("sail.detailWidth", 300, 280, 460));
       const sources = ref([]);
       const activeSource = ref("");
+      const canManageSources = ref(false);
+      const settingsOpen = ref(false);
+      const settingsMode = ref("list");
+      const settingsLoading = ref(false);
+      const settingsSaving = ref(false);
+      const settingsList = ref([]);
+      const settingsPath = ref("");
+      const settingsDefault = ref("");
+      const settingsEditName = ref("");
+      const settingsHasSecret = ref(false);
+      const settingsForm = reactive({
+        name: "", endpoint: "", accessKey: "", secretKey: "", bucket: "",
+        region: "", pathStyle: false, cdnDomain: "", default: false,
+      });
       const dragOver = ref(false);
       const menu = ref(null);
       const dialog = ref(null);
@@ -1295,6 +1409,104 @@
       function applySources(r) {
         sources.value = Array.isArray(r && r.sources) ? r.sources : [];
         activeSource.value = (r && r.selected) || "";
+        canManageSources.value = !!(r && r.manage);
+      }
+
+      function resetSettingsForm() {
+        Object.assign(settingsForm, {
+          name: "", endpoint: "", accessKey: "", secretKey: "", bucket: "",
+          region: "", pathStyle: false, cdnDomain: "", default: false,
+        });
+        settingsEditName.value = "";
+        settingsHasSecret.value = false;
+      }
+
+      async function loadSettings() {
+        settingsLoading.value = true;
+        try {
+          const r = await API.settingsSources();
+          settingsList.value = Array.isArray(r.sources) ? r.sources : [];
+          settingsPath.value = r.path || "";
+          settingsDefault.value = r.default || "";
+        } catch (e) {
+          toast(tt.value.settingsTitle, errText(e), "err");
+        } finally {
+          settingsLoading.value = false;
+        }
+      }
+
+      async function openSettings() {
+        drawer.value = false;
+        settingsOpen.value = true;
+        settingsMode.value = "list";
+        await loadSettings();
+      }
+
+      function closeSettings() {
+        settingsOpen.value = false;
+        settingsMode.value = "list";
+      }
+
+      function editSettingsSource(s) {
+        settingsMode.value = "edit";
+        settingsEditName.value = s.name;
+        settingsHasSecret.value = !!s.hasSecret;
+        Object.assign(settingsForm, {
+          name: s.name, endpoint: s.endpoint || "", accessKey: s.accessKey || "",
+          secretKey: "", bucket: s.bucket || "", region: s.region || "",
+          pathStyle: !!s.pathStyle, cdnDomain: s.cdnDomain || "", default: !!s.default,
+        });
+      }
+
+      function newSettingsSource() {
+        resetSettingsForm();
+        settingsMode.value = "edit";
+      }
+
+      async function saveSettingsSource() {
+        if (settingsSaving.value) return;
+        const form = settingsForm;
+        if (!form.name.trim() || !form.endpoint.trim() || !form.bucket.trim()) {
+          toast(tt.value.settingsTitle, tt.value.settingsRequired, "warn");
+          return;
+        }
+        settingsSaving.value = true;
+        try {
+          await API.saveSettingsSource({
+            name: form.name.trim(), endpoint: form.endpoint.trim(), accessKey: form.accessKey.trim(),
+            secretKey: form.secretKey, bucket: form.bucket.trim(), region: form.region.trim(),
+            pathStyle: !!form.pathStyle, cdnDomain: form.cdnDomain.trim(), default: !!form.default,
+          });
+          toast(tt.value.settingsSaved, form.name.trim(), "ok");
+          settingsMode.value = "list";
+          await loadSettings();
+        } catch (e) {
+          toast(tt.value.settingsTitle, errText(e), "err");
+        } finally {
+          settingsSaving.value = false;
+        }
+      }
+
+      async function deleteSettingsSource(s) {
+        if (!s || !(await confirmDialogBox(tt.value.confirmDel, s.name))) return;
+        try {
+          await API.deleteSettingsSource(s.name);
+          toast(tt.value.deleted, s.name, "ok");
+          await loadSettings();
+        } catch (e) {
+          toast(tt.value.settingsTitle, errText(e), "err");
+        }
+      }
+
+      async function setDefaultSettingsSource(s) {
+        if (!s || s.default) return;
+        try {
+          await API.setDefaultSettingsSource(s.name);
+          toast(tt.value.settingsSaved, s.name, "ok");
+          await loadSettings();
+        } catch (e) {
+          toast(tt.value.settingsTitle, errText(e), "err");
+        }
       }
 
       async function switchSource(s) {
@@ -3349,6 +3561,7 @@
         if (e.key === "Escape") {
           if (dialog.value) return closeDialog();
           if (menu.value) return closeMenu();
+          if (settingsOpen.value) return closeSettings();
           if (preview.value) return closePreview();
           if (selected.value) return select(null);
           return;
@@ -3411,7 +3624,9 @@
       });
 
       return {
-        icons, tt, session, sources, activeSource, path, entries, loading, error, search, listMode, selected,
+        icons, tt, session, sources, activeSource, canManageSources, settingsOpen, settingsMode, settingsLoading, settingsSaving,
+        settingsList, settingsPath, settingsDefault, settingsEditName, settingsHasSecret, settingsForm,
+        path, entries, loading, error, search, listMode, selected,
         dragOver, menu, dialog, picker, dlgInput, toasts, uploads, preview, quota, pv, version,
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
         drawer, searchOpen, searchBox, theme, themeTitle, sidebarWidth, arcSideWidth, detailWidth, winW,
@@ -3419,7 +3634,9 @@
         arcRows, arcCrumbs, arcTopCrumb, arcTopTitle, canArcUp, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad, pdfThumbnails,
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
-        go, goUp, setListMode, reload, open, openPreview, select, switchSource, onCardClick, onPressStart, cancelPress,
+        go, goUp, setListMode, reload, open, openPreview, select, switchSource, openSettings, closeSettings,
+        editSettingsSource, newSettingsSource, saveSettingsSource, deleteSettingsSource, setDefaultSettingsSource,
+        onCardClick, onPressStart, cancelPress,
         closePreview, stepPreview, zoom, resetZoom, toggleZoom, onWheel, onImgDown, onImgMove, onImgUp,
         onTouchStart, onTouchEnd, toggleTheme, startSidebarResize, startArchiveResize, startDetailResize, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,
         downloadCurrent, arcOpen, arcBack, arcGoUp, arcGoCrumb, backToArchive, pdfGo, pdfZoom, pdfFit, pdfSearch,

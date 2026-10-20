@@ -45,16 +45,18 @@ type webSourceView struct {
 type webSourcesResponse struct {
 	Default  string          `json:"default"`
 	Selected string          `json:"selected"`
+	Manage   bool            `json:"manage"`
 	Sources  []webSourceView `json:"sources"`
 }
 
 // webMultiHandler 在多个已构建好的 webfs.Server 之间路由。静态资源和
 // /api/sources 由外壳处理,其余请求按 Cookie 选择数据源后原样交给对应网关。
 type webMultiHandler struct {
-	sources []*webSource
-	byID    map[string]*webSource
-	def     *webSource
-	static  http.Handler
+	sources  []*webSource
+	byID     map[string]*webSource
+	def      *webSource
+	static   http.Handler
+	settings *sourceSettingsStore
 }
 
 func sourceID(name string) string {
@@ -132,6 +134,12 @@ func (h *webMultiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/api/source":
 		h.handleSource(w, r)
 		return
+	case "/api/settings/sources":
+		h.handleSettingsSources(w, r)
+		return
+	case "/api/settings/default":
+		h.handleSettingsDefault(w, r)
+		return
 	}
 
 	if strings.HasPrefix(r.URL.Path, "/api/") {
@@ -179,7 +187,7 @@ func (h *webMultiHandler) handleSources(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	selected := h.selected(r)
-	h.writeSources(w, selected)
+	h.writeSources(w, r, selected)
 }
 
 func (h *webMultiHandler) handleSource(w http.ResponseWriter, r *http.Request) {
@@ -213,10 +221,10 @@ func (h *webMultiHandler) handleSource(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 		Secure:   r.TLS != nil,
 	})
-	h.writeSources(w, s)
+	h.writeSources(w, r, s)
 }
 
-func (h *webMultiHandler) writeSources(w http.ResponseWriter, selected *webSource) {
+func (h *webMultiHandler) writeSources(w http.ResponseWriter, r *http.Request, selected *webSource) {
 	if selected == nil {
 		selected = h.def
 	}
@@ -228,7 +236,7 @@ func (h *webMultiHandler) writeSources(w http.ResponseWriter, selected *webSourc
 	if selected != nil {
 		selectedID = selected.id
 	}
-	out := webSourcesResponse{Default: defID, Selected: selectedID, Sources: make([]webSourceView, 0, len(h.sources))}
+	out := webSourcesResponse{Default: defID, Selected: selectedID, Manage: h.canManage(r), Sources: make([]webSourceView, 0, len(h.sources))}
 	for _, s := range h.sources {
 		out.Sources = append(out.Sources, webSourceView{
 			ID:        s.id,
