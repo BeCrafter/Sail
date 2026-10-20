@@ -40,7 +40,7 @@
       cancel: "取消", confirm: "确定", save: "保存",
       deleted: "已删除", renamed: "已重命名", created: "已创建", copied: "链接已复制", 
       uploadFailed: "上传失败", uploading: "上传中", uploaded: "上传完成", 
-      close: "关闭", prev: "上一个", next: "下一个", zoomIn: "放大", zoomOut: "缩小", reset: "重置", fitWidth: "适应宽度", findInPDF: "在 PDF 中查找",
+      close: "关闭", prev: "上一个", next: "下一个", zoomIn: "放大", zoomOut: "缩小", reset: "重置", fitWidth: "适应宽度", findInPDF: "在 PDF 中查找", pdfThumbnails: "缩略图",
       noPreview: "该文件暂时无法预览", unsupportedPreview: "此格式暂不支持在线预览,可先下载查看",
       mediaError: "无法播放此视频或音频,可能是文件损坏,或浏览器不支持该编码",
       previewFailed: "预览加载失败", loadingPreview: "正在加载预览…",
@@ -97,7 +97,7 @@
       cancel: "Cancel", confirm: "Confirm", save: "Save",
       deleted: "Deleted", renamed: "Renamed", created: "Created", copied: "Link copied",
       uploadFailed: "Upload failed", uploading: "Uploading", uploaded: "Uploaded",
-      close: "Close", prev: "Previous", next: "Next", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Reset", fitWidth: "Fit width", findInPDF: "Find in PDF",
+      close: "Close", prev: "Previous", next: "Next", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Reset", fitWidth: "Fit width", findInPDF: "Find in PDF", pdfThumbnails: "Page thumbnails",
       noPreview: "This file cannot be previewed", unsupportedPreview: "Preview is not available for this format; download it instead",
       mediaError: "Cannot play this video or audio. The file may be damaged or use a codec this browser does not support.",
       previewFailed: "Failed to load preview", loadingPreview: "Loading preview…",
@@ -169,6 +169,7 @@
     zoomIn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-3.5-3.5"/></svg>',
     zoomOut: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-3.5-3.5"/></svg>',
     reset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4v6h6"/><path d="M4.5 13a8 8 0 1 0 1.8-6.4L4 10"/></svg>',
+    thumbnails: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="18" rx="1.2"/></svg>',
     folderOpen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H6.5L3 19z"/><path d="M3 19h15l3-9H6.5z"/></svg>',
     menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg>',
@@ -774,6 +775,7 @@
         <button class="pbtn pdf-zoom" :title="tt.zoomOut" @click="pdfZoom(0.9)" v-html="icons.zoomOut"></button>
         <button class="pbtn pct pdf-zoom" :title="tt.fitWidth" @click="pdfFit">{{ pdfScalePct }}</button>
         <button class="pbtn pdf-zoom" :title="tt.zoomIn" @click="pdfZoom(1.25)" v-html="icons.zoomIn"></button>
+        <button class="pbtn pdf-thumb" :class="{ on: preview.pdfSidebarOpen }" :title="tt.pdfThumbnails" @click="pdfThumbnails" v-html="icons.thumbnails"></button>
         <button class="pbtn pdf-find" :title="tt.findInPDF" @click="pdfSearch" v-html="icons.search"></button>
       </template>
       <template v-else-if="(preview.kind === 'pptx' && preview.pages) || (preview.decoded && preview.pages > 1)">
@@ -1359,7 +1361,7 @@
           entry: it, kind: kind || "none", url: fileURL(it.path), text: "", lines: [],
           highlighted: "", html: "", htmlSrcdoc: "", table: null, truncated: false, error: false, mediaError: false,
           loading: false, message: "", page: 0, pages: 0, progress: -1, progressText: "",
-          arc: null, arcRoot: null, arcEntry: null, decoded: false, pdfScale: 1,
+          arc: null, arcRoot: null, arcEntry: null, decoded: false, pdfScale: 1, pdfSidebarOpen: false,
         };
         pv.zoom = 1; pv.x = 0; pv.y = 0;
 
@@ -2354,7 +2356,7 @@
           entry: virtual, kind: kind || "none", url: "", text: "", lines: [], highlighted: "",
           html: "", htmlSrcdoc: "", table: null, truncated: false, error: false, mediaError: false,
           loading: false, message: "", page: 0, pages: 0, progress: -1, progressText: "",
-          decoded: false, pdfScale: 1,
+          decoded: false, pdfScale: 1, pdfSidebarOpen: false,
           arcEntry: { level, entry, base: row.base },
         });
         pv.zoom = 1; pv.x = 0; pv.y = 0;
@@ -2477,7 +2479,7 @@
           entry: root, kind: "archive", url: "", text: "", lines: [], highlighted: "", html: "", htmlSrcdoc: "",
           table: null, truncated: false, error: false, mediaError: false, loading: false,
           message: "", page: 0, pages: 0, progress: -1, progressText: "", decoded: false,
-          pdfScale: 1, arcEntry: null,
+          pdfScale: 1, pdfSidebarOpen: false, arcEntry: null,
         });
         pv.zoom = 1; pv.x = 0; pv.y = 0;
       }
@@ -2786,8 +2788,9 @@
             preview.value.page = viewer.currentPageNumber || 1;
             preview.value.pages = viewer.pagesCount || 0;
             preview.value.pdfScale = viewer.currentScale || 1;
+            preview.value.pdfSidebarOpen = !!(app.viewsManager && app.viewsManager.isOpen);
           };
-          const events = ["pagesinit", "pagechanging", "scalechanging", "documentloaded", "pagerendered"];
+          const events = ["pagesinit", "pagechanging", "scalechanging", "documentloaded", "pagerendered", "sidebarviewchanged"];
           for (const name of events) app.eventBus.on(name, update);
           pdfUnbind = () => {
             for (const name of events) {
@@ -2831,6 +2834,21 @@
         const viewer = app && app.pdfViewer;
         if (!viewer) return;
         viewer.currentScaleValue = "page-width";
+      }
+
+      function pdfThumbnails() {
+        const app = pdfApplication();
+        const vm = app && app.viewsManager;
+        if (!vm || !preview.value) return;
+        // SidebarView.THUMBS = 1. 点击「缩略图」时:已打开且就在缩略图视图则关闭;
+        // 打开但停在大纲/附件/图层时切回缩略图;未打开则打开。
+        if (vm.isOpen && vm.visibleView === 1) {
+          vm.close();
+        } else {
+          if (!vm.isOpen) vm.open();
+          if (vm.active !== 1) vm.switchView(1);
+        }
+        preview.value.pdfSidebarOpen = !!vm.isOpen;
       }
 
       function pdfSearch() {
@@ -3228,7 +3246,7 @@
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
         drawer, searchOpen, searchBox, theme, themeTitle,
         atRoot, crumbs, filtered, previewables, previewIndex, usedPct, quotaClass, connClass, connText, canLink,
-        arcRows, arcCrumbs, canArcUp, arcSummary, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad,
+        arcRows, arcCrumbs, canArcUp, arcSummary, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad, pdfThumbnails,
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel, capsText,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
         go, goUp, setListMode, reload, open, openPreview, select, onCardClick, onPressStart, cancelPress,

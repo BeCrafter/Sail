@@ -632,7 +632,7 @@ sail serve web --profile prod --prefix shared
 - **传输**:拖拽或选择上传,带进度队列,直接流进内核(不落暂存副本);支持单文件或选中项下载。
 - **操作**:重命名(文件与目录)、删除、新建文件夹、复制链接——配置了 `cdn-domain` 时给 CDN
   公开地址,否则给预签名 URL。
-- **预览**:图片(缩放/平移)、视频、音频、PDF(内置 PDF.js 查看器,带翻页、缩放与查找)、CSV 表格、Markdown、
+- **预览**:图片(缩放/平移)、视频、音频、PDF(内置 PDF.js 查看器,带翻页、缩放、查找与缩略图侧栏)、CSV 表格、Markdown、
   沙箱 HTML(脚本可执行,相对资源按原目录解析,但拿不到本应用的同源权限)、带语法高亮的
   源代码、纯文本;Office 文档(DOCX/XLSX/XLSM/PPTX,其中 XLSX 会计算结果;旧版
   .doc/.xls/.ppt 会提示另存为新格式)、3D 模型(GLB/GLTF/OBJ/STL)、压缩包

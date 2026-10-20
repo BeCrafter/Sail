@@ -690,7 +690,7 @@ What you get in the browser:
   core (no staging copy), and download of one file or a selection.
 - **Operate**: rename (files and directories), delete, new folder, and "copy link" — a CDN public
   URL when `cdn-domain` is configured, otherwise a presigned URL.
-- **Preview**: images (zoom/pan), video, audio, PDF (built-in PDF.js viewer with page, zoom and find controls),
+- **Preview**: images (zoom/pan), video, audio, PDF (built-in PDF.js viewer with page, zoom, find and thumbnail sidebar),
   CSV tables, Markdown, sandboxed HTML (scripts run and relative assets resolve against the
   original folder, without gaining same-origin access to the app), syntax-highlighted source code
   and plain text; Office documents (DOCX/XLSX/XLSM/PPTX, with XLSX formula results; legacy

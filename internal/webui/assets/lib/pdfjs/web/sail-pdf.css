@@ -110,7 +110,8 @@ html[data-sail-theme="dark"] .pdfViewer .page {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* 搜索条:外层只放搜索入口,真正的查找条仍由 PDF.js 提供并浮在右上角。 */
+/* 搜索条:外层只放搜索入口,Pdf.js 的查找条浮在右上角。
+   不使用 PDF.js 的 wrapContainers 纵向布局,统一成一排输入 + 一排选项。 */
 #findbar,
 .editorParamsToolbar {
   visibility: visible !important;
@@ -119,22 +120,33 @@ html[data-sail-theme="dark"] .pdfViewer .page {
   inset-inline-end: 12px !important;
   inset-inline-start: auto !important;
   display: flex !important;
+  flex-direction: row !important;
   flex-wrap: wrap !important;
   align-items: center !important;
-  gap: 4px !important;
+  justify-content: flex-start !important;
+  gap: 4px 10px !important;
   width: max-content !important;
   min-width: 0 !important;
   max-width: min(520px, calc(100% - 24px)) !important;
   height: auto !important;
-  padding: 5px 8px !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+  padding: 8px 10px !important;
   white-space: normal !important;
   color: var(--main-color) !important;
   background: var(--field-bg-color) !important;
   border: 1px solid var(--field-border-color) !important;
-  border-radius: 9px !important;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18) !important;
-  font: 13px/30px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif !important;
+  border-radius: 11px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18) !important;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif !important;
   z-index: 20 !important;
+}
+
+#findbar::before,
+#findbar::after,
+.editorParamsToolbar::before,
+.editorParamsToolbar::after {
+  display: none !important;
 }
 
 #findbar.hidden,
@@ -152,43 +164,141 @@ html[data-sail-theme="dark"] .pdfViewer .page {
   color: inherit !important;
 }
 
-#findInput {
-  width: 180px !important;
-  height: 28px !important;
-  margin: 0 !important;
-  border-radius: 6px !important;
-  font-size: 13px !important;
-  background: var(--field-bg-color) !important;
-  color: var(--field-color) !important;
-  border: 1px solid var(--field-border-color) !important;
-}
-
 #findbar > *,
-#findbar .toolbarHorizontalGroup {
+#findbar > .toolbarHorizontalGroup {
   height: auto !important;
-  width: auto !important;
-  flex: none !important;
-  justify-content: flex-start !important;
+  min-height: 0 !important;
   padding: 0 !important;
 }
 
-#findbar .toolbarButton {
-  width: 28px !important;
-  height: 28px !important;
+#findbar #findInputContainer {
+  flex: 1 1 260px !important;
+  min-width: 210px !important;
+  width: auto !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+#findbar #findInputContainer > .toolbarHorizontalGroup {
+  display: flex !important;
+  flex: none !important;
+  align-items: center !important;
+  gap: 2px !important;
+  width: auto !important;
+  padding: 0 !important;
+}
+
+#findInput {
+  flex: 1 1 160px !important;
+  width: 200px !important;
+  min-width: 120px !important;
+  max-width: 100% !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 9px !important;
+  border-radius: 7px !important;
+  font: 13px/30px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif !important;
+  background: var(--field-bg-color) !important;
+  color: var(--field-color) !important;
+  border: 1px solid var(--field-border-color) !important;
+  outline: none !important;
+}
+
+#findInput:focus {
+  border-color: #0e8a72 !important;
+  box-shadow: 0 0 0 2px rgba(14, 138, 114, 0.14) !important;
+}
+
+#findbar #findInputContainer .toolbarButton {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
   aspect-ratio: auto !important;
+  border-radius: 7px !important;
+}
+
+#findbar #findInputContainer .toolbarButton:hover {
+  background: var(--button-hover-color) !important;
 }
 
 #findbar .splitToolbarButtonSeparator {
   display: none !important;
 }
 
-#findbar .toolbarLabel,
-#findResultsCount,
-#findMsg {
+#findbar #findbarOptionsOneContainer,
+#findbar #findbarOptionsTwoContainer {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 2px 10px !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#findbar .toggleButton {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  width: auto !important;
+  height: 24px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 3px !important;
+  border-radius: 5px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+
+#findbar .toggleButton:hover {
+  background: var(--button-hover-color) !important;
+}
+
+#findbar .toggleButton:has(> input:checked) {
+  color: #0e8a72 !important;
+  background: rgba(14, 138, 114, 0.12) !important;
+}
+
+html[data-sail-theme="dark"] #findbar .toggleButton:has(> input:checked) {
+  color: #6fe0c6 !important;
+  background: rgba(111, 224, 198, 0.14) !important;
+}
+
+#findbar .toggleButton input[type="checkbox"] {
+  position: static !important;
+  flex: none !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+  accent-color: #0e8a72 !important;
+}
+
+#findbar .toolbarLabel {
   height: auto !important;
   min-height: 0 !important;
   margin: 0 !important;
-  line-height: 22px !important;
+  line-height: 1.4 !important;
+  font-size: 12px !important;
+  color: var(--main-color) !important;
+}
+
+#findbar #findbarMessageContainer {
+  flex: 1 1 100% !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+  height: auto !important;
 }
 
 #findResultsCount {
@@ -199,4 +309,170 @@ html[data-sail-theme="dark"] .pdfViewer .page {
 
 html[data-sail-theme="dark"] #findResultsCount {
   color: #99a1ad !important;
+}
+
+/* 缩略图侧栏:与外层预览的玻璃面板/强调色保持一致。 */
+#viewsManager {
+  --sidebar-width: 244px;
+  --sidebar-min-width: 190px;
+  --sidebar-max-width: min(290px, calc(100vw - 24px));
+  --sidebar-block-padding: 10px;
+  --sidebar-padding: 0px;
+  --sidebar-border-radius: 12px;
+  --sidebar-bg-color: rgba(255, 255, 255, 0.96);
+  --sidebar-backdrop-filter: blur(18px);
+  --sidebar-border-color: rgba(18, 25, 38, 0.12);
+  --sidebar-box-shadow: 0 12px 40px rgba(20, 28, 42, 0.2);
+  --text-color: #1b222e;
+  --button-fg: #566070;
+  --button-bg: rgba(18, 25, 38, 0.04);
+  --button-border-color: transparent;
+  --button-hover-bg: rgba(18, 25, 38, 0.07);
+  --button-hover-fg: #1b222e;
+  --button-active-bg: rgba(14, 138, 114, 0.13);
+  --button-active-fg: #0e8a72;
+  --button-focus-outline-color: #0e8a72;
+  --indicator-color: #0e8a72;
+  --header-bg: transparent;
+  --header-shadow: none;
+  --image-border-color: rgba(18, 25, 38, 0.12);
+  --image-hover-border-color: rgba(14, 138, 114, 0.5);
+  --image-current-border-color: #0e8a72;
+  --image-page-number-bg: rgba(18, 25, 38, 0.06);
+  --image-page-number-fg: #566070;
+  --image-hover-page-number-bg: rgba(18, 25, 38, 0.1);
+  --image-current-page-number-bg: #0e8a72;
+  --image-current-page-number-fg: #ffffff;
+  --image-shadow: 0 1px 2px rgba(20, 28, 42, 0.08), 0 6px 18px rgba(20, 28, 42, 0.1);
+  --image-hover-shadow: 0 2px 6px rgba(20, 28, 42, 0.1), 0 10px 26px rgba(20, 28, 42, 0.14);
+  --image-current-shadow: 0 0 0 2px #0e8a72, 0 8px 24px rgba(14, 138, 114, 0.16);
+  overflow: hidden;
+}
+
+html[data-sail-theme="dark"] #viewsManager {
+  --sidebar-bg-color: rgba(18, 21, 26, 0.96);
+  --sidebar-border-color: rgba(255, 255, 255, 0.1);
+  --sidebar-box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  --text-color: #e9ecf1;
+  --button-fg: #aeb6c2;
+  --button-bg: rgba(255, 255, 255, 0.05);
+  --button-hover-bg: rgba(255, 255, 255, 0.09);
+  --button-hover-fg: #ffffff;
+  --button-active-bg: rgba(14, 138, 114, 0.24);
+  --button-active-fg: #6fe0c6;
+  --button-focus-outline-color: #6fe0c6;
+  --indicator-color: #6fe0c6;
+  --image-border-color: rgba(255, 255, 255, 0.12);
+  --image-hover-border-color: rgba(111, 224, 198, 0.55);
+  --image-current-border-color: #6fe0c6;
+  --image-page-number-bg: rgba(255, 255, 255, 0.08);
+  --image-page-number-fg: #aeb6c2;
+  --image-hover-page-number-bg: rgba(255, 255, 255, 0.14);
+  --image-current-page-number-bg: #6fe0c6;
+  --image-current-page-number-fg: #0b0d11;
+  --image-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+  --image-hover-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 10px 26px rgba(0, 0, 0, 0.45);
+  --image-current-shadow: 0 0 0 2px #6fe0c6, 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+#viewsManager #viewsManagerHeader {
+  border-bottom: 1px solid var(--sidebar-border-color);
+  background: transparent;
+}
+
+#viewsManager #viewsManagerTitle {
+  padding: 9px 10px;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+#viewsManager .viewsManagerLabel {
+  flex: 1 1 auto;
+  text-align: left;
+  font: 600 13px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--text-color);
+}
+
+#viewsManager #viewsManagerSelector {
+  width: 38px;
+  height: 30px;
+}
+
+#viewsManager #viewsManagerSelector > button {
+  border-radius: 7px;
+}
+
+#viewsManager #viewsManagerContent {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-color);
+}
+
+#viewsManager #viewsManagerContent::-webkit-scrollbar {
+  width: 9px;
+}
+
+#viewsManager #viewsManagerContent::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-color);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+#viewsManager #thumbnailsView {
+  --thumbnail-width: 132px;
+  flex: 0 0 auto;
+  align-content: flex-start;
+  justify-content: center;
+  padding: 14px 10px 24px;
+  gap: 18px 12px;
+}
+
+#viewsManager #thumbnailsView > .thumbnail {
+  width: var(--thumbnail-width);
+}
+
+#viewsManager .thumbnailImageContainer {
+  border-radius: 8px;
+}
+
+#viewsManager .thumbnailImageContainer::after {
+  bottom: 6px;
+  min-width: 28px;
+  height: 17px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+#viewsManager .viewsManagerButton {
+  border-radius: 7px;
+}
+
+@media (max-width: 600px) {
+  #viewsManager {
+    --sidebar-width: 210px;
+    --sidebar-max-width: calc(100vw - 20px);
+  }
+
+  #findbar,
+  .editorParamsToolbar {
+    top: 6px !important;
+    inset-inline-end: 6px !important;
+    max-width: calc(100% - 12px) !important;
+    padding: 7px 8px !important;
+  }
+
+  #findbar #findInputContainer {
+    flex-basis: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #findInput {
+    width: 100% !important;
+  }
+
+  #findbar #findbarOptionsOneContainer,
+  #findbar #findbarOptionsTwoContainer {
+    flex: 1 1 auto !important;
+  }
 }

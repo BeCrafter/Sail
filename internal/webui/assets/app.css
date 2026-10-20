@@ -433,6 +433,7 @@ button, input { font-family: inherit; }
   gap: 5px; font-size: 11px; flex: none; white-space: nowrap; transition: background var(--dur);
 }
 .pbtn:hover { background: var(--bg-hover); }
+.pbtn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .pbtn.pct { width: 50px; justify-content: flex-end; font-variant-numeric: tabular-nums; }
 .pbtn svg { width: 13px; height: 13px; display: block; }
 .preview .stage { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
