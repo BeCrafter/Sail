@@ -140,6 +140,9 @@ func (h *webMultiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/api/settings/default":
 		h.handleSettingsDefault(w, r)
 		return
+	case "/api/settings/test":
+		h.handleSettingsTest(w, r)
+		return
 	}
 
 	if strings.HasPrefix(r.URL.Path, "/api/") {

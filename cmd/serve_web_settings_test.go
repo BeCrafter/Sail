@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -9,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/BeCrafter/sail/internal/config"
+	"github.com/BeCrafter/sail/internal/fakes3"
 )
 
 func newSettingsStoreForTest(t *testing.T, body string) (*sourceSettingsStore, string) {
@@ -165,5 +168,31 @@ func TestSettingsHTTPLocalOnly(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("remote status = %d, want 403", rec.Code)
+	}
+}
+
+func TestSettingsTestConnection(t *testing.T) {
+	s3srv := fakes3.New()
+	defer s3srv.Close()
+	body := fmt.Sprintf(`default-profile: test
+profiles:
+  test:
+    endpoint: %s
+    access-key: ak
+    secret-key: sk
+    bucket: qb
+    region: us-east-1
+    path-style: true
+`, s3srv.URL())
+	store, _ := newSettingsStoreForTest(t, body)
+	if err := store.test(context.Background(), settingsSourceInput{
+		Name: "test", Endpoint: s3srv.URL(), AccessKey: "ak", Bucket: "qb", PathStyle: true,
+	}); err != nil {
+		t.Fatalf("test connection failed: %v", err)
+	}
+	if err := store.test(context.Background(), settingsSourceInput{
+		Name: "test", Endpoint: "http://127.0.0.1:1", AccessKey: "ak", Bucket: "qb", PathStyle: true,
+	}); err == nil {
+		t.Fatal("unreachable endpoint should fail")
 	}
 }

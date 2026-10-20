@@ -591,8 +591,12 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
 .settings-advanced-body { padding-bottom: 14px; }
 .settings-advanced-grid { margin-top: 2px; }
 .settings-advanced-grid .field input:disabled { background: var(--bg-soft); }
-.settings-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.settings-form-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.settings-form-actions .grow { flex: 1; min-width: 8px; }
 .settings-form-actions .spin { width: 14px; height: 14px; border-width: 2px; }
+.settings-test-status { max-width: min(420px, 50vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; }
+.settings-test-status.ok { color: var(--ok); }
+.settings-test-status.err { color: var(--danger); }
 
 /* ---------- 预览 ---------- */
 .preview { position: fixed; inset: 0; z-index: 80; background: var(--bg-glass-drop); backdrop-filter: blur(8px); display: flex; flex-direction: column; }

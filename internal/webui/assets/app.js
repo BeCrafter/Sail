@@ -24,7 +24,7 @@
     "zh-CN": {
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
-      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件;重启 serve web 后,数据源列表的变更才会在资源库中生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已写入配置文件,重启 serve web 后生效", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", settingsAdvanced: "高级配置", settingsCDNBucketPath: "CDN Bucket 路径", settingsAuto: "自动检测", settingsIncluded: "已包含", settingsNotIncluded: "不包含", settingsMaxUpload: "单文件上限", settingsBackendMax: "后端对象上限", settingsChunkSize: "分片大小", settingsDirCacheTTL: "目录缓存 TTL", settingsChunkedUpload: "启用分片上传", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
+      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件;重启 serve web 后,数据源列表的变更才会在资源库中生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已写入配置文件,重启 serve web 后生效", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", settingsTest: "测试连接", settingsTesting: "测试中…", settingsTestOk: "连接成功", settingsTestFailed: "连接失败", settingsAdvanced: "高级配置", settingsCDNBucketPath: "CDN Bucket 路径", settingsAuto: "自动检测", settingsIncluded: "已包含", settingsNotIncluded: "不包含", settingsMaxUpload: "单文件上限", settingsBackendMax: "后端对象上限", settingsChunkSize: "分片大小", settingsDirCacheTTL: "目录缓存 TTL", settingsChunkedUpload: "启用分片上传", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
       profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
@@ -82,7 +82,7 @@
     en: {
       appTitle: "Sail Media",
       appSub: "S3 media library",
-      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written to the config file immediately; restart serve web to apply structural changes to the library.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved to the config file; restart serve web to apply", settingsRequired: "Name, endpoint and bucket are required", settingsAdvanced: "Advanced", settingsCDNBucketPath: "CDN bucket path", settingsAuto: "Auto-detect", settingsIncluded: "Included", settingsNotIncluded: "Not included", settingsMaxUpload: "Max upload size", settingsBackendMax: "Backend object limit", settingsChunkSize: "Chunk size", settingsDirCacheTTL: "Directory cache TTL", settingsChunkedUpload: "Enable chunked uploads", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
+      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written to the config file immediately; restart serve web to apply structural changes to the library.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved to the config file; restart serve web to apply", settingsRequired: "Name, endpoint and bucket are required", settingsTest: "Test connection", settingsTesting: "Testing…", settingsTestOk: "Connected", settingsTestFailed: "Connection failed", settingsAdvanced: "Advanced", settingsCDNBucketPath: "CDN bucket path", settingsAuto: "Auto-detect", settingsIncluded: "Included", settingsNotIncluded: "Not included", settingsMaxUpload: "Max upload size", settingsBackendMax: "Backend object limit", settingsChunkSize: "Chunk size", settingsDirCacheTTL: "Directory cache TTL", settingsChunkedUpload: "Enable chunked uploads", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
       profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
@@ -376,6 +376,7 @@
     saveSettingsSource: (body) => request("/api/settings/sources", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
     deleteSettingsSource: (name) => request("/api/settings/sources?name=" + encPath(name), { method: "DELETE" }),
     setDefaultSettingsSource: (name) => request("/api/settings/default", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) }),
+    testSettingsSource: (body) => request("/api/settings/test", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
     session: () => request("/api/session"),
     list: (p) => request("/api/list?path=" + encPath(p)),
     usage: () => request("/api/usage"),
@@ -889,6 +890,11 @@
             </div>
           </div>
           <div class="settings-form-actions">
+            <button type="button" class="btn" :disabled="settingsTesting" @click="testSettingsConnection">
+              <span v-if="settingsTesting" class="spin"></span>{{ settingsTesting ? tt.settingsTesting : tt.settingsTest }}
+            </button>
+            <span v-if="settingsTestState" class="settings-test-status" :class="settingsTestState" :title="settingsTestMessage">{{ settingsTestMessage }}</span>
+            <span class="grow"></span>
             <button type="button" class="btn" @click="settingsMode = 'list'">{{ tt.cancel }}</button>
             <button class="btn primary" :disabled="settingsSaving">
               <span v-if="settingsSaving" class="spin"></span>{{ tt.settingsSave }}
@@ -1095,11 +1101,21 @@
       const settingsEditName = ref("");
       const settingsHasSecret = ref(false);
       const settingsAdvancedOpen = ref(false);
+      const settingsTesting = ref(false);
+      const settingsTestState = ref("");
+      const settingsTestMessage = ref("");
       const settingsForm = reactive({
         name: "", endpoint: "", accessKey: "", secretKey: "", bucket: "",
         region: "", pathStyle: false, cdnDomain: "", cdnBucketPath: "auto", default: false,
         serveMaxUploadSize: "", serveBackendMaxSize: "", serveChunkSize: "",
         serveDirCacheTTL: "", serveChunkedUpload: false,
+      });
+
+      watch(settingsForm, () => {
+        if (settingsTestState.value) {
+          settingsTestState.value = "";
+          settingsTestMessage.value = "";
+        }
       });
       const dragOver = ref(false);
       const menu = ref(null);
@@ -1495,6 +1511,8 @@
         settingsOpen.value = true;
         settingsMode.value = "list";
         settingsAdvancedOpen.value = false;
+        settingsTestState.value = "";
+        settingsTestMessage.value = "";
         await loadSettings();
       }
 
@@ -1506,6 +1524,8 @@
       function editSettingsSource(s) {
         settingsMode.value = "edit";
         settingsAdvancedOpen.value = false;
+        settingsTestState.value = "";
+        settingsTestMessage.value = "";
         settingsEditName.value = s.name;
         settingsHasSecret.value = !!s.hasSecret;
         const sv = s.serve || {};
@@ -1523,7 +1543,41 @@
       function newSettingsSource() {
         resetSettingsForm();
         settingsAdvancedOpen.value = false;
+        settingsTestState.value = "";
+        settingsTestMessage.value = "";
         settingsMode.value = "edit";
+      }
+
+      function settingsConnectionPayload() {
+        const form = settingsForm;
+        return {
+          name: form.name.trim(), endpoint: form.endpoint.trim(), accessKey: form.accessKey.trim(),
+          secretKey: form.secretKey, bucket: form.bucket.trim(), region: form.region.trim(),
+          pathStyle: !!form.pathStyle, cdnDomain: form.cdnDomain.trim(),
+          cdnBucketPath: form.cdnBucketPath, default: !!form.default,
+        };
+      }
+
+      async function testSettingsConnection() {
+        if (settingsTesting.value) return;
+        const form = settingsForm;
+        if (!form.name.trim() || !form.endpoint.trim() || !form.bucket.trim()) {
+          toast(tt.value.settingsTitle, tt.value.settingsRequired, "warn");
+          return;
+        }
+        settingsTesting.value = true;
+        settingsTestState.value = "";
+        settingsTestMessage.value = "";
+        try {
+          await API.testSettingsSource(settingsConnectionPayload());
+          settingsTestState.value = "ok";
+          settingsTestMessage.value = tt.value.settingsTestOk;
+        } catch (e) {
+          settingsTestState.value = "err";
+          settingsTestMessage.value = tt.value.settingsTestFailed + ": " + errText(e);
+        } finally {
+          settingsTesting.value = false;
+        }
       }
 
       async function saveSettingsSource() {
@@ -1536,10 +1590,7 @@
         settingsSaving.value = true;
         try {
           await API.saveSettingsSource({
-            name: form.name.trim(), endpoint: form.endpoint.trim(), accessKey: form.accessKey.trim(),
-            secretKey: form.secretKey, bucket: form.bucket.trim(), region: form.region.trim(),
-            pathStyle: !!form.pathStyle, cdnDomain: form.cdnDomain.trim(),
-            cdnBucketPath: form.cdnBucketPath, default: !!form.default,
+            ...settingsConnectionPayload(),
             serve: {
               maxUploadSize: form.serveMaxUploadSize.trim(), backendMaxSize: form.serveBackendMaxSize.trim(),
               chunkSize: form.serveChunkSize.trim(), dirCacheTTL: form.serveDirCacheTTL.trim(),
@@ -3695,6 +3746,7 @@
       return {
         icons, tt, session, sources, activeSource, canManageSources, settingsOpen, settingsMode, settingsLoading, settingsSaving,
         settingsList, settingsEditName, settingsHasSecret, settingsAdvancedOpen, settingsForm,
+        settingsTesting, settingsTestState, settingsTestMessage,
         path, entries, loading, error, search, listMode, selected,
         dragOver, menu, dialog, picker, dlgInput, toasts, uploads, preview, quota, pv, version,
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
@@ -3704,7 +3756,7 @@
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
         go, goUp, setListMode, reload, open, openPreview, select, switchSource, openSettings, closeSettings,
-        editSettingsSource, newSettingsSource, saveSettingsSource, deleteSettingsSource, setDefaultSettingsSource,
+        editSettingsSource, newSettingsSource, testSettingsConnection, saveSettingsSource, deleteSettingsSource, setDefaultSettingsSource,
         onCardClick, onPressStart, cancelPress,
         closePreview, stepPreview, zoom, resetZoom, toggleZoom, onWheel, onImgDown, onImgMove, onImgUp,
         onTouchStart, onTouchEnd, toggleTheme, startSidebarResize, startArchiveResize, startDetailResize, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net"
@@ -11,8 +12,12 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/BeCrafter/sail/internal/client"
 	"github.com/BeCrafter/sail/internal/config"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 var profileNameRE = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
@@ -207,6 +212,64 @@ func (s *sourceSettingsStore) save(in settingsSourceInput) error {
 	return s.write(cfg)
 }
 
+// test 用表单里尚未保存的参数建一个临时 S3 client,执行一次最小列举。
+// 编辑已有 profile 时,Secret Key 留空表示沿用磁盘上的密钥。
+func (s *sourceSettingsStore) test(ctx context.Context, in settingsSourceInput) error {
+	s.mu.Lock()
+	cfg, err := s.load()
+	s.mu.Unlock()
+	if err != nil {
+		return err
+	}
+	name := strings.TrimSpace(in.Name)
+	if name == "" {
+		name = "test"
+	}
+	p := cfg.Profiles[name]
+	p.Endpoint = strings.TrimSpace(in.Endpoint)
+	p.AccessKey = strings.TrimSpace(in.AccessKey)
+	if in.SecretKey != "" {
+		p.SecretKey = in.SecretKey
+	}
+	p.Bucket = strings.TrimSpace(in.Bucket)
+	p.Region = strings.TrimSpace(in.Region)
+	p.PathStyle = in.PathStyle
+	if p.Endpoint == "" {
+		return errors.New("endpoint is required")
+	}
+	if p.Bucket == "" {
+		return errors.New("bucket is required")
+	}
+	if p.AccessKey == "" {
+		p.AccessKey = "${" + config.EnvVarName(name, "ACCESS_KEY") + "}"
+	}
+	if p.SecretKey == "" {
+		p.SecretKey = "${" + config.EnvVarName(name, "SECRET_KEY") + "}"
+	}
+	tmp := &config.Config{
+		DefaultProfile: name,
+		Profiles:       map[string]config.Profile{name: p},
+	}
+	r, err := tmp.Resolve(name)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	c, err := client.New(ctx, r)
+	if err != nil {
+		return err
+	}
+	_, err = c.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+		Bucket:  aws.String(r.Bucket),
+		MaxKeys: aws.Int32(1),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *sourceSettingsStore) remove(name string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -324,6 +387,32 @@ func (h *webMultiHandler) handleSettingsSources(w http.ResponseWriter, r *http.R
 		w.Header().Set("Allow", "GET, POST, DELETE")
 		writeSourceJSONError(w, http.StatusMethodNotAllowed, "method not allowed")
 	}
+}
+
+func (h *webMultiHandler) handleSettingsTest(w http.ResponseWriter, r *http.Request) {
+	if !h.canManage(r) {
+		writeSourceJSONError(w, http.StatusForbidden, "settings are only available from localhost")
+		return
+	}
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		writeSourceJSONError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	if h.settings == nil {
+		writeSourceJSONError(w, http.StatusServiceUnavailable, "settings store is unavailable")
+		return
+	}
+	var in settingsSourceInput
+	if err := decodeSettingsJSON(w, r, &in); err != nil {
+		writeSourceJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := h.settings.test(r.Context(), in); err != nil {
+		writeSourceJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeSettingsJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
 func (h *webMultiHandler) handleSettingsDefault(w http.ResponseWriter, r *http.Request) {
