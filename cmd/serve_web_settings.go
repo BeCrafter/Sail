@@ -24,16 +24,32 @@ type sourceSettingsStore struct {
 	mu   sync.Mutex
 }
 
+type settingsServeView struct {
+	Prefix         string   `json:"prefix"`
+	MaxUploadSize  string   `json:"maxUploadSize"`
+	BackendMaxSize string   `json:"backendMaxSize"`
+	StagingDir     string   `json:"stagingDir"`
+	ChunkSize      string   `json:"chunkSize"`
+	DirCacheTTL    string   `json:"dirCacheTTL"`
+	Prewarm        []string `json:"prewarm"`
+	TLSCert        string   `json:"tlsCert"`
+	TLSKey         string   `json:"tlsKey"`
+	ChunkedUpload  bool     `json:"chunkedUpload"`
+	WebRequireAuth bool     `json:"webRequireAuth"`
+}
+
 type settingsSourceView struct {
-	Name      string `json:"name"`
-	Endpoint  string `json:"endpoint"`
-	AccessKey string `json:"accessKey"`
-	HasSecret bool   `json:"hasSecret"`
-	Bucket    string `json:"bucket"`
-	Region    string `json:"region"`
-	PathStyle bool   `json:"pathStyle"`
-	CDNDomain string `json:"cdnDomain"`
-	Default   bool   `json:"default"`
+	Name          string            `json:"name"`
+	Endpoint      string            `json:"endpoint"`
+	AccessKey     string            `json:"accessKey"`
+	HasSecret     bool              `json:"hasSecret"`
+	Bucket        string            `json:"bucket"`
+	Region        string            `json:"region"`
+	PathStyle     bool              `json:"pathStyle"`
+	CDNDomain     string            `json:"cdnDomain"`
+	CDNBucketPath string            `json:"cdnBucketPath"`
+	Serve         settingsServeView `json:"serve"`
+	Default       bool              `json:"default"`
 }
 
 type settingsSourcesResponse struct {
@@ -42,16 +58,32 @@ type settingsSourcesResponse struct {
 	Sources []settingsSourceView `json:"sources"`
 }
 
+type settingsServeInput struct {
+	Prefix         string   `json:"prefix"`
+	MaxUploadSize  string   `json:"maxUploadSize"`
+	BackendMaxSize string   `json:"backendMaxSize"`
+	StagingDir     string   `json:"stagingDir"`
+	ChunkSize      string   `json:"chunkSize"`
+	DirCacheTTL    string   `json:"dirCacheTTL"`
+	Prewarm        []string `json:"prewarm"`
+	TLSCert        string   `json:"tlsCert"`
+	TLSKey         string   `json:"tlsKey"`
+	ChunkedUpload  bool     `json:"chunkedUpload"`
+	WebRequireAuth bool     `json:"webRequireAuth"`
+}
+
 type settingsSourceInput struct {
-	Name      string `json:"name"`
-	Endpoint  string `json:"endpoint"`
-	AccessKey string `json:"accessKey"`
-	SecretKey string `json:"secretKey"`
-	Bucket    string `json:"bucket"`
-	Region    string `json:"region"`
-	PathStyle bool   `json:"pathStyle"`
-	CDNDomain string `json:"cdnDomain"`
-	Default   bool   `json:"default"`
+	Name          string              `json:"name"`
+	Endpoint      string              `json:"endpoint"`
+	AccessKey     string              `json:"accessKey"`
+	SecretKey     string              `json:"secretKey"`
+	Bucket        string              `json:"bucket"`
+	Region        string              `json:"region"`
+	PathStyle     bool                `json:"pathStyle"`
+	CDNDomain     string              `json:"cdnDomain"`
+	CDNBucketPath string              `json:"cdnBucketPath"`
+	Serve         *settingsServeInput `json:"serve"`
+	Default       bool                `json:"default"`
 }
 
 func newSourceSettingsStore(path string) *sourceSettingsStore {
@@ -97,11 +129,27 @@ func (s *sourceSettingsStore) list() (settingsSourcesResponse, error) {
 	}
 	for _, name := range names {
 		p := cfg.Profiles[name]
+		cdp := "auto"
+		if p.CDNBucketPath != nil {
+			if *p.CDNBucketPath {
+				cdp = "yes"
+			} else {
+				cdp = "no"
+			}
+		}
 		out.Sources = append(out.Sources, settingsSourceView{
 			Name: name, Endpoint: p.Endpoint, AccessKey: p.AccessKey,
 			HasSecret: p.SecretKey != "", Bucket: p.Bucket, Region: p.Region,
-			PathStyle: p.PathStyle, CDNDomain: p.CDNDomain,
+			PathStyle: p.PathStyle, CDNDomain: p.CDNDomain, CDNBucketPath: cdp,
 			Default: cfg.DefaultProfile == name,
+			Serve: settingsServeView{
+				Prefix: p.Serve.Prefix, MaxUploadSize: p.Serve.MaxUploadSize,
+				BackendMaxSize: p.Serve.BackendMaxSize, StagingDir: p.Serve.StagingDir,
+				ChunkSize: p.Serve.ChunkSize, DirCacheTTL: p.Serve.DirCacheTTL,
+				Prewarm: append([]string(nil), p.Serve.Prewarm...),
+				TLSCert: p.Serve.TLSCert, TLSKey: p.Serve.TLSKey,
+				ChunkedUpload: p.Serve.ChunkedUpload, WebRequireAuth: p.Serve.Web.RequireAuth,
+			},
 		})
 	}
 	return out, nil
@@ -140,6 +188,29 @@ func (s *sourceSettingsStore) save(in settingsSourceInput) error {
 	p.Region = strings.TrimSpace(in.Region)
 	p.PathStyle = in.PathStyle
 	p.CDNDomain = strings.TrimSpace(in.CDNDomain)
+	switch in.CDNBucketPath {
+	case "yes":
+		v := true
+		p.CDNBucketPath = &v
+	case "no":
+		v := false
+		p.CDNBucketPath = &v
+	default:
+		p.CDNBucketPath = nil
+	}
+	if in.Serve != nil {
+		p.Serve.Prefix = strings.TrimSpace(in.Serve.Prefix)
+		p.Serve.MaxUploadSize = strings.TrimSpace(in.Serve.MaxUploadSize)
+		p.Serve.BackendMaxSize = strings.TrimSpace(in.Serve.BackendMaxSize)
+		p.Serve.StagingDir = strings.TrimSpace(in.Serve.StagingDir)
+		p.Serve.ChunkSize = strings.TrimSpace(in.Serve.ChunkSize)
+		p.Serve.DirCacheTTL = strings.TrimSpace(in.Serve.DirCacheTTL)
+		p.Serve.Prewarm = cleanSettingsList(in.Serve.Prewarm)
+		p.Serve.TLSCert = strings.TrimSpace(in.Serve.TLSCert)
+		p.Serve.TLSKey = strings.TrimSpace(in.Serve.TLSKey)
+		p.Serve.ChunkedUpload = in.Serve.ChunkedUpload
+		p.Serve.Web.RequireAuth = in.Serve.WebRequireAuth
+	}
 	cfg.Profiles[name] = p
 	if in.Default || cfg.DefaultProfile == "" {
 		cfg.DefaultProfile = name
@@ -155,6 +226,17 @@ func (s *sourceSettingsStore) save(in settingsSourceInput) error {
 		cfg.DefaultProfile = names[0]
 	}
 	return s.write(cfg)
+}
+
+func cleanSettingsList(in []string) []string {
+	out := make([]string, 0, len(in))
+	for _, v := range in {
+		v = strings.TrimSpace(v)
+		if v != "" {
+			out = append(out, v)
+		}
+	}
+	return out
 }
 
 func (s *sourceSettingsStore) remove(name string) error {

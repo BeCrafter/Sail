@@ -24,7 +24,7 @@
     "zh-CN": {
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
-      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件;重启 serve web 后,数据源列表的变更才会在资源库中生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已写入配置文件,重启 serve web 后生效", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
+      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件;重启 serve web 后,数据源列表的变更才会在资源库中生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已写入配置文件,重启 serve web 后生效", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", settingsAdvanced: "高级配置", settingsCDNBucketPath: "CDN Bucket 路径", settingsAuto: "自动检测", settingsIncluded: "已包含", settingsNotIncluded: "不包含", settingsPrefix: "空间前缀", settingsMaxUpload: "单文件上限", settingsBackendMax: "后端对象上限", settingsStagingDir: "暂存目录", settingsChunkSize: "分片大小", settingsDirCacheTTL: "目录缓存 TTL", settingsPrewarm: "预热目录", settingsTLSCert: "TLS 证书", settingsTLSKey: "TLS 私钥", settingsChunkedUpload: "启用分片上传", settingsRequireAuth: "Web 要求登录", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
       profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
@@ -82,7 +82,7 @@
     en: {
       appTitle: "Sail Media",
       appSub: "S3 media library",
-      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written to the config file immediately; restart serve web to apply structural changes to the library.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved to the config file; restart serve web to apply", settingsRequired: "Name, endpoint and bucket are required", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
+      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written to the config file immediately; restart serve web to apply structural changes to the library.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved to the config file; restart serve web to apply", settingsRequired: "Name, endpoint and bucket are required", settingsAdvanced: "Advanced", settingsCDNBucketPath: "CDN bucket path", settingsAuto: "Auto-detect", settingsIncluded: "Included", settingsNotIncluded: "Not included", settingsPrefix: "Space prefix", settingsMaxUpload: "Max upload size", settingsBackendMax: "Backend object limit", settingsStagingDir: "Staging directory", settingsChunkSize: "Chunk size", settingsDirCacheTTL: "Directory cache TTL", settingsPrewarm: "Prewarm directories", settingsTLSCert: "TLS certificate", settingsTLSKey: "TLS key", settingsChunkedUpload: "Enable chunked uploads", settingsRequireAuth: "Require web login", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
       profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
@@ -807,10 +807,6 @@
       <div class="settings-wrap">
         <div v-if="settingsLoading" class="settings-loading"><span class="spin"></span>{{ tt.loadingPreview }}</div>
         <template v-else-if="settingsMode === 'list'">
-          <div class="settings-path" v-if="settingsPath">
-            <span>{{ tt.settingsConfigPath }}</span><code>{{ settingsPath }}</code>
-          </div>
-          <div class="settings-note">{{ tt.settingsRestartNote }}</div>
           <div class="settings-cards" v-if="settingsList.length">
             <article v-for="s in settingsList" :key="s.name" class="settings-card" :class="{ def: s.default }">
               <div class="settings-card-head">
@@ -861,15 +857,39 @@
               <input v-model="settingsForm.secretKey" type="password" autocomplete="new-password"
                      :placeholder="settingsEditName ? (settingsHasSecret ? tt.settingsSecretKeep : tt.settingsSecretHint) : tt.settingsSecretHint" />
             </label>
-            <label class="field field-wide"><span>{{ tt.settingsCDN }}</span>
+            <label class="field"><span>{{ tt.settingsCDN }}</span>
               <input v-model="settingsForm.cdnDomain" autocomplete="off" spellcheck="false" placeholder="https://cdn.example.com" />
+            </label>
+            <label class="field"><span>{{ tt.settingsCDNBucketPath }}</span>
+              <select v-model="settingsForm.cdnBucketPath">
+                <option value="auto">{{ tt.settingsAuto }}</option>
+                <option value="yes">{{ tt.settingsIncluded }}</option>
+                <option value="no">{{ tt.settingsNotIncluded }}</option>
+              </select>
             </label>
           </div>
           <div class="settings-checks">
             <label class="checkline"><input type="checkbox" v-model="settingsForm.pathStyle" />{{ tt.settingsPathStyle }}</label>
             <label class="checkline"><input type="checkbox" v-model="settingsForm.default" />{{ tt.settingsDefaultSource }}</label>
           </div>
-          <div class="settings-note">{{ tt.settingsRestartNote }}</div>
+          <details class="settings-advanced">
+            <summary>{{ tt.settingsAdvanced }}</summary>
+            <div class="settings-form-grid settings-advanced-grid">
+              <label class="field"><span>{{ tt.settingsPrefix }}</span><input v-model="settingsForm.servePrefix" autocomplete="off" spellcheck="false" placeholder="team/" /></label>
+              <label class="field"><span>{{ tt.settingsMaxUpload }}</span><input v-model="settingsForm.serveMaxUploadSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
+              <label class="field"><span>{{ tt.settingsBackendMax }}</span><input v-model="settingsForm.serveBackendMaxSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
+              <label class="field"><span>{{ tt.settingsStagingDir }}</span><input v-model="settingsForm.serveStagingDir" autocomplete="off" spellcheck="false" /></label>
+              <label class="field"><span>{{ tt.settingsChunkSize }}</span><input v-model="settingsForm.serveChunkSize" autocomplete="off" spellcheck="false" placeholder="4GiB" /></label>
+              <label class="field"><span>{{ tt.settingsDirCacheTTL }}</span><input v-model="settingsForm.serveDirCacheTTL" autocomplete="off" spellcheck="false" placeholder="60s" /></label>
+              <label class="field"><span>{{ tt.settingsPrewarm }}</span><input v-model="settingsForm.servePrewarm" autocomplete="off" spellcheck="false" placeholder="/hot, /warm" /></label>
+              <label class="field"><span>{{ tt.settingsTLSCert }}</span><input v-model="settingsForm.serveTLSCert" autocomplete="off" spellcheck="false" /></label>
+              <label class="field"><span>{{ tt.settingsTLSKey }}</span><input v-model="settingsForm.serveTLSKey" autocomplete="off" spellcheck="false" /></label>
+            </div>
+            <div class="settings-checks">
+              <label class="checkline"><input type="checkbox" v-model="settingsForm.serveChunkedUpload" />{{ tt.settingsChunkedUpload }}</label>
+              <label class="checkline"><input type="checkbox" v-model="settingsForm.serveRequireAuth" />{{ tt.settingsRequireAuth }}</label>
+            </div>
+          </details>
           <div class="settings-form-actions">
             <button type="button" class="btn" @click="settingsMode = 'list'">{{ tt.cancel }}</button>
             <button class="btn primary" :disabled="settingsSaving">
@@ -1074,13 +1094,14 @@
       const settingsLoading = ref(false);
       const settingsSaving = ref(false);
       const settingsList = ref([]);
-      const settingsPath = ref("");
-      const settingsDefault = ref("");
       const settingsEditName = ref("");
       const settingsHasSecret = ref(false);
       const settingsForm = reactive({
         name: "", endpoint: "", accessKey: "", secretKey: "", bucket: "",
-        region: "", pathStyle: false, cdnDomain: "", default: false,
+        region: "", pathStyle: false, cdnDomain: "", cdnBucketPath: "auto", default: false,
+        servePrefix: "", serveMaxUploadSize: "", serveBackendMaxSize: "", serveStagingDir: "",
+        serveChunkSize: "", serveDirCacheTTL: "", servePrewarm: "",
+        serveTLSCert: "", serveTLSKey: "", serveChunkedUpload: false, serveRequireAuth: false,
       });
       const dragOver = ref(false);
       const menu = ref(null);
@@ -1415,23 +1436,60 @@
       function resetSettingsForm() {
         Object.assign(settingsForm, {
           name: "", endpoint: "", accessKey: "", secretKey: "", bucket: "",
-          region: "", pathStyle: false, cdnDomain: "", default: false,
+          region: "", pathStyle: false, cdnDomain: "", cdnBucketPath: "auto", default: false,
+          servePrefix: "", serveMaxUploadSize: "", serveBackendMaxSize: "", serveStagingDir: "",
+          serveChunkSize: "", serveDirCacheTTL: "", servePrewarm: "",
+          serveTLSCert: "", serveTLSKey: "", serveChunkedUpload: false, serveRequireAuth: false,
         });
         settingsEditName.value = "";
         settingsHasSecret.value = false;
       }
 
-      async function loadSettings() {
-        settingsLoading.value = true;
+      function settingsCardKey(el) {
+        return (el.querySelector(".settings-card-title .nm")?.textContent || "").trim();
+      }
+
+      function captureSettingsPositions() {
+        const map = new Map();
+        document.querySelectorAll(".settings-card").forEach((el) => {
+          const name = settingsCardKey(el);
+          if (name) map.set(name, el.getBoundingClientRect());
+        });
+        return map;
+      }
+
+      function animateSettingsReorder(before) {
+        if (!before || before.size === 0 || typeof Element === "undefined" || !Element.prototype.animate) return;
+        document.querySelectorAll(".settings-card").forEach((el) => {
+          const prev = before.get(settingsCardKey(el));
+          if (!prev) return;
+          const next = el.getBoundingClientRect();
+          const dx = prev.left - next.left;
+          const dy = prev.top - next.top;
+          if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+          el.animate(
+            [{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "translate(0,0)" }],
+            { duration: 360, easing: "cubic-bezier(.22,1,.36,1)" }
+          );
+        });
+      }
+
+      async function loadSettings(showSpinner = true, animate = false) {
+        const before = animate ? captureSettingsPositions() : null;
+        if (showSpinner) settingsLoading.value = true;
         try {
           const r = await API.settingsSources();
-          settingsList.value = Array.isArray(r.sources) ? r.sources : [];
-          settingsPath.value = r.path || "";
-          settingsDefault.value = r.default || "";
+          const list = Array.isArray(r.sources) ? r.sources.slice() : [];
+          list.sort((a, b) => (b.default ? 1 : 0) - (a.default ? 1 : 0) || a.name.localeCompare(b.name));
+          settingsList.value = list;
+          if (animate) {
+            await nextTick();
+            animateSettingsReorder(before);
+          }
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         } finally {
-          settingsLoading.value = false;
+          if (showSpinner) settingsLoading.value = false;
         }
       }
 
@@ -1451,10 +1509,18 @@
         settingsMode.value = "edit";
         settingsEditName.value = s.name;
         settingsHasSecret.value = !!s.hasSecret;
+        const sv = s.serve || {};
         Object.assign(settingsForm, {
           name: s.name, endpoint: s.endpoint || "", accessKey: s.accessKey || "",
           secretKey: "", bucket: s.bucket || "", region: s.region || "",
-          pathStyle: !!s.pathStyle, cdnDomain: s.cdnDomain || "", default: !!s.default,
+          pathStyle: !!s.pathStyle, cdnDomain: s.cdnDomain || "",
+          cdnBucketPath: s.cdnBucketPath || "auto", default: !!s.default,
+          servePrefix: sv.prefix || "", serveMaxUploadSize: sv.maxUploadSize || "",
+          serveBackendMaxSize: sv.backendMaxSize || "", serveStagingDir: sv.stagingDir || "",
+          serveChunkSize: sv.chunkSize || "", serveDirCacheTTL: sv.dirCacheTTL || "",
+          servePrewarm: Array.isArray(sv.prewarm) ? sv.prewarm.join(", ") : "",
+          serveTLSCert: sv.tlsCert || "", serveTLSKey: sv.tlsKey || "",
+          serveChunkedUpload: !!sv.chunkedUpload, serveRequireAuth: !!sv.webRequireAuth,
         });
       }
 
@@ -1475,11 +1541,20 @@
           await API.saveSettingsSource({
             name: form.name.trim(), endpoint: form.endpoint.trim(), accessKey: form.accessKey.trim(),
             secretKey: form.secretKey, bucket: form.bucket.trim(), region: form.region.trim(),
-            pathStyle: !!form.pathStyle, cdnDomain: form.cdnDomain.trim(), default: !!form.default,
+            pathStyle: !!form.pathStyle, cdnDomain: form.cdnDomain.trim(),
+            cdnBucketPath: form.cdnBucketPath, default: !!form.default,
+            serve: {
+              prefix: form.servePrefix.trim(), maxUploadSize: form.serveMaxUploadSize.trim(),
+              backendMaxSize: form.serveBackendMaxSize.trim(), stagingDir: form.serveStagingDir.trim(),
+              chunkSize: form.serveChunkSize.trim(), dirCacheTTL: form.serveDirCacheTTL.trim(),
+              prewarm: form.servePrewarm.split(",").map((v) => v.trim()).filter(Boolean),
+              tlsCert: form.serveTLSCert.trim(), tlsKey: form.serveTLSKey.trim(),
+              chunkedUpload: !!form.serveChunkedUpload, webRequireAuth: !!form.serveRequireAuth,
+            },
           });
           toast(tt.value.settingsSaved, form.name.trim(), "ok");
           settingsMode.value = "list";
-          await loadSettings();
+          await loadSettings(false, true);
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         } finally {
@@ -1492,7 +1567,7 @@
         try {
           await API.deleteSettingsSource(s.name);
           toast(tt.value.deleted, s.name, "ok");
-          await loadSettings();
+          await loadSettings(false, true);
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         }
@@ -1503,7 +1578,7 @@
         try {
           await API.setDefaultSettingsSource(s.name);
           toast(tt.value.settingsSaved, s.name, "ok");
-          await loadSettings();
+          await loadSettings(false, true);
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         }
@@ -3625,7 +3700,7 @@
 
       return {
         icons, tt, session, sources, activeSource, canManageSources, settingsOpen, settingsMode, settingsLoading, settingsSaving,
-        settingsList, settingsPath, settingsDefault, settingsEditName, settingsHasSecret, settingsForm,
+        settingsList, settingsEditName, settingsHasSecret, settingsForm,
         path, entries, loading, error, search, listMode, selected,
         dragOver, menu, dialog, picker, dlgInput, toasts, uploads, preview, quota, pv, version,
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,

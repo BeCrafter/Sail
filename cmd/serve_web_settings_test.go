@@ -79,6 +79,32 @@ func TestSettingsStoreListAndSave(t *testing.T) {
 	}
 
 	if err := store.save(settingsSourceInput{
+		Name: "alpha", Endpoint: "https://new.example.com", AccessKey: "NEWKEY",
+		Bucket: "bucket-new", Region: "ap-southeast-1", CDNBucketPath: "yes",
+		CDNDomain: "https://cdn.example.com",
+		Serve: &settingsServeInput{
+			Prefix: "newteam/", MaxUploadSize: "1GiB", ChunkedUpload: true,
+			ChunkSize: "8MiB", DirCacheTTL: "30s", Prewarm: []string{"/hot", " /warm "},
+			TLSCert: "/c.pem", TLSKey: "/k.pem", WebRequireAuth: true,
+		},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err = config.Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a = cfg.Profiles["alpha"]
+	if a.CDNBucketPath == nil || !*a.CDNBucketPath || a.Serve.Prefix != "newteam/" ||
+		a.Serve.MaxUploadSize != "1GiB" || !a.Serve.ChunkedUpload || a.Serve.ChunkSize != "8MiB" ||
+		a.Serve.DirCacheTTL != "30s" || len(a.Serve.Prewarm) != 2 || !a.Serve.Web.RequireAuth {
+		t.Fatalf("advanced fields not saved: %+v", a)
+	}
+	if len(a.Serve.Users) != 1 {
+		t.Fatalf("unexposed users table should be preserved: %+v", a.Serve.Users)
+	}
+
+	if err := store.save(settingsSourceInput{
 		Name: "gamma", Endpoint: "https://g.example.com", Bucket: "bucket-g", Region: "us-west-2", Default: true,
 	}); err != nil {
 		t.Fatal(err)
