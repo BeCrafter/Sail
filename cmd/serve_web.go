@@ -28,9 +28,9 @@ var serveWebCmd = &cobra.Command{
 	Long: `Share a bucket with a browser: open http://host:port/ and you get a media library
 (thumbnail grid or list, upload/download, rename/delete, new folder, search, previews for images,
 video, audio, PDF, CSV, Markdown, HTML, code, Office documents, 3D models, archives and
-PSD/TIFF/HEIC, and a usage bar). Which bucket is served
-comes from the profile, so name it with --profile (the global --bucket flag and SAIL_BUCKET still
-override it when needed) — one process serves one bucket, exactly like serve webdav/smb.
+PSD/TIFF/HEIC, and a usage bar). The sidebar lists every profile in the config and starts on
+default-profile (an explicit --profile wins); each source keeps its own bucket, credentials and
+serve layout, and switching is handled by the browser without exposing storage credentials.
 
 The UI is compiled into the binary (no Node, no npm, no static files to deploy) and talks to
 the same protocol-independent core the other gateways use, so prefix isolation, quotas, chunked
@@ -70,7 +70,7 @@ Examples:
 
 func runServeWeb(cmd *cobra.Command, _ []string) error {
 	o := serveWebOpts
-	r, _, err := loadResolved()
+	r, cfg, err := loadResolved()
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,10 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	httpSrv := newServeHTTPServer(s.listen, rt.gw)
+	// 一个进程展示配置里的全部 profile;浏览器用 Cookie 选择当前数据源,
+	// 未选择时落到 default-profile(--profile 显式指定时以它为准)。
+	sources := buildWebSources(cfg, o, cmd.Flags().Changed, rt, r, logger)
+	httpSrv := newServeHTTPServer(s.listen, newWebMultiHandler(sources, defaultWebSourceName(cfg, r.ProfileName), webui.Handler()))
 
 	scheme := "http"
 	if s.tlsCert != "" {

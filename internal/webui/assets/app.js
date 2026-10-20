@@ -24,7 +24,7 @@
     "zh-CN": {
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
-      source: "数据源", menu: "侧栏",
+      source: "数据源", menu: "侧栏", sourceDefault: "默认", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
       profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
@@ -82,7 +82,7 @@
     en: {
       appTitle: "Sail Media",
       appSub: "S3 media library",
-      source: "Source", menu: "Sidebar",
+      source: "Source", menu: "Sidebar", sourceDefault: "Default", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
       profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
@@ -367,6 +367,8 @@
   }
 
   const API = {
+    sources: () => request("/api/sources"),
+    selectSource: (id) => request("/api/source", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }),
     session: () => request("/api/session"),
     list: (p) => request("/api/list?path=" + encPath(p)),
     usage: () => request("/api/usage"),
@@ -513,7 +515,23 @@
           </div>
         </div>
 
-        <div class="side-group" v-if="session">
+        <div class="side-group" v-if="sources.length">
+          <div class="side-group-head">{{ tt.source }}</div>
+          <div v-for="s in sources" :key="s.id" class="profile-item"
+               :class="{ active: s.selected, disabled: !s.available }"
+               :title="s.available ? (s.name + ' · ' + (s.bucket || '')) : (s.error || tt.sourceUnavailable)"
+               @click="switchSource(s)">
+            <i class="dot" :class="!s.available ? 'err' : (s.selected ? connClass : '')"></i>
+            <div class="meta">
+              <div class="nm">
+                <span>{{ s.name }}</span>
+                <span v-if="s.default" class="src-badge">{{ tt.sourceDefault }}</span>
+              </div>
+              <div class="bk">{{ s.bucket || tt.sourceUnavailable }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="side-group" v-else-if="session">
           <div class="side-group-head">{{ tt.source }}</div>
           <div class="profile-item active" :title="bucketLabel" @click="go('/')">
             <i class="dot" :class="connClass"></i>
@@ -933,6 +951,8 @@
       const search = ref("");
       const listMode = ref(localStorage.getItem("sail.listMode") === "1");
       const selected = ref(null);
+      const sources = ref([]);
+      const activeSource = ref("");
       const dragOver = ref(false);
       const menu = ref(null);
       const dialog = ref(null);
@@ -1261,9 +1281,51 @@
         return null;
       }
 
+      function applySources(r) {
+        sources.value = Array.isArray(r && r.sources) ? r.sources : [];
+        activeSource.value = (r && r.selected) || "";
+      }
+
+      async function switchSource(s) {
+        if (!s || s.id === activeSource.value) return;
+        if (!s.available) {
+          toast(tt.value.sourceUnavailable, s.error || s.name, "warn");
+          return;
+        }
+        if (uploads.value.some((u) => u.state === "uploading" || u.state === "queued")) {
+          toast(tt.value.sourceSwitchBusy, s.name, "warn");
+          return;
+        }
+        try {
+          const r = await API.selectSource(s.id);
+          applySources(r);
+          if (preview.value) closePreview();
+          selected.value = null;
+          menu.value = null;
+          search.value = "";
+          searchOpen.value = false;
+          drawer.value = false;
+          path.value = "/";
+          syncHash("/");
+          session.value = await API.session();
+          quota.value = session.value.quota || null;
+          version.value = session.value.version || "";
+          await load();
+          refreshUsage();
+        } catch (e) {
+          toast(tt.value.sourceSwitchFailed, errText(e), "err");
+        }
+      }
+
       async function boot() {
         path.value = pathFromHash();
         try {
+          try {
+            applySources(await API.sources());
+          } catch (e) {
+            // 兼容旧服务:没有 /api/sources 时仍按单数据源继续。
+            if (e.status !== 404) throw e;
+          }
           session.value = await API.session();
           quota.value = session.value.quota || null;
           version.value = session.value.version || "";
@@ -3294,7 +3356,7 @@
       });
 
       return {
-        icons, tt, session, path, entries, loading, error, search, listMode, selected,
+        icons, tt, session, sources, activeSource, path, entries, loading, error, search, listMode, selected,
         dragOver, menu, dialog, picker, dlgInput, toasts, uploads, preview, quota, pv, version,
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
         drawer, searchOpen, searchBox, theme, themeTitle,
@@ -3302,7 +3364,7 @@
         arcRows, arcCrumbs, arcTopCrumb, arcTopTitle, canArcUp, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad, pdfThumbnails,
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel, capsText,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
-        go, goUp, setListMode, reload, open, openPreview, select, onCardClick, onPressStart, cancelPress,
+        go, goUp, setListMode, reload, open, openPreview, select, switchSource, onCardClick, onPressStart, cancelPress,
         closePreview, stepPreview, zoom, resetZoom, toggleZoom, onWheel, onImgDown, onImgMove, onImgUp,
         onTouchStart, onTouchEnd, toggleTheme, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,
         downloadCurrent, arcOpen, arcBack, arcGoUp, arcGoCrumb, backToArchive, pdfGo, pdfZoom, pdfFit, pdfSearch,

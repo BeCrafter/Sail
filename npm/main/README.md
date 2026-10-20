@@ -252,7 +252,8 @@ list of differences and limitations.
 
 The same bucket opened in a browser. The UI is compiled into the binary (no Node, no npm) and serves
 a media library over the same protocol-independent core as the other gateways, so prefix isolation,
-quota, chunked storage and deletion behave identically.
+quota, chunked storage and deletion behave identically. Every profile in the config is listed in
+the left data-source panel; `default-profile` is selected first (an explicit `--profile` wins).
 
 ```bash
 # Start (defaults to :9090; HTTPS recommended outside loopback)

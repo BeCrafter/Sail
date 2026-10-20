@@ -663,7 +663,9 @@ delete path are the same code, and swapping the SMB library touches nothing belo
 Open a bucket in a browser. `sail serve web` serves a self-contained media library: the UI is
 compiled into the binary (no Node, no npm, no static files to deploy) and talks to the same
 protocol-independent core as the other gateways, so prefix isolation, quota, chunked storage and
-the delete path are one implementation, not three.
+the delete path are one implementation, not three. The left data-source panel lists every profile
+in the config; `default-profile` is selected first (an explicit `--profile` wins), and switching
+sources keeps each profile's bucket, credentials and serve layout on the server side.
 
 ```bash
 # Start: defaults to :9090 and anonymous access — no user/password needed

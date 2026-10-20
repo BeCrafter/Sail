@@ -255,6 +255,21 @@ func allowMethods(m map[string]apiHandler) []string {
 	return out
 }
 
+// CheckAuth 供多数据源外壳复用当前网关的认证规则:匿名模式恒为 true,
+// 需要登录时校验 Basic 凭据。它不返回用户信息,只回答「这次请求是否已认证」。
+func (s *Server) CheckAuth(r *http.Request) bool {
+	if s.anonymous {
+		return true
+	}
+	entry, _ := s.authenticate(r)
+	return entry != nil
+}
+
+// WriteUnauthorized 输出与网关完全一致的 401 响应(含 Basic challenge)。
+func (s *Server) WriteUnauthorized(w http.ResponseWriter) {
+	s.unauthorized(w)
+}
+
 // authenticate 校验 Basic 凭据并返回对应的用户条目。用户名不存在也走同一
 // 条失败路径(不泄露用户是否存在),口令比对用常量时间。
 func (s *Server) authenticate(r *http.Request) (*userEntry, string) {

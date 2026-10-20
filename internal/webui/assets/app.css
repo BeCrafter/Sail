@@ -141,6 +141,10 @@ button, input { font-family: inherit; }
 .profile-item:hover { background: var(--bg-hover); }
 .profile-item.active { background: var(--accent-soft); border-color: rgba(var(--accent-rgb), 0.28); }
 .profile-item.active .nm { color: var(--accent); }
+.profile-item.disabled { opacity: .5; cursor: not-allowed; }
+.profile-item.disabled:hover { background: transparent; }
+.profile-item .nm { display: flex; align-items: center; gap: 6px; }
+.src-badge { flex: none; padding: 0 5px; height: 15px; line-height: 15px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-size: 9px; font-weight: 700; }
 .profile-item .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--fg-faint); }
 .profile-item .dot.ok { background: var(--ok); }
 .profile-item .dot.err { background: var(--danger); }

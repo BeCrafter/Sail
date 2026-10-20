@@ -268,9 +268,9 @@ Examples:
 		`Share a bucket with a browser: open http://host:port/ and you get a media library
 (thumbnail grid or list, upload/download, rename/delete, new folder, search, previews for images,
 video, audio, PDF, CSV, Markdown, HTML, code, Office documents, 3D models, archives and
-PSD/TIFF/HEIC, and a usage bar). Which bucket is served
-comes from the profile, so name it with --profile (the global --bucket flag and SAIL_BUCKET still
-override it when needed) — one process serves one bucket, exactly like serve webdav/smb.
+PSD/TIFF/HEIC, and a usage bar). The sidebar lists every profile in the config and starts on
+default-profile (an explicit --profile wins); each source keeps its own bucket, credentials and
+serve layout, and switching is handled by the browser without exposing storage credentials.
 
 The UI is compiled into the binary (no Node, no npm, no static files to deploy) and talks to
 the same protocol-independent core the other gateways use, so prefix isolation, quotas, chunked
@@ -306,9 +306,9 @@ Examples:
     --user alice --password '***' --tls-cert c.pem --tls-key k.pem`: `用浏览器共享某个 bucket:打开 http://主机:端口/ 就是一个媒体库
 (缩略图网格或列表、上传/下载、重命名/删除、新建文件夹、搜索,以及图片/视频/音频/PDF/CSV/
 Markdown/HTML/代码、Office 文档、3D 模型、压缩包(可逐层进入嵌套压缩包并预览包内文件)、
-PSD/TIFF/HEIC 预览和一条用量条)。共享哪个 bucket 由 profile 决定,用 --profile
-指定(全局 --bucket 与 SAIL_BUCKET 需要时仍可覆盖)—— 一个进程服务一个 bucket,与 serve
-webdav/smb 完全一致。
+PSD/TIFF/HEIC 预览和一条用量条)。左侧数据源会列出配置里的全部 profile,首次进入默认选中
+default-profile(显式 --profile 优先);每个源保留各自的 bucket、凭据与 serve 布局,
+切换由浏览器完成,不会把存储凭据下发到前端。
 
 界面已编译进二进制(不需要 Node、npm,也没有要部署的静态文件),并与其它网关共用同一套
 协议无关内核,因此前缀隔离、配额、分片存储与删除路径都只有一份实现,而不是三份。
