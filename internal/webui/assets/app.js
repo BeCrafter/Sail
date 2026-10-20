@@ -871,19 +871,23 @@
             <label class="checkline"><input type="checkbox" v-model="settingsForm.pathStyle" />{{ tt.settingsPathStyle }}</label>
             <label class="checkline"><input type="checkbox" v-model="settingsForm.default" />{{ tt.settingsDefaultSource }}</label>
           </div>
-          <details class="settings-advanced">
-            <summary>{{ tt.settingsAdvanced }}</summary>
-            <label class="checkline settings-chunk-toggle"><input type="checkbox" v-model="settingsForm.serveChunkedUpload" />{{ tt.settingsChunkedUpload }}</label>
-            <div class="settings-form-grid settings-advanced-grid">
-              <label class="field"><span>{{ tt.settingsMaxUpload }}</span><input v-model="settingsForm.serveMaxUploadSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
-              <label class="field"><span>{{ tt.settingsBackendMax }}</span><input v-model="settingsForm.serveBackendMaxSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
-              <label class="field"><span>{{ tt.settingsChunkSize }}</span>
-                <input v-model="settingsForm.serveChunkSize" :disabled="!settingsForm.serveChunkedUpload"
-                       autocomplete="off" spellcheck="false" placeholder="4GiB" />
-              </label>
-              <label class="field"><span>{{ tt.settingsDirCacheTTL }}</span><input v-model="settingsForm.serveDirCacheTTL" autocomplete="off" spellcheck="false" placeholder="60s" /></label>
+          <div class="settings-advanced" :class="{ open: settingsAdvancedOpen }">
+            <div class="settings-advanced-head">
+              <button type="button" class="settings-advanced-toggle" @click="settingsAdvancedOpen = !settingsAdvancedOpen">{{ tt.settingsAdvanced }}</button>
+              <label class="checkline"><input type="checkbox" v-model="settingsForm.serveChunkedUpload" />{{ tt.settingsChunkedUpload }}</label>
             </div>
-          </details>
+            <div v-show="settingsAdvancedOpen" class="settings-advanced-body">
+              <div class="settings-form-grid settings-advanced-grid">
+                <label class="field"><span>{{ tt.settingsMaxUpload }}</span><input v-model="settingsForm.serveMaxUploadSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
+                <label class="field"><span>{{ tt.settingsBackendMax }}</span><input v-model="settingsForm.serveBackendMaxSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
+                <label class="field"><span>{{ tt.settingsChunkSize }}</span>
+                  <input v-model="settingsForm.serveChunkSize" :disabled="!settingsForm.serveChunkedUpload"
+                         autocomplete="off" spellcheck="false" placeholder="4GiB" />
+                </label>
+                <label class="field"><span>{{ tt.settingsDirCacheTTL }}</span><input v-model="settingsForm.serveDirCacheTTL" autocomplete="off" spellcheck="false" placeholder="60s" /></label>
+              </div>
+            </div>
+          </div>
           <div class="settings-form-actions">
             <button type="button" class="btn" @click="settingsMode = 'list'">{{ tt.cancel }}</button>
             <button class="btn primary" :disabled="settingsSaving">
@@ -1090,6 +1094,7 @@
       const settingsList = ref([]);
       const settingsEditName = ref("");
       const settingsHasSecret = ref(false);
+      const settingsAdvancedOpen = ref(false);
       const settingsForm = reactive({
         name: "", endpoint: "", accessKey: "", secretKey: "", bucket: "",
         region: "", pathStyle: false, cdnDomain: "", cdnBucketPath: "auto", default: false,
@@ -1489,6 +1494,7 @@
         drawer.value = false;
         settingsOpen.value = true;
         settingsMode.value = "list";
+        settingsAdvancedOpen.value = false;
         await loadSettings();
       }
 
@@ -1499,6 +1505,7 @@
 
       function editSettingsSource(s) {
         settingsMode.value = "edit";
+        settingsAdvancedOpen.value = false;
         settingsEditName.value = s.name;
         settingsHasSecret.value = !!s.hasSecret;
         const sv = s.serve || {};
@@ -1515,6 +1522,7 @@
 
       function newSettingsSource() {
         resetSettingsForm();
+        settingsAdvancedOpen.value = false;
         settingsMode.value = "edit";
       }
 
@@ -3686,7 +3694,7 @@
 
       return {
         icons, tt, session, sources, activeSource, canManageSources, settingsOpen, settingsMode, settingsLoading, settingsSaving,
-        settingsList, settingsEditName, settingsHasSecret, settingsForm,
+        settingsList, settingsEditName, settingsHasSecret, settingsAdvancedOpen, settingsForm,
         path, entries, loading, error, search, listMode, selected,
         dragOver, menu, dialog, picker, dlgInput, toasts, uploads, preview, quota, pv, version,
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
