@@ -874,11 +874,9 @@
           <div class="settings-advanced" :class="{ open: settingsAdvancedOpen }">
             <div class="settings-advanced-head">
               <button type="button" class="settings-advanced-toggle" @click="settingsAdvancedOpen = !settingsAdvancedOpen">{{ tt.settingsAdvanced }}</button>
+              <label v-if="settingsAdvancedOpen" class="checkline settings-chunk-toggle"><input type="checkbox" v-model="settingsForm.serveChunkedUpload" />{{ tt.settingsChunkedUpload }}</label>
             </div>
             <div v-show="settingsAdvancedOpen" class="settings-advanced-body">
-              <div class="settings-advanced-toolbar">
-                <label class="checkline"><input type="checkbox" v-model="settingsForm.serveChunkedUpload" />{{ tt.settingsChunkedUpload }}</label>
-              </div>
               <div class="settings-form-grid settings-advanced-grid">
                 <label class="field"><span>{{ tt.settingsMaxUpload }}</span><input v-model="settingsForm.serveMaxUploadSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
                 <label class="field"><span>{{ tt.settingsBackendMax }}</span><input v-model="settingsForm.serveBackendMaxSize" autocomplete="off" spellcheck="false" placeholder="5TiB" /></label>
