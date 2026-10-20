@@ -768,7 +768,7 @@
   <!-- 预览 -->
   <div v-if="preview" class="preview">
     <div class="preview-top">
-      <button class="pbtn" v-if="preview.arcEntry" :title="tt.archiveBack" @click="backToArchive" v-html="icons.chevronLeft"></button>
+      <button class="pbtn" v-if="preview.arc && (preview.arcEntry || canArcUp)" :title="preview.arcEntry ? tt.archiveBack : tt.archiveUp" @click="arcBack" v-html="icons.chevronLeft"></button>
       <div v-if="preview.arc" ref="arcTopCrumb" class="nm arc-top-crumb" :title="arcTopTitle">
         <template v-for="(c, i) in arcCrumbs" :key="i">
           <span v-if="i" class="arc-sep">/</span>
@@ -809,11 +809,6 @@
          @touchstart.passive="onTouchStart" @touchend="onTouchEnd" @dblclick="preview.kind === 'image' && toggleZoom()"
          @click.self="closePreview">
       <aside class="pv-archive-side" v-if="preview.arc">
-        <div class="pv-archive-head">
-          <button v-if="canArcUp" class="arc-up" :title="tt.archiveUp" @click="arcGoUp" v-html="icons.chevronLeft"></button>
-          <span class="ico" v-html="icons.archive"></span>
-          <span class="arc-sum">{{ arcSummary }}</span>
-        </div>
         <div class="pv-archive-list">
           <div v-for="(e, i) in arcRows" :key="i" class="pv-archive-row" tabindex="0"
                :class="{ dir: e.isDir, nested: e.isArchive, active: !!preview.arcEntry && preview.arcEntry.fullName === e.fullName }"
@@ -1131,14 +1126,6 @@
         const arc = preview.value && preview.value.arc;
         if (!arc) return false;
         return !!(arc.dir || (arc.levels && arc.levels.length > 1));
-      });
-
-      const arcSummary = computed(() => {
-        const level = currentArcLevel();
-        if (!level) return "";
-        return tt.value.archiveSummary
-          .replace("{n}", level.fileCount)
-          .replace("{size}", fmtSize(level.total));
       });
 
       const arcTruncated = computed(() => {
@@ -2505,6 +2492,14 @@
         }
       }
 
+      // 顶栏统一的返回键:选中文件时先回到目录;已在子目录/嵌套压缩包时向上一级。
+      function arcBack() {
+        const pvNow = preview.value;
+        if (!pvNow || !pvNow.arc) return;
+        if (pvNow.arcEntry) { backToArchive(); return; }
+        arcGoUp();
+      }
+
       function backToArchive() {
         if (!preview.value || !preview.value.arcEntry) return;
         previewToken += 1;
@@ -3282,13 +3277,13 @@
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
         drawer, searchOpen, searchBox, theme, themeTitle,
         atRoot, crumbs, filtered, previewables, previewIndex, usedPct, quotaClass, connClass, connText, canLink,
-        arcRows, arcCrumbs, arcTopCrumb, arcTopTitle, canArcUp, arcSummary, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad, pdfThumbnails,
+        arcRows, arcCrumbs, arcTopCrumb, arcTopTitle, canArcUp, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad, pdfThumbnails,
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel, capsText,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
         go, goUp, setListMode, reload, open, openPreview, select, onCardClick, onPressStart, cancelPress,
         closePreview, stepPreview, zoom, resetZoom, toggleZoom, onWheel, onImgDown, onImgMove, onImgUp,
         onTouchStart, onTouchEnd, toggleTheme, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,
-        downloadCurrent, arcOpen, arcGoUp, arcGoCrumb, backToArchive, pdfGo, pdfZoom, pdfFit, pdfSearch,
+        downloadCurrent, arcOpen, arcBack, arcGoUp, arcGoCrumb, backToArchive, pdfGo, pdfZoom, pdfFit, pdfSearch,
         downloadEntry, askMkdir, renameEntry, deleteEntry, copyLink, openMenu, runMenu,
         pickFiles, onPicked, onDragOver, onDragLeave, onDrop, closeDialog, confirmDialog, toggleLang,
       };
