@@ -501,6 +501,9 @@ button, input { font-family: inherit; }
   width: min(100%, 960px); max-width: 960px; height: 100%; margin: 0 auto; overflow: auto; padding: 14px 18px;
   background: var(--surface-page); font: 12.5px/1.65 var(--mono); color: var(--fg); text-align: left;
 }
+/* 压缩包右侧内容区已经是分栏后的阅读区域,代码/文本/CSV 填满右栏即可。 */
+.preview .stage.arc-split > .code-box,
+.preview .stage.arc-split > .table-wrap { width: 100%; max-width: none; margin: 0; }
 .preview .stage .code-box .ln { display: inline-block; width: 3.2em; color: var(--fg-faint); user-select: none; text-align: right; padding-right: 12px; }
 .preview .stage .code-box .line { display: block; min-height: 1.65em; white-space: pre-wrap; word-break: break-all; }
 .preview .stage .code-box .line:hover { background: var(--bg-soft); }
