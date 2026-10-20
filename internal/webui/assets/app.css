@@ -573,6 +573,20 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
 .preview .stage .md pre { background: var(--bg-soft); border-radius: 8px; padding: 12px 14px; overflow: auto; }
 .preview .stage .md code { background: var(--bg-soft); border-radius: 5px; padding: 1px 5px; }
 .preview .stage .md blockquote { margin: 0 0 10px; padding: 2px 12px; border-left: 3px solid var(--accent); color: var(--fg-dim); }
+/* 普通预览的阅读列不满宽时,左右加一层柔和渐变阴影,让纸张从背景里浮起来。
+   压缩包右栏是铺满的内容区,不套这层阴影。 */
+.preview .stage:not(.arc-split) > .code-box,
+.preview .stage:not(.arc-split) > .table-wrap,
+.preview .stage:not(.arc-split) > .md,
+.preview .stage:not(.arc-split) > .frame-wrap.html-frame {
+  box-shadow: -14px 0 26px -20px rgba(20, 28, 42, 0.48), 14px 0 26px -20px rgba(20, 28, 42, 0.38);
+}
+[data-theme="dark"] .preview .stage:not(.arc-split) > .code-box,
+[data-theme="dark"] .preview .stage:not(.arc-split) > .table-wrap,
+[data-theme="dark"] .preview .stage:not(.arc-split) > .md,
+[data-theme="dark"] .preview .stage:not(.arc-split) > .frame-wrap.html-frame {
+  box-shadow: -14px 0 26px -20px rgba(0, 0, 0, 0.8), 14px 0 26px -20px rgba(0, 0, 0, 0.7);
+}
 
 /* ---------- Office / 3D 预览 ---------- */
 .preview .stage .pv-office {
