@@ -894,7 +894,7 @@
       </div>
       <div class="code-box" v-else-if="preview.kind === 'code'"><pre v-html="preview.highlighted"></pre></div>
       <div class="code-box" v-else-if="preview.kind === 'text' || preview.kind === 'md'">
-        <div class="line" v-for="(l, i) in preview.lines" :key="i"><span class="ln">{{ i + 1 }}</span>{{ l }}</div>
+        <div class="line" v-for="(l, i) in preview.lines" :key="i"><span v-if="!preview.arc" class="ln">{{ i + 1 }}</span>{{ l }}</div>
       </div>
       <div class="md" v-else-if="preview.kind === 'markdown'" v-html="preview.html"></div>
       <div class="pv-empty" v-else-if="preview.kind === 'none'">

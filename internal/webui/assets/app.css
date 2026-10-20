@@ -759,15 +759,10 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
   grid-column: 1; grid-row: 1; position: relative;
   display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden;
   background: var(--surface-panel); border-right: 1px solid var(--line);
-  box-shadow: 8px 0 22px -18px rgba(20, 28, 42, 0.45);
+  /* 阴影只向右(内容区)投射,侧栏内部保持干净。 */
+  box-shadow: 10px 0 26px -16px rgba(20, 28, 42, 0.46);
 }
-.pv-archive-side::after {
-  content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 16px;
-  background: linear-gradient(to left, rgba(20, 28, 42, 0.07), transparent);
-  pointer-events: none; z-index: 2;
-}
-[data-theme="dark"] .pv-archive-side { box-shadow: 8px 0 22px -18px rgba(0, 0, 0, 0.8); }
-[data-theme="dark"] .pv-archive-side::after { background: linear-gradient(to left, rgba(0, 0, 0, 0.24), transparent); }
+[data-theme="dark"] .pv-archive-side { box-shadow: 10px 0 26px -14px rgba(0, 0, 0, 0.85); }
 .arc-resizer {
   position: absolute; top: 0; right: 0; bottom: 0; width: 8px; cursor: col-resize; z-index: 4;
 }
