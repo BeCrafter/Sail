@@ -55,8 +55,13 @@ func quotaJSON(used, avail int64, ok bool) map[string]any {
 // 前端首屏用它渲染侧栏与状态栏,不再需要「测试连接」这类探测。
 func (r *request) handleSession(w http.ResponseWriter) {
 	used, avail, ok := r.fs.QuotaUsage()
+	user := r.user
+	if r.server.anonymous {
+		user = "" // 前端据 anonymous 显示本地化的「匿名」标签
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"user":            r.user,
+		"user":            user,
+		"anonymous":       r.server.anonymous,
 		"profile":         r.server.profile,
 		"bucket":          r.server.bucket,
 		"prefix":          strings.TrimSuffix(r.prefix, "/"),

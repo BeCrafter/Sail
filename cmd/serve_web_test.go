@@ -133,11 +133,31 @@ func TestServeWebRequiresBucketAndCredentials(t *testing.T) {
 		}
 	}
 
-	// 有桶但无凭据:拒绝(不匿名开放)。
+	// 有桶但无凭据:Web 默认匿名启动(不要求用户配置)。
 	writeServeConfig(t, "mybucket")
 	serveWebOpts = serveFlags{backendMaxSize: "5TiB", listen: ":9090"}
-	if err := runServeWeb(serveWebCmd, nil); err == nil || !strings.Contains(err.Error(), "--user") {
-		t.Fatalf("缺少凭据应报错,实际 %v", err)
+	r, _, err := loadResolved()
+	if err != nil {
+		t.Fatalf("读取配置失败: %v", err)
+	}
+	noAuth := func(string) bool { return false }
+	settings, err := mergeServeWeb(serveWebOpts, r, noAuth)
+	if err != nil {
+		t.Fatalf("Web 默认应匿名启动,实际报错: %v", err)
+	}
+	if !settings.anonymous {
+		t.Errorf("缺凭据时 Web 应匿名,实际 %+v", settings)
+	}
+
+	// 显式 require-auth 且没有凭据:回退默认 sail/sail。
+	serveWebOpts = serveFlags{backendMaxSize: "5TiB", listen: ":9090", requireAuth: true}
+	requireAuthChanged := func(f string) bool { return f == "require-auth" }
+	settings, err = mergeServeWeb(serveWebOpts, r, requireAuthChanged)
+	if err != nil {
+		t.Fatalf("require-auth 缺凭据应回退默认值,实际报错: %v", err)
+	}
+	if settings.anonymous || settings.user != defaultServeUser || settings.password != defaultServePassword || !settings.defaultCreds {
+		t.Errorf("require-auth 缺凭据应用默认 sail/sail,实际 %+v", settings)
 	}
 
 	// TLS 只给一半。
@@ -156,7 +176,7 @@ func TestServeWebRequiresBucketAndCredentials(t *testing.T) {
 // Web 命令自己注册那批 flag:共享的布局参数 + Web 专属的监听/TLS/缓存。
 func TestServeWebFlagSurface(t *testing.T) {
 	for _, name := range []string{
-		"listen", "prefix", "user", "password", "tls-cert", "tls-key",
+		"listen", "prefix", "user", "password", "require-auth", "tls-cert", "tls-key",
 		"backend-max-object-size", "max-upload-size", "staging-dir",
 		"chunked-upload", "chunk-size", "dir-cache-ttl", "prewarm",
 	} {
@@ -185,6 +205,11 @@ type webHarness struct {
 // newServeWebHarness 按 cmd 的真实装配路径建一个 Web 网关:
 // client → s3fs → quotafs → webfs 壳 → webfs.Server,再用 httptest 起服务。
 func newServeWebHarness(t *testing.T, opt serveRuntimeOptions) *webHarness {
+	return newServeWebHarnessWith(t, opt, nil)
+}
+
+// newServeWebHarnessWith 允许用例调整生效参数(例如切换匿名模式)。
+func newServeWebHarnessWith(t *testing.T, opt serveRuntimeOptions, mutate func(*serveSettings)) *webHarness {
 	t.Helper()
 	s3srv := fakes3.New()
 	t.Cleanup(s3srv.Close)
@@ -204,6 +229,9 @@ func newServeWebHarness(t *testing.T, opt serveRuntimeOptions) *webHarness {
 		password:    "pa",
 		maxUpload:   1 << 20,
 		dirCacheTTL: time.Minute,
+	}
+	if mutate != nil {
+		mutate(&s)
 	}
 	rt, err := newServeRuntimeWith(serveFlags{}, r, s, func(string) bool { return false },
 		log.New(io.Discard, "", 0), webProtocolShell, opt)
@@ -353,5 +381,40 @@ func TestServeWebHotReloadSwapsUsers(t *testing.T) {
 	}
 	if got := decodeJSON(t, data)["user"]; got != "bob" {
 		t.Errorf("会话用户 = %v,期望 bob", got)
+	}
+}
+
+// 匿名运行期:cmd 的装配路径(anonymous settings → 伪用户栈 → webfs.Anonymous)
+// 必须真的放行无凭据请求,并把会话标成 anonymous。
+func TestServeWebAnonymousRuntime(t *testing.T) {
+	h := newServeWebHarnessWith(t, serveRuntimeOptions{}, func(s *serveSettings) {
+		s.user, s.password = "", ""
+		s.anonymous = true
+	})
+
+	resp, data := h.do(t, http.MethodGet, "/api/session", nil, "", "")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("匿名 session = %d %s", resp.StatusCode, data)
+	}
+	sess := decodeJSON(t, data)
+	if sess["anonymous"] != true || sess["user"] != "" {
+		t.Errorf("匿名会话标记不对: %v", sess)
+	}
+
+	// 匿名上传 + 列表。
+	if resp, data := h.do(t, http.MethodPut, "/api/file?path=/hello.txt", []byte("hi"), "", ""); resp.StatusCode != http.StatusOK {
+		t.Fatalf("匿名上传 = %d %s", resp.StatusCode, data)
+	}
+	resp, data = h.do(t, http.MethodGet, "/api/list?path=/", nil, "", "")
+	if resp.StatusCode != http.StatusOK || !strings.Contains(string(data), "hello.txt") {
+		t.Fatalf("匿名列表 = %d %s", resp.StatusCode, data)
+	}
+
+	// 热加载用户表不应把匿名模式切回登录(require-auth 属冷区)。
+	if err := h.rt.applyUserTable(effectiveUserTable(h.rt.settings)); err != nil {
+		t.Fatalf("匿名热加载失败: %v", err)
+	}
+	if resp, _ := h.do(t, http.MethodGet, "/api/session", nil, "", ""); resp.StatusCode != http.StatusOK {
+		t.Errorf("热加载后匿名 session = %d", resp.StatusCode)
 	}
 }

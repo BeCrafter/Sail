@@ -85,6 +85,11 @@ type WebConfig struct {
 	// (浏览器对 Basic 凭据在明文 HTTP 上的态度各版本不一,公网部署建议开)。
 	TLSCert string `mapstructure:"tls-cert"`
 	TLSKey  string `mapstructure:"tls-key"`
+	// RequireAuth 为 true 时浏览器必须用 HTTP Basic 登录,凭据取 serve.users
+	// 或 serve.user/serve.password(两者都没有时回退默认 sail/sail)。
+	// false(默认)= 匿名可访问:Web 资源库默认不需要用户配置;要启用登录
+	// 必须显式打开这个开关。
+	RequireAuth bool `mapstructure:"require-auth"`
 }
 
 // SMBConfig 是 serve.smb 块:`sail serve smb` 的专属参数落点。字段语义与
@@ -254,9 +259,10 @@ func (c *Config) Resolve(profile string) (*Resolved, error) {
 				ServerName: expandEnv(p.Serve.SMB.ServerName),
 			},
 			Web: WebConfig{
-				Listen:  expandEnv(p.Serve.Web.Listen),
-				TLSCert: expandEnv(p.Serve.Web.TLSCert),
-				TLSKey:  expandEnv(p.Serve.Web.TLSKey),
+				Listen:      expandEnv(p.Serve.Web.Listen),
+				TLSCert:     expandEnv(p.Serve.Web.TLSCert),
+				TLSKey:      expandEnv(p.Serve.Web.TLSKey),
+				RequireAuth: p.Serve.Web.RequireAuth,
 			},
 		},
 	}

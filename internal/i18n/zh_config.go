@@ -13,11 +13,14 @@ setup wizard notes:
   - access-key / secret-key can be typed as plaintext; pressing Enter on empty references a per-profile
     derived env var (e.g. profile test → SAIL_TEST_ACCESS_KEY); after writing it prints the vars to export
   - when reconfiguring an existing profile, configured plaintext keys are not echoed; Enter keeps them
-  - the gateway (serve block) is guided as well, in layers. It is shared by "sail serve webdav" and
-    "sail serve smb", so the wizard asks which services to configure (webdav | smb | both) first, then walks
-    the layers in order: the shared settings (prefix, auth mode — single-user or multi-user — chunked-upload,
-    staging-dir), then each selected service's own settings (WebDAV: listen, TLS; SMB: listen, share,
-    server-name). Multi-user tables are validated in place (duplicate names, nested prefixes, quota syntax —
+  - the gateway (serve block) is guided as well, in layers. It is shared by "sail serve webdav",
+    "sail serve smb" and "sail serve web", so the wizard asks which services to configure
+    (webdav | smb | web | both | all) first, then walks the layers in order: the shared settings
+    (prefix, auth mode — single-user or multi-user — chunked-upload, staging-dir), then each selected
+    service's own settings (WebDAV: listen, TLS; SMB: listen, share, server-name; Web: listen,
+    require-auth, TLS). Web is anonymous by default; when it is the only service selected the wizard
+    skips the credential questions unless you turn require-auth on. Multi-user tables are validated in
+    place (duplicate names, nested prefixes, quota syntax —
     quota accepts MB/GB/TB). An existing serve block defaults to "keep" — choose append to add users to the
     existing table, reconfigure to edit it, or remove to drop it. A service that is not selected is left as
     configured, never cleared. Size limits, dir-cache-ttl and prewarm are not asked here; edit the config file
@@ -35,11 +38,12 @@ setup 向导要点:
   - access-key / secret-key 直接输入明文;回车留空则引用按 profile 派生的环境变量
     (如 profile test → SAIL_TEST_ACCESS_KEY),写盘后打印需要 export 的变量名
   - 重配已有 profile 时,已配置的明文密钥不回显,回车即保留
-  - 网关(serve 块)同样引导配置,且是分层的。该块由 "sail serve webdav" 与 "sail serve smb" 共用:
-    向导先问要配置哪些服务(webdav | smb | both),再按层依次走——通用设置(前缀、认证模式
-    single/multi、chunked-upload、staging-dir),然后逐个服务问各自的专属设置(WebDAV: listen、TLS;
-    SMB: listen、share、server-name)。多用户表就地校验(重名、前缀嵌套、quota 语法——quota 支持
-    MB/GB/TB)。已有 serve 块默认保留,可选追加用户、重新配置或删除。未被选中的服务按原配置保留,
+  - 网关(serve 块)同样引导配置,且是分层的。该块由 "sail serve webdav"、"sail serve smb" 与
+    "sail serve web" 共用:向导先问要配置哪些服务(webdav | smb | web | both | all),再按层依次走——
+    通用设置(前缀、认证模式 single/multi、chunked-upload、staging-dir),然后逐个服务问各自的专属设置
+    (WebDAV: listen、TLS;SMB: listen、share、server-name;Web: listen、require-auth、TLS)。Web 默认
+    匿名;只选 Web 且不要求登录时,向导会跳过凭据提问。多用户表就地校验(重名、前缀嵌套、quota 语法——
+    quota 支持 MB/GB/TB)。已有 serve 块默认保留,可选追加用户、重新配置或删除。未被选中的服务按原配置保留,
     绝不会被清空。尺寸上限、dir-cache-ttl 与 prewarm 不在向导内提问,如需修改请编辑配置文件
   - 输入会尽量归一化: 裸端口补冒号(8443 -> :8443)、URL 缺协议头补 https://、quota 单字母单位
     补全为 MB/GB/TB、路径里的 ~ 自动展开、yes/no 回答接受 yes/true/1/on(服务与认证模式选择有各自的
@@ -145,7 +149,7 @@ setup 向导要点:
 		"(unset; the serve commands use flag defaults)":                                                                "(未配置,serve 各命令使用 flag 默认值)",
 		"%d user(s)":     "%d 名用户",
 		"single user %s": "单用户 %s",
-		"(no credentials; serve will refuse to start)":                                                    "(无凭据,serve 将拒绝启动)",
+		"(no credentials; Web is anonymous, WebDAV/SMB use sail/sail)":                                    "(无凭据;Web 默认匿名,WebDAV/SMB 回退 sail/sail)",
 		"protocols to configure (webdav|smb|web|both|all)":                                                "要配置哪些协议 (webdav|smb|web|both|all)",
 		"unrecognized answer %q; please answer webdav, smb, web, both or all\n":                           "无法识别的回答 %q;请输入 webdav、smb、web、both 或 all\n",
 		"note: Web listen/TLS keep their configured values; they are not asked while Web is not selected": "注意: Web 资源库的 listen/TLS 按原配置保留;未选中 Web 时不会提问这两项",

@@ -106,7 +106,15 @@ func collectServeParams(r *bufio.Reader, existing config.ServeConfig) (config.Se
 	p := promptProtocols(r, existing)
 	noteSkippedProtocols(p, existing)
 	s := existing
-	if err := collectSharedParams(r, &s, existing); err != nil {
+	// 只配 Web 时默认匿名:先问认证开关,再决定共享层是否还需要收集凭据。
+	// 其它组合(含 WebDAV/SMB)仍要凭据,顺序保持原样。
+	webOnly := p.web && !p.webdav && !p.smb
+	webAuthAsked := false
+	if webOnly {
+		s.Web.RequireAuth = promptWebRequireAuth(r, existing.Web.RequireAuth)
+		webAuthAsked = true
+	}
+	if err := collectSharedParams(r, &s, existing, webOnly && !s.Web.RequireAuth); err != nil {
 		return config.ServeConfig{}, err
 	}
 	if p.webdav {
@@ -116,7 +124,7 @@ func collectServeParams(r *bufio.Reader, existing config.ServeConfig) (config.Se
 		collectSMBParams(r, &s)
 	}
 	if p.web {
-		collectWebParams(r, &s)
+		collectWebParams(r, &s, webAuthAsked)
 	}
 	return s, nil
 }
@@ -142,10 +150,13 @@ func serveSection(title string) {
 
 // collectSharedParams 收集各服务共用的参数:前缀、认证、分片与暂存目录。
 // 需要 existing 单参:认证选定模式后会清空另一侧,得先拿原始用户表当 seed。
-func collectSharedParams(r *bufio.Reader, s *config.ServeConfig, existing config.ServeConfig) error {
+// skipAuth 用于「只配 Web 且匿名」:此时不需要任何凭据,直接跳过认证提问。
+func collectSharedParams(r *bufio.Reader, s *config.ServeConfig, existing config.ServeConfig, skipAuth bool) error {
 	serveSection(i18n.T("shared settings (used by all services)"))
 	s.Prefix = promptReader(r, i18n.T("shared prefix mapped to / (empty = the whole bucket)"), existing.Prefix)
-	if err := collectServeAuth(r, s, existing); err != nil {
+	if skipAuth {
+		fmt.Println(i18n.T("anonymous web access: no credentials needed (enable login later with require-auth)"))
+	} else if err := collectServeAuth(r, s, existing); err != nil {
 		return err
 	}
 	s.ChunkedUpload = promptBoolReader(r, i18n.T("chunked-upload (store files over chunk-size as chunks + a manifest)?"), existing.ChunkedUpload)
@@ -175,11 +186,15 @@ func collectSMBParams(r *bufio.Reader, s *config.ServeConfig) {
 	s.SMB.ServerName = promptReader(r, label, s.SMB.ServerName)
 }
 
-// collectWebParams 收集内置 Web 资源库专属参数:监听地址与 TLS 对(与 WebDAV
-// 同语义:成对才有意义)。端口刻意独立于 WebDAV——两者各跑各的进程。
-func collectWebParams(r *bufio.Reader, s *config.ServeConfig) {
+// collectWebParams 收集内置 Web 资源库专属参数:监听地址、认证开关与 TLS 对
+// (与 WebDAV 同语义:成对才有意义)。端口刻意独立于 WebDAV——两者各跑各的
+// 进程。authAsked 为 true 表示认证开关已在共享层之前问过(只配 Web 的分支)。
+func collectWebParams(r *bufio.Reader, s *config.ServeConfig, authAsked bool) {
 	serveSection(i18n.T("Web settings"))
 	s.Web.Listen = promptListen(r, s.Web.Listen, serveWebOpts.listen)
+	if !authAsked {
+		s.Web.RequireAuth = promptWebRequireAuth(r, s.Web.RequireAuth)
+	}
 	s.Web.TLSCert = promptPath(r, i18n.T("tls-cert (path to the certificate; empty = serve over HTTP)"), s.Web.TLSCert, true)
 	if s.Web.TLSCert == "" {
 		// 无证书则私钥无意义:清掉「有 key 无 cert」的半配置态。
@@ -187,6 +202,11 @@ func collectWebParams(r *bufio.Reader, s *config.ServeConfig) {
 		return
 	}
 	s.Web.TLSKey = promptPath(r, i18n.T("tls-key (path to the private key; required together with tls-cert)"), s.Web.TLSKey, true)
+}
+
+// promptWebRequireAuth 询问 Web 资源库是否要求登录;默认否(匿名)。
+func promptWebRequireAuth(r *bufio.Reader, def bool) bool {
+	return promptBoolReader(r, i18n.T("require login for the web library (no = anonymous: anyone who can reach the port can read/write)?"), def)
 }
 
 // serveAuthMode 是通用层的认证模式:单用户(一个账号覆盖整个共享空间)或

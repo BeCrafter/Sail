@@ -144,16 +144,19 @@ func TestServeWebdavRequiresBucketAndCredentials(t *testing.T) {
 		}
 	}
 
-	// user/password/tls 校验依赖配置合并结果:注入合法配置(不提供 user/password),
-	// 断言报错同时提及 flag 与 serve 配置两条来源。
+	// 缺凭据不再拒绝启动:WebDAV 回退到默认 sail/sail(启动横幅会显式告警)。
 	writeServeConfig(t, "mybucket")
 	serveWebdavOpts = serveFlags{backendMaxSize: "5TiB", listen: ":8080", user: "", password: ""}
-	credErr := runServeWebdav(serveWebdavCmd, nil)
-	if credErr == nil || !strings.Contains(credErr.Error(), "--user") {
-		t.Fatalf("缺少密码应报错,实际 %v", credErr)
+	r, _, err := loadResolved()
+	if err != nil {
+		t.Fatalf("读取配置失败: %v", err)
 	}
-	if !strings.Contains(credErr.Error(), "serve") {
-		t.Errorf("缺 user/password 报错应提及 serve 配置来源,实际 %v", credErr)
+	settings, err := mergeServe(serveWebdavOpts, r, func(string) bool { return false })
+	if err != nil {
+		t.Fatalf("缺凭据应回退默认值,实际报错: %v", err)
+	}
+	if settings.user != defaultServeUser || settings.password != defaultServePassword || !settings.defaultCreds {
+		t.Errorf("缺凭据应用默认 sail/sail 并标记 defaultCreds,实际 %+v", settings)
 	}
 
 	serveWebdavOpts.user = "alice"

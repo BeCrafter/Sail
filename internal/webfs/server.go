@@ -18,8 +18,12 @@ import (
 
 // Config 是 Web 网关外壳的构造参数。
 type Config struct {
-	// Users 是用户路由表(每用户一个已构建好的 FileSystem)。本网关与
-	// WebDAV/SMB 同一套语义:不允许匿名共享,至少一名用户。
+	// Anonymous 为 true 时网关不校验 Basic 凭据:所有请求都路由到 Users 中
+	// 唯一的一条匿名空间(Password 可为空)。Web 资源库默认匿名;WebDAV/SMB
+	// 不走这个开关。
+	Anonymous bool
+	// Users 是用户路由表(每用户一个已构建好的 FileSystem)。非匿名模式下
+	// 与 WebDAV/SMB 同一套语义:至少一名用户,不允许匿名共享。
 	Users []UserEntry
 	// MaxUploadSize 是单次上传的请求体上限(字节);<= 0 表示不限制。
 	MaxUploadSize int64
@@ -56,7 +60,9 @@ type UserEntry struct {
 
 // Server 是 Web 网关的 HTTP 外壳:认证 → 按用户路由 → JSON API / 静态资源。
 type Server struct {
-	users         atomic.Value // map[string]*userEntry
+	anonymous     bool
+	anonymousSpot atomic.Pointer[userEntry] // 匿名模式下唯一的空间
+	users         atomic.Value              // map[string]*userEntry
 	maxUploadSize int64
 	maxUploadText string
 	static        http.Handler
@@ -75,13 +81,21 @@ type userEntry struct {
 	prefix   string
 }
 
+// anonymousUser 是匿名模式在访问日志里使用的用户名。
+const anonymousUser = "anonymous"
+
 // NewServer 组装网关。与 WebDAV 壳同一条理由:认证与路由在进入内核之前
 // 完成,内核不认识用户。
 func NewServer(cfg Config) (*Server, error) {
-	if len(cfg.Users) == 0 {
+	if cfg.Anonymous {
+		if len(cfg.Users) != 1 {
+			return nil, errors.New("webfs: 匿名模式需要且仅需要一个空间")
+		}
+	} else if len(cfg.Users) == 0 {
 		return nil, errors.New("webfs: 缺少用户表,不允许匿名共享")
 	}
 	s := &Server{
+		anonymous:     cfg.Anonymous,
 		maxUploadSize: cfg.MaxUploadSize,
 		maxUploadText: cfg.MaxUploadSizeText,
 		static:        cfg.Static,
@@ -103,6 +117,19 @@ func NewServer(cfg Config) (*Server, error) {
 // 指针 = 同一栈,只换凭据条目;新指针构建新条目并启动预热;消失的条目
 // 自然退役(在途请求持旧引用完成)。
 func (s *Server) SwapUsers(entries []UserEntry) error {
+	if s.anonymous {
+		if len(entries) != 1 {
+			return errors.New("webfs: 匿名模式需要且仅需要一个空间")
+		}
+		e := entries[0]
+		prev := s.anonymousSpot.Load()
+		// 同一 FileSystem 指针 = 同一栈:热加载只换壳条目,不重复预热。
+		s.anonymousSpot.Store(&userEntry{fs: e.FileSystem, prefix: e.Prefix})
+		if prev == nil || prev.fs != e.FileSystem {
+			s.prewarm(e.FileSystem, e.PrewarmDirs)
+		}
+		return nil
+	}
 	if len(entries) == 0 {
 		return errors.New("webfs: 用户表不能为空")
 	}
@@ -126,15 +153,22 @@ func (s *Server) SwapUsers(entries []UserEntry) error {
 		if ok && old.fs == e.FileSystem {
 			continue // 同一栈:预热已经跑过,不重复
 		}
-		if len(e.PrewarmDirs) > 0 {
-			go func(fs *FileSystem, dirs []string) {
-				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
-				defer cancel()
-				fs.Prewarm(ctx, dirs)
-			}(e.FileSystem, e.PrewarmDirs)
-		}
+		s.prewarm(e.FileSystem, e.PrewarmDirs)
 	}
 	return nil
+}
+
+// prewarm 为一个新栈启动后台预热;空清单直接返回。goroutine 的生命周期
+// 由超时控制,不阻塞请求路径。
+func (s *Server) prewarm(fs *FileSystem, dirs []string) {
+	if len(dirs) == 0 {
+		return
+	}
+	go func(fs *FileSystem, dirs []string) {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+		defer cancel()
+		fs.Prewarm(ctx, dirs)
+	}(fs, dirs)
 }
 
 func (s *Server) current() map[string]*userEntry {
@@ -148,6 +182,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	sw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
 
 	entry, user := s.authenticate(r)
+	if s.anonymous {
+		entry, user = s.anonymousSpot.Load(), anonymousUser
+	}
 	if entry == nil {
 		s.unauthorized(sw)
 		s.logRequest(r, "?", sw.status, start)

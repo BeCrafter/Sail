@@ -53,6 +53,8 @@ type serveFlags struct {
 	// SMB 专属
 	share      string
 	serverName string
+	// Web 专属
+	requireAuth bool
 }
 
 var serveWebdavOpts serveFlags
@@ -126,6 +128,18 @@ func runServeWebdav(cmd *cobra.Command, _ []string) error {
 			r.ProfileName))
 	}
 
+	// 先绑定再建运行期:端口探测要拿到实际端口,横幅与 URL 都用它;
+	// 绑定失败也属于最早可报的错。
+	ln, listenAddr, err := listenWithProbe(s.listen)
+	if err != nil {
+		return err
+	}
+	defer ln.Close()
+	if listenAddr != s.listen {
+		fmt.Fprint(os.Stderr, i18n.Tf("  listen %s is in use; using %s\n", s.listen, listenAddr))
+	}
+	s.listen = listenAddr
+
 	rt, err := newServeRuntime(o, r, s, cmd.Flags().Changed, log.New(os.Stderr, "", log.LstdFlags))
 	if err != nil {
 		return err
@@ -141,6 +155,9 @@ func runServeWebdav(cmd *cobra.Command, _ []string) error {
 		"sail webdav started: %s://%s  bucket=%s profile=%s%s user=%s max-object-size=%s staging=%s chunked=%s\n",
 		scheme, s.listen, r.Bucket, r.ProfileName, exposePrefix(s.prefix), usersBanner(s), humanSize(s.maxUpload), stagingDirOf(s.stagingDir), chunkedText(s.chunkedUpload, s.chunkSize)))
 	for _, line := range userSpaceLines(s) {
+		fmt.Fprint(os.Stderr, line)
+	}
+	for _, line := range authNoticeLines(s) {
 		fmt.Fprint(os.Stderr, line)
 	}
 	if urls := serveURLs(scheme, s.listen); len(urls) > 0 {
@@ -161,9 +178,9 @@ func runServeWebdav(cmd *cobra.Command, _ []string) error {
 	}
 
 	if s.tlsCert != "" {
-		return httpSrv.ListenAndServeTLS(s.tlsCert, s.tlsKey)
+		return httpSrv.ServeTLS(ln, s.tlsCert, s.tlsKey)
 	}
-	return httpSrv.ListenAndServe()
+	return httpSrv.Serve(ln)
 }
 
 // serveUserFromFlags 判定单用户凭据是否来自命令行 flag(flag 显式给出即视为
@@ -187,6 +204,9 @@ func serveWatchTarget() string {
 // usersBanner 渲染启动横幅的 user 段:单用户沿用既有格式;多用户列名字
 // (不渲染密码),每个用户的空间映射在随后的 userSpaceLines 里逐行展开。
 func usersBanner(s serveSettings) string {
+	if s.anonymous {
+		return i18n.T("anonymous (no login)")
+	}
 	if len(s.users) == 0 {
 		return s.user
 	}
@@ -197,8 +217,24 @@ func usersBanner(s serveSettings) string {
 	return strings.Join(names, ",")
 }
 
+// authNoticeLines 是认证相关的启动告警:匿名访问与默认口令都必须说清楚,
+// 不能让用户以为「没配就是安全的」。
+func authNoticeLines(s serveSettings) []string {
+	if s.anonymous {
+		return []string{i18n.T("  anonymous access: anyone who can reach this address can read and write the bucket; set serve.web.require-auth: true to require a login\n")}
+	}
+	if s.defaultCreds {
+		return []string{i18n.Tf("  no credentials configured: using the default user %q and password %q — set serve.user/serve.password or serve.users to change it\n", defaultServeUser, defaultServePassword)}
+	}
+	return nil
+}
+
 // userSpaceLines 是多用户模式下逐行展开的「用户 → 空间前缀」映射。
 func userSpaceLines(s serveSettings) []string {
+	if s.anonymous {
+		// 匿名模式不使用配置里的用户表,打印出来只会误导。
+		return nil
+	}
 	return userTableLines(s.prefix, s.users)
 }
 
@@ -234,6 +270,12 @@ type serveSettings struct {
 	chunkSize     int64
 	dirCacheTTL   time.Duration
 	prewarm       []string
+	// anonymous 为 true 时网关不校验凭据(仅 Web 资源库:require-auth=false)。
+	// 此时 users/user/password 被忽略,整个进程用 base 前缀下一个匿名空间。
+	anonymous bool
+	// defaultCreds 标记 user/password 是"配置里没有、回退到默认 sail/sail"
+	// 的结果,启动横幅据此给出显式告警。
+	defaultCreds bool
 }
 
 // shellEntry 是协议壳的用户条目:凭据 + 该用户已建好的内核栈 + 协议壳对象。
@@ -323,6 +365,13 @@ func (g webdavGateway) swapUsers(entries []shellEntry) error {
 	return g.srv.SwapUsers(out)
 }
 
+// defaultServeUser / defaultServePassword 是「必须登录、但配置里没有凭据」时
+// 的回退值:让零配置启动可用,启动横幅会明确告警这是默认口令。
+const (
+	defaultServeUser     = "sail"
+	defaultServePassword = "sail"
+)
+
 // mergeServeBase 合并两种协议壳共用的那部分参数,并做与协议无关的校验
 // (用户表互斥与语义、大小/分片/缓存时长语法)。监听地址不在这里解析:它的
 // 配置落点按协议分(serve.listen / serve.smb.listen),由各自的 merge 负责。
@@ -330,6 +379,17 @@ func (g webdavGateway) swapUsers(entries []shellEntry) error {
 // 解析链:flag(显式设置) > profile.serve.* > flag 默认值。changed 返回某
 // flag 是否被显式设置;测试可传显式 map。
 func mergeServeBase(o serveFlags, r *config.Resolved, changed func(string) bool) (serveSettings, error) {
+	return mergeServeBaseWith(o, r, changed, false)
+}
+
+// mergeServeBaseWith 是 mergeServeBase 的实现。allowAnonymous 只由 Web 资源库
+// 传入(require-auth=false):此时缺凭据不算错误,标记 anonymous 交给网关做
+// 匿名路由;WebDAV/SMB 仍需凭据,缺省回退到默认的 sail/sail,并在启动横幅
+// 里显式告警(默认口令家喻户晓,不能静默)。
+//
+// 解析链:flag(显式设置) > profile.serve.* > flag 默认值。changed 返回某
+// flag 是否被显式设置;测试可传显式 map。
+func mergeServeBaseWith(o serveFlags, r *config.Resolved, changed func(string) bool, allowAnonymous bool) (serveSettings, error) {
 	prefix := pick(changed("prefix"), o.prefix, r.Serve.Prefix)
 	user := pick(changed("user"), o.user, r.Serve.User)
 	password := pick(changed("password"), o.password, r.Serve.Password)
@@ -352,14 +412,27 @@ func mergeServeBase(o serveFlags, r *config.Resolved, changed func(string) bool)
 			"serve.users and user/password are mutually exclusive (profile %q): configure either the users list or the single-user pair, not both",
 			r.ProfileName))
 	}
+	anonymous := false
+	defaultCreds := false
 	if len(users) > 0 {
 		if err := config.ValidateUsers(corePrefix(prefix), users); err != nil {
 			return serveSettings{}, err
 		}
-	} else if user == "" || password == "" {
-		return serveSettings{}, errors.New(i18n.Tf(
-			"--user and --password are required (from flags or profile %q \"serve\" config): this gateway does not allow anonymous sharing",
-			r.ProfileName))
+	} else if user == "" && password == "" && allowAnonymous {
+		// Web 资源库默认匿名:不需要用户配置,也不生成任何凭据。
+		anonymous = true
+	} else {
+		// 必须登录的网关(WebDAV/SMB,以及显式 require-auth 的 Web)在没配
+		// 凭据时使用默认 sail/sail,让零配置启动可用;defaultCreds 供启动
+		// 横幅提示这是默认值。
+		if user == "" {
+			user = defaultServeUser
+			defaultCreds = true
+		}
+		if password == "" {
+			password = defaultServePassword
+			defaultCreds = true
+		}
 	}
 
 	backendMax, err := parseSize(backendMaxRaw)
@@ -392,6 +465,8 @@ func mergeServeBase(o serveFlags, r *config.Resolved, changed func(string) bool)
 		chunkSize:     chunkSize,
 		dirCacheTTL:   dirCacheTTL,
 		prewarm:       prewarm,
+		anonymous:     anonymous,
+		defaultCreds:  defaultCreds,
 	}, nil
 }
 
@@ -488,14 +563,22 @@ type userStack struct {
 	shell any
 }
 
-// effectiveUserTable 把生效参数归一为用户表:多用户取配置表;单用户是
+// effectiveUserTable 把生效参数归一为用户表:匿名模式是一个无凭据的伪用户
+// (仅用于建栈与预热,网关不校验它的凭据);多用户取配置表;单用户是
 // 隐式一用户表(相对前缀为空,即 base 前缀本身,不限额)。
 func effectiveUserTable(s serveSettings) []config.UserConfig {
+	if s.anonymous {
+		return []config.UserConfig{{Name: anonymousUser}}
+	}
 	if len(s.users) > 0 {
 		return s.users
 	}
 	return []config.UserConfig{{Name: s.user, Password: s.password}}
 }
+
+// anonymousUser 是匿名模式下内部伪用户名:只出现在日志与栈标签里,
+// 不会要求客户端提供。
+const anonymousUser = "anonymous"
 
 // newServeRuntime 构建共享 S3 client、初始用户栈与网关。
 // WebDAV 与 Web 共用本函数;protocol 决定建哪套壳(SMB 不走这里:
@@ -628,8 +711,11 @@ func quotaBytes(raw string) (int64, error) {
 // 运行中的 base 再验)→ Swap(建网关或换表)→ 为新前缀异步补建目录。
 // 任何失败返回错误,旧表原样生效。
 func (rt *serveRuntime) applyUserTable(users []config.UserConfig) error {
-	if err := config.ValidateUsers(corePrefix(rt.settings.prefix), users); err != nil {
-		return err
+	// 匿名模式只有内部伪用户(无凭据),跳过面向真实用户表的校验。
+	if !rt.settings.anonymous {
+		if err := config.ValidateUsers(corePrefix(rt.settings.prefix), users); err != nil {
+			return err
+		}
 	}
 	if rt.gwi == nil {
 		entries, err := rt.buildEntries(users)
@@ -675,9 +761,9 @@ func (rt *serveRuntime) applyUserTable(users []config.UserConfig) error {
 			}
 		}
 	}
-	// 多用户模式下异步幂等创建用户空间目录(I10);单用户兼容模式保持
-	// 既有行为,不自动创建。
-	if len(rt.settings.users) > 0 {
+	// 多用户模式下异步幂等创建用户空间目录(I10);单用户兼容模式与匿名
+	// 模式保持既有行为,不自动创建。
+	if !rt.settings.anonymous && len(rt.settings.users) > 0 {
 		for _, u := range users {
 			if eff := config.EffectivePrefix(rt.settings.prefix, u.Prefix); eff != "" {
 				rt.ensureDirAsync(eff)
@@ -705,6 +791,12 @@ func (rt *serveRuntime) reload() {
 		return
 	}
 	rt.warnColdZone(r2, s2)
+	// 匿名模式不使用真实用户表,重读没有可应用的内容;require-auth 属冷区,
+	// 运行中的模式不随配置热切换。
+	if rt.settings.anonymous {
+		rt.logger.Print(i18n.T("reload: anonymous web mode ignores serve.users; restart with require-auth to apply them"))
+		return
+	}
 	users := effectiveUserTable(s2)
 	// 生效前缀按运行中的 base 解释(base 属冷区),校验与应用经同一闸门。
 	if err := rt.applyUserTable(users); err != nil {
@@ -724,6 +816,9 @@ func (rt *serveRuntime) warnColdZone(r2 *config.Resolved, s2 serveSettings) {
 	add := func(label string) { changed = append(changed, label) }
 	if rt.settings.listen != s2.listen {
 		add("listen")
+	}
+	if rt.settings.anonymous != s2.anonymous {
+		add("serve.web.require-auth")
 	}
 	if corePrefix(rt.settings.prefix) != corePrefix(s2.prefix) {
 		add("prefix")
@@ -1215,8 +1310,8 @@ net start webclient
 func init() {
 	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.listen, "listen", ":8080", "listen address")
 	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.prefix, "prefix", "", "shared root prefix (mapped to /); out-of-prefix paths are always rejected")
-	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.user, "user", "", "Basic auth username (required)")
-	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.password, "password", "", "Basic auth password (required)")
+	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.user, "user", "", "Basic auth username (empty = \"sail\" unless serve.user/serve.users is configured)")
+	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.password, "password", "", "Basic auth password (empty = \"sail\" unless serve.password/serve.users is configured)")
 	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.tlsCert, "tls-cert", "", "TLS certificate file (supplying it together with --tls-key enables HTTPS)")
 	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.tlsKey, "tls-key", "", "TLS private key file (supplying it together with --tls-cert enables HTTPS)")
 	serveWebdavCmd.Flags().StringVar(&serveWebdavOpts.backendMaxSize, "backend-max-object-size", "5TiB", "declared backend per-object limit (S3 has no capability negotiation, it can't be probed)")

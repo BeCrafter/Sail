@@ -36,11 +36,17 @@ the same protocol-independent core the other gateways use, so prefix isolation, 
 storage and the delete path are one implementation, not three.
 
 Design boundaries:
-  - Authentication is HTTP Basic against the same serve.users table as WebDAV; browsers keep the
-    credentials for the session, and there is no logout short of closing the browser. Put the
-    gateway behind TLS (--tls-cert/--tls-key) whenever it is not on loopback.
-  - One user = one space: in multi-user mode each user sees only their own prefix, and the quota
-    reported in the UI is that user's serve.users quota.
+  - Anonymous by default: no login is required, so a fresh profile without a serve block works
+    out of the box. Pass --require-auth (or set serve.web.require-auth: true) to require HTTP
+    Basic; credentials then come from serve.users or serve.user/serve.password, falling back to
+    the default sail/sail when neither is configured. Browsers keep Basic credentials for the
+    session and there is no logout short of closing the browser, so require auth and put the
+    gateway behind TLS (--tls-cert/--tls-key) whenever it is not on a trusted network.
+  - If the requested port is already in use, the next free port is tried (up to 20) and the
+    startup banner prints the port actually bound.
+  - One user = one space: with require-auth and multi-user mode each user sees only their own
+    prefix, and the quota reported in the UI is that user's serve.users quota. Anonymous mode
+    serves the base prefix.
   - The browser never receives storage credentials: it only talks to this server.
   - Uploads stream straight into the core (no staging copy); with --chunked-upload on, files
     larger than --chunk-size are stored as chunks under the reserved .sail/ prefix, which the UI
@@ -51,8 +57,8 @@ Design boundaries:
     later release" placeholder and can still be downloaded; dedicated previewers are planned.
 
 Examples:
-  sail serve web --profile prod --listen :9090 --user alice --password '***'
-  sail serve web --profile prod --prefix shared --listen :9090 \
+  sail serve web --profile prod --listen :9090
+  sail serve web --profile prod --prefix shared --require-auth \
     --user alice --password '***' --tls-cert c.pem --tls-key k.pem`,
 	Args: cobra.NoArgs,
 	RunE: runServeWeb,
@@ -74,6 +80,18 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 			"no bucket to serve: pass --bucket, set SAIL_BUCKET, or add \"bucket\" to profile %q in the config file — the web library serves a whole bucket, and without one there is nothing to show",
 			r.ProfileName))
 	}
+
+	// 先绑定再建运行期:与 WebDAV 共用同一套端口探测,横幅与 URL 使用
+	// 实际端口(原端口被占用时会向后找一个空闲端口)。
+	ln, listenAddr, err := listenWithProbe(s.listen)
+	if err != nil {
+		return err
+	}
+	defer ln.Close()
+	if listenAddr != s.listen {
+		fmt.Fprint(os.Stderr, i18n.Tf("  listen %s is in use; using %s\n", s.listen, listenAddr))
+	}
+	s.listen = listenAddr
 
 	logger := log.New(os.Stderr, "", log.LstdFlags)
 	// 外链能力在 cmd 侧接线:预签名要 S3 客户端,公开链接要 CDN 配置,
@@ -102,6 +120,9 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	for _, line := range userSpaceLines(s) {
 		fmt.Fprint(os.Stderr, line)
 	}
+	for _, line := range authNoticeLines(s) {
+		fmt.Fprint(os.Stderr, line)
+	}
 	if urls := serveURLs(scheme, s.listen); len(urls) > 0 {
 		fmt.Fprint(os.Stderr, i18n.Tf("  open in a browser: %s\n", strings.Join(urls, "  ")))
 		if len(urls) > 1 {
@@ -119,19 +140,28 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	}
 
 	if s.tlsCert != "" {
-		return httpSrv.ListenAndServeTLS(s.tlsCert, s.tlsKey)
+		return httpSrv.ServeTLS(ln, s.tlsCert, s.tlsKey)
 	}
-	return httpSrv.ListenAndServe()
+	return httpSrv.Serve(ln)
 }
 
-// mergeServeWeb 在共用参数之外补 Web 专属部分:监听地址与 TLS 对。
-// 与 SMB 同理,监听地址刻意不继承 serve.listen:三种协议各跑各的进程,
-// 挤在同一个端口上只会更意外;Web 自己的落点是 serve.web.listen。
+// mergeServeWeb 在共用参数之外补 Web 专属部分:监听地址、TLS 对与认证开关。
+// 认证默认关闭(匿名),这是 Web 资源库与 WebDAV/SMB 的关键差异:浏览器场景
+// 零配置可用;要登录必须显式 require-auth,凭据沿用共享的 serve.users /
+// serve.user/password,缺省回退 sail/sail。
+//
+// 监听地址刻意不继承 serve.listen:三种协议各跑各的进程,挤在同一个端口上
+// 只会更意外;Web 自己的落点是 serve.web.listen。
 func mergeServeWeb(o serveFlags, r *config.Resolved, changed func(string) bool) (serveSettings, error) {
-	s, err := mergeServeBase(o, r, changed)
+	requireAuth := r.Serve.Web.RequireAuth
+	if changed("require-auth") {
+		requireAuth = o.requireAuth
+	}
+	s, err := mergeServeBaseWith(o, r, changed, !requireAuth)
 	if err != nil {
 		return serveSettings{}, err
 	}
+	s.anonymous = !requireAuth
 	s.listen = pick(changed("listen"), o.listen, r.Serve.Web.Listen)
 	s.tlsCert = pick(changed("tls-cert"), o.tlsCert, r.Serve.Web.TLSCert)
 	s.tlsKey = pick(changed("tls-key"), o.tlsKey, r.Serve.Web.TLSKey)
@@ -154,6 +184,7 @@ var webProtocolShell = serveProtocol{
 			return nil, nil, err
 		}
 		gw, err := webfs.NewServer(webfs.Config{
+			Anonymous:         rt.settings.anonymous,
 			Users:             out,
 			MaxUploadSize:     rt.settings.maxUpload,
 			MaxUploadSizeText: humanSize(rt.settings.maxUpload),
@@ -240,8 +271,9 @@ func physicalKey(prefix, logical string) string {
 func init() {
 	serveWebCmd.Flags().StringVar(&serveWebOpts.listen, "listen", ":9090", "listen address for the web library (serve.web.listen)")
 	serveWebCmd.Flags().StringVar(&serveWebOpts.prefix, "prefix", "", "shared root prefix (mapped to /); out-of-prefix paths are always rejected")
-	serveWebCmd.Flags().StringVar(&serveWebOpts.user, "user", "", "HTTP Basic user name (required)")
-	serveWebCmd.Flags().StringVar(&serveWebOpts.password, "password", "", "HTTP Basic password (required)")
+	serveWebCmd.Flags().StringVar(&serveWebOpts.user, "user", "", "HTTP Basic user name (used only with --require-auth; empty = \"sail\" unless serve.user/serve.users is configured)")
+	serveWebCmd.Flags().StringVar(&serveWebOpts.password, "password", "", "HTTP Basic password (used only with --require-auth; empty = \"sail\" unless serve.password/serve.users is configured)")
+	serveWebCmd.Flags().BoolVar(&serveWebOpts.requireAuth, "require-auth", false, "require HTTP Basic login (default off: anonymous access; credentials come from serve.users or serve.user/serve.password, falling back to sail/sail)")
 	serveWebCmd.Flags().StringVar(&serveWebOpts.tlsCert, "tls-cert", "", "TLS certificate; supply together with --tls-key to serve HTTPS (serve.web.tls-cert)")
 	serveWebCmd.Flags().StringVar(&serveWebOpts.tlsKey, "tls-key", "", "TLS private key; supply together with --tls-cert (serve.web.tls-key)")
 	serveWebCmd.Flags().StringVar(&serveWebOpts.backendMaxSize, "backend-max-object-size", "5TiB", "declared backend per-object limit (S3 has no capability negotiation, it can't be probed)")

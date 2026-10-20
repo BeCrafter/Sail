@@ -75,10 +75,12 @@ Interactively generates or updates `~/.config/sail/config.yaml` (`--reset` reset
 - `endpoint` is required — leaving it empty re-prompts in place
 - `access-key` / `secret-key` can be entered in plaintext; press Enter on empty to reference per-profile env vars (see "Key security" below). After writing, it prints the variable names you need to `export`
 - When reconfiguring an existing profile, already-configured plaintext keys are not echoed — press Enter to keep them
-- The gateway (`serve:` block, shared by `serve webdav` and `serve smb`) is guided in layers: first whether
-  to configure it, then which services (`webdav` | `smb` | `both`), then the shared settings (prefix, auth
+- The gateway (`serve:` block, shared by `serve webdav`, `serve smb` and `serve web`) is guided in layers: first whether
+  to configure it, then which services (`webdav` | `smb` | `web` | `both` | `all`), then the shared settings (prefix, auth
   mode — single-user or multi-user — chunked-upload, staging-dir), then each selected service's own settings
-  (WebDAV: listen, TLS; SMB: listen, share, server-name). An existing `serve` block defaults to "keep" —
+  (WebDAV: listen, TLS; SMB: listen, share, server-name; Web: listen, require-auth, TLS). Web is anonymous by
+  default; when it is the only service selected the wizard skips the credential questions unless you turn
+  require-auth on. An existing `serve` block defaults to "keep" —
   choose to append users to the existing table, reconfigure it, or remove it; a service you do not select
   keeps its configured values untouched; multi-user tables are validated as you enter them (duplicate names,
   nested prefixes, quota syntax), and the fields the wizard does not ask (size limits, `dir-cache-ttl`,
@@ -174,9 +176,17 @@ it asks which protocols to configure.
         server-name: SAIL   # the name this server calls itself in the NTLM challenge
       web:
         listen: ":9090"     # Web library's own port, also not inherited from serve.listen
+        require-auth: false # false (default) = anonymous; true = HTTP Basic with serve.users / user+password
         # tls-cert: /etc/cert.pem   # with tls-key enables HTTPS for the browser UI
         # tls-key: /etc/key.pem
 ```
+
+Credentials have a safe-by-default fallback: **Web** is anonymous unless
+`serve.web.require-auth: true`; **WebDAV/SMB** always require a login and fall back to
+user `sail` / password `sail` when neither `users` nor `user`+`password` is configured (the
+startup banner warns loudly — change it for any non-personal deployment). A blank
+`user` or `password` is filled with `sail` independently, so setting only `user: alice`
+leaves the password at the default.
 
 ### cdn-domain notes
 
@@ -378,7 +388,7 @@ it explicitly to override the config value.
 | `--profile` | config `default-profile` | Which profile to share: the bucket comes from that profile's `bucket` (overridable by global `--bucket` or `SAIL_BUCKET`); startup is refused when all three are empty |
 | `--listen` | `:8080` | Listen address (`serve.listen`) |
 | `--prefix` | empty | Shared root prefix (mapped to `/`); out-of-prefix paths are always rejected (`serve.prefix`) |
-| `--user` / `--password` | empty | Basic auth; startup is refused when empty, anonymous sharing is not allowed (`serve.user`/`serve.password`). Mutually exclusive with `serve.users` |
+| `--user` / `--password` | `sail` / `sail` | Basic auth (`serve.user`/`serve.password`). Empty sides fall back to `sail`; configure both for any non-personal deployment. Mutually exclusive with `serve.users` |
 | `--tls-cert` / `--tls-key` | empty | Supplying both enables HTTPS (`serve.tls-cert`/`serve.tls-key`) |
 | `--backend-max-object-size` | `5TiB` | Declared backend per-object limit (S3 has no capability negotiation, it can't be probed) (`serve.backend-max-object-size`) |
 | `--max-upload-size` | follows the flag above | Request body limit; over the limit returns 413 + actionable guidance before the body is fully read (`serve.max-upload-size`) |
@@ -652,15 +662,21 @@ protocol-independent core as the other gateways, so prefix isolation, quota, chu
 the delete path are one implementation, not three.
 
 ```bash
-# Start (defaults to :9090; HTTPS recommended outside loopback)
-sail serve web --profile prod --listen :9090 \
+# Start: defaults to :9090 and anonymous access — no user/password needed
+sail serve web --profile prod
+
+# Require login (HTTP Basic) and serve over HTTPS
+sail serve web --profile prod --require-auth \
   --user alice --password '***' --tls-cert cert.pem --tls-key key.pem
 
 # Share only a prefix inside the bucket (mapped to /, out-of-prefix paths are always rejected)
-sail serve web --profile prod --prefix shared --user alice --password '***'
+sail serve web --profile prod --prefix shared
 
 # Then open http://host:9090/ (or https://… when TLS is on)
 ```
+
+If the requested port is already in use, the next free port is tried (up to 20) and the banner
+prints the address actually bound.
 
 What you get in the browser:
 
@@ -685,16 +701,19 @@ The Web-specific ones:
 | Flag | Default | Notes (`serve.web.*` config key) |
 |---|---|---|
 | `--listen` | `:9090` | Listen address; deliberately not inherited from `serve.listen` (`serve.web.listen`) |
+| `--require-auth` | `false` | Require HTTP Basic login; credentials come from `serve.users` or `--user`/`--password`, falling back to `sail`/`sail` when neither is configured (`serve.web.require-auth`) |
 | `--tls-cert` / `--tls-key` | empty | Supplying both enables HTTPS for the browser UI (`serve.web.tls-cert`/`serve.web.tls-key`) |
 
 ### Boundaries
 
-- **Authentication is HTTP Basic** against the same `serve.users` table as WebDAV; the browser keeps
-  the credentials for the session, and there is no logout short of closing the browser. Put the
-  gateway behind TLS whenever it is not on loopback.
+- **Anonymous by default**: no login is required, so a fresh profile without a `serve` block
+  works out of the box. Turn on `--require-auth` (or `serve.web.require-auth: true`) to require
+  HTTP Basic; the browser then keeps the credentials for the session, and there is no logout short
+  of closing the browser. Put the gateway behind TLS whenever it is not on a trusted network.
 - **The browser never receives storage credentials** — it only talks to this server.
-- **One user = one space**: in multi-user mode each user sees only their own prefix, and the quota
-  shown in the UI is that user's `serve.users` quota.
+- **One user = one space**: with `--require-auth` in multi-user mode each user sees only their own
+  prefix, and the quota shown in the UI is that user's `serve.users` quota. Anonymous mode serves
+  the shared base prefix.
 - **Chunked objects are hidden and non-linkable**: the reserved `.sail/` prefix is filtered from
   listings, and "copy link" refuses for a chunked object because a presigned URL would return the
   manifest instead of the file.

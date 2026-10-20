@@ -38,6 +38,73 @@ func defaultFlags() serveFlags {
 	}
 }
 
+// 零配置启动:必须登录的网关回退默认 sail/sail 并标记 defaultCreds;
+// Web 默认匿名,不生成任何凭据。
+func TestMergeServeCredentialDefaults(t *testing.T) {
+	r := &config.Resolved{ProfileName: "prod", Bucket: "b"}
+
+	s, err := mergeServe(defaultFlags(), r, noChanged)
+	if err != nil {
+		t.Fatalf("WebDAV 缺凭据应回退默认值: %v", err)
+	}
+	if s.user != defaultServeUser || s.password != defaultServePassword || !s.defaultCreds || s.anonymous {
+		t.Errorf("WebDAV 默认凭据不符: %+v", s)
+	}
+
+	// 只给用户名:密码回退默认值,仍标记 defaultCreds。
+	o := defaultFlags()
+	o.user = "alice"
+	s, err = mergeServe(o, r, func(f string) bool { return f == "user" })
+	if err != nil {
+		t.Fatalf("缺密码应回退默认值: %v", err)
+	}
+	if s.user != "alice" || s.password != defaultServePassword || !s.defaultCreds {
+		t.Errorf("半配置凭据应补齐默认密码: %+v", s)
+	}
+
+	// Web:默认匿名,不需要用户配置。
+	w, err := mergeServeWeb(defaultFlags(), r, noChanged)
+	if err != nil {
+		t.Fatalf("Web 默认应允许匿名: %v", err)
+	}
+	if !w.anonymous || w.user != "" || w.defaultCreds {
+		t.Errorf("Web 默认应匿名且不带默认凭据: %+v", w)
+	}
+
+	// Web + require-auth:回退默认 sail/sail。
+	wo := defaultFlags()
+	wo.requireAuth = true
+	w, err = mergeServeWeb(wo, r, func(f string) bool { return f == "require-auth" })
+	if err != nil {
+		t.Fatalf("Web require-auth 缺凭据应回退默认值: %v", err)
+	}
+	if w.anonymous || w.user != defaultServeUser || w.password != defaultServePassword || !w.defaultCreds {
+		t.Errorf("Web require-auth 默认凭据不符: %+v", w)
+	}
+
+	// Web + require-auth + 配置了 users:用配置的用户表,不触发匿名。
+	wo = defaultFlags()
+	wo.requireAuth = true
+	r2 := &config.Resolved{ProfileName: "prod", Bucket: "b"}
+	r2.Serve.Users = usersFrom("alice", "bob")
+	w, err = mergeServeWeb(wo, r2, func(f string) bool { return f == "require-auth" })
+	if err != nil {
+		t.Fatalf("users 应被接受: %v", err)
+	}
+	if w.anonymous || len(w.users) != 2 || w.defaultCreds {
+		t.Errorf("require-auth + users 应走多用户: %+v", w)
+	}
+
+	// Web 未开 require-auth 时,即使配置了 users 也保持匿名。
+	w, err = mergeServeWeb(defaultFlags(), r2, noChanged)
+	if err != nil {
+		t.Fatalf("匿名模式不应因 users 报错: %v", err)
+	}
+	if !w.anonymous {
+		t.Errorf("require-auth=false 应始终匿名: %+v", w)
+	}
+}
+
 // I4:users 表与单 user/password 同设拒绝启动(含跨来源:flag vs 配置)。
 func TestMergeServeUsersAndPasswordAreMutuallyExclusive(t *testing.T) {
 	cases := []struct {
@@ -52,7 +119,7 @@ func TestMergeServeUsersAndPasswordAreMutuallyExclusive(t *testing.T) {
 		{"users + flag 单用户", usersFrom("alice"), "", "user", "mutually exclusive"},
 		{"users + flag 密码", usersFrom("alice"), "", "password", "mutually exclusive"},
 		{"仅配置单用户", nil, "alice", "", ""},
-		{"两者皆无", nil, "", "", "--user and --password are required"},
+		{"两者皆无:回退默认凭据", nil, "", "", ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

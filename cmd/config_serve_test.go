@@ -354,6 +354,7 @@ func TestDefaultProtocols(t *testing.T) {
 		{"只配 TLS 也算 WebDAV", config.ServeConfig{TLSCert: "/c.pem", TLSKey: "/k.pem"}, webdavOnly},
 		{"只配 SMB", config.ServeConfig{SMB: config.SMBConfig{Listen: ":2445"}}, smbOnly},
 		{"只配 Web", config.ServeConfig{Web: config.WebConfig{Listen: ":9090"}}, webOnly},
+		{"只配 Web 认证开关", config.ServeConfig{Web: config.WebConfig{RequireAuth: true}}, webOnly},
 		{"WebDAV + SMB", config.ServeConfig{Listen: ":8443", SMB: config.SMBConfig{Share: "team"}}, both},
 		{"三者都有", config.ServeConfig{Listen: ":8443", SMB: config.SMBConfig{Share: "team"}, Web: config.WebConfig{Listen: ":9090"}}, serveProtocols{webdav: true, smb: true, web: true}},
 		// 共享字段不表态:用户表/前缀是各协议共用的,不能据此推断
@@ -394,15 +395,15 @@ func TestCollectServeSMBOnly(t *testing.T) {
 	}
 }
 
-// 只配 Web:不碰 WebDAV/SMB 字段,Web 专属字段落库。
+// 只配 Web 且默认匿名:不碰 WebDAV/SMB 字段,也不问凭据。
 func TestCollectServeWebOnly(t *testing.T) {
 	in := []string{
-		"y",      // 配置 serve 块
-		"web",    // 服务:只配内置 Web 资源库
-		"",       // prefix(通用)
-		"single", // 认证模式
-		"alice", "pw",
-		"", "", // chunked-upload / staging-dir
+		"y",     // 配置 serve 块
+		"web",   // 服务:只配内置 Web 资源库
+		"",      // require login? 回车 = 否(匿名)
+		"",      // prefix(通用)
+		"",      // chunked-upload
+		"",      // staging-dir
 		":9191", // web listen
 		"",      // tls-cert 空
 	}
@@ -416,11 +417,38 @@ func TestCollectServeWebOnly(t *testing.T) {
 	if got.SMB != (config.SMBConfig{}) {
 		t.Errorf("未选 SMB 时不该写出 smb 块: %+v", got.SMB)
 	}
-	if got.User != "alice" || got.Password != "pw" {
-		t.Errorf("凭据是共享字段,应照样问: %+v", got)
+	if got.User != "" || got.Password != "" || len(got.Users) != 0 {
+		t.Errorf("匿名 Web 不应问出凭据: %+v", got)
+	}
+	if got.Web.RequireAuth {
+		t.Errorf("默认应为匿名: %+v", got.Web)
 	}
 	if got.Web.Listen != ":9191" || got.Web.TLSCert != "" || got.Web.TLSKey != "" {
 		t.Errorf("Web 字段不符: %+v", got.Web)
+	}
+}
+
+// 只配 Web 但要求登录:仍走进共享认证提问,require-auth 落库。
+func TestCollectServeWebOnlyWithAuth(t *testing.T) {
+	in := []string{
+		"y", "web",
+		"y",      // require login
+		"",       // prefix(通用)
+		"single", // 认证模式
+		"alice", "pw",
+		"", "", // chunked-upload / staging-dir
+		":9191", // web listen
+		"",      // tls-cert 空
+	}
+	got, err := collectServeConfig(newReader(in...), config.ServeConfig{})
+	if err != nil {
+		t.Fatalf("不应报错: %v", err)
+	}
+	if !got.Web.RequireAuth {
+		t.Errorf("require-auth 应落库: %+v", got.Web)
+	}
+	if got.User != "alice" || got.Password != "pw" {
+		t.Errorf("要求登录时应收集凭据: %+v", got)
 	}
 }
 
@@ -608,7 +636,7 @@ func TestServeSummaryLines(t *testing.T) {
 			t.Errorf("第 %d 层的层名应对齐到同一列: %q", i, lines[i])
 		}
 	}
-	if want := "web:    listen=:9090 tls"; lines[3] != want {
+	if want := "web:    listen=:9090 auth=anonymous tls"; lines[3] != want {
 		t.Errorf("Web 层摘要 = %q,期望 %q", lines[3], want)
 	}
 	joined := strings.Join(lines, "\n")

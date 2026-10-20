@@ -14,7 +14,7 @@
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
       source: "数据源", menu: "侧栏",
-      profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀",
+      profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
       capPublic: "已启用 CDN 公开链接", capPresign: "已启用预签名链接", capNone: "未配置 CDN / 预签名,无法生成外链",
@@ -49,7 +49,7 @@
       appTitle: "Sail Media",
       appSub: "S3 media library",
       source: "Source", menu: "Sidebar",
-      profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix",
+      profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
       capPublic: "CDN public links enabled", capPresign: "Presigned links enabled", capNone: "No CDN / presign configured, external links unavailable",
@@ -340,7 +340,7 @@
         </div>
 
         <div class="side-card" v-if="session">
-          <div class="kv"><span class="k">{{ tt.user }}</span><span class="v">{{ session.user }}</span></div>
+          <div class="kv"><span class="k">{{ tt.user }}</span><span class="v">{{ session.anonymous ? tt.anonymous : session.user }}</span></div>
           <div class="kv" v-if="session.prefix"><span class="k">{{ tt.prefix }}</span><span class="v mono" :title="session.prefix">{{ session.prefix }}/</span></div>
           <div class="kv"><span class="k">{{ tt.maxUpload }}</span><span class="v">{{ session.maxUploadText || '—' }}</span></div>
           <div class="kv" v-if="quota">

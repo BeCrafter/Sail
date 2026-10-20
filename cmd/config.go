@@ -29,11 +29,14 @@ setup wizard notes:
   - access-key / secret-key can be typed as plaintext; pressing Enter on empty references a per-profile
     derived env var (e.g. profile test → SAIL_TEST_ACCESS_KEY); after writing it prints the vars to export
   - when reconfiguring an existing profile, configured plaintext keys are not echoed; Enter keeps them
-  - the gateway (serve block) is guided as well, in layers. It is shared by "sail serve webdav" and
-    "sail serve smb", so the wizard asks which services to configure (webdav | smb | both) first, then walks
-    the layers in order: the shared settings (prefix, auth mode — single-user or multi-user — chunked-upload,
-    staging-dir), then each selected service's own settings (WebDAV: listen, TLS; SMB: listen, share,
-    server-name). Multi-user tables are validated in place (duplicate names, nested prefixes, quota syntax —
+  - the gateway (serve block) is guided as well, in layers. It is shared by "sail serve webdav",
+    "sail serve smb" and "sail serve web", so the wizard asks which services to configure
+    (webdav | smb | web | both | all) first, then walks the layers in order: the shared settings
+    (prefix, auth mode — single-user or multi-user — chunked-upload, staging-dir), then each selected
+    service's own settings (WebDAV: listen, TLS; SMB: listen, share, server-name; Web: listen,
+    require-auth, TLS). Web is anonymous by default; when it is the only service selected the wizard
+    skips the credential questions unless you turn require-auth on. Multi-user tables are validated in
+    place (duplicate names, nested prefixes, quota syntax —
     quota accepts MB/GB/TB). An existing serve block defaults to "keep" — choose append to add users to the
     existing table, reconfigure to edit it, or remove to drop it. A service that is not selected is left as
     configured, never cleared. Size limits, dir-cache-ttl and prewarm are not asked here; edit the config file
@@ -378,7 +381,7 @@ func serveBlockEmpty(s config.ServeConfig) bool {
 		!s.ChunkedUpload && s.ChunkSize == "" &&
 		s.DirCacheTTL == "" && len(s.Prewarm) == 0 &&
 		s.SMB.Listen == "" && s.SMB.Share == "" && s.SMB.ServerName == "" &&
-		s.Web.Listen == "" && s.Web.TLSCert == "" && s.Web.TLSKey == ""
+		s.Web.Listen == "" && s.Web.TLSCert == "" && s.Web.TLSKey == "" && !s.Web.RequireAuth
 }
 
 // yamlQuote 把用户自由输入的值渲染成 YAML 双引号标量:值里的 "#"、":"、
@@ -483,7 +486,7 @@ func serveBlock(s config.ServeConfig) string {
 		b.WriteString(smbf("share", s.SMB.Share))
 		b.WriteString(smbf("server-name", s.SMB.ServerName))
 	}
-	if s.Web.Listen != "" || s.Web.TLSCert != "" || s.Web.TLSKey != "" {
+	if s.Web.Listen != "" || s.Web.TLSCert != "" || s.Web.TLSKey != "" || s.Web.RequireAuth {
 		b.WriteString("      web:\n")
 		webf := func(key, val string) string {
 			if val == "" {
@@ -492,6 +495,7 @@ func serveBlock(s config.ServeConfig) string {
 			return fmt.Sprintf("        %s: %s\n", key, yamlScalar(val))
 		}
 		b.WriteString(webf("listen", s.Web.Listen))
+		fmt.Fprintf(&b, "        require-auth: %t\n", s.Web.RequireAuth)
 		b.WriteString(webf("tls-cert", s.Web.TLSCert))
 		b.WriteString(webf("tls-key", s.Web.TLSKey))
 	}
@@ -601,8 +605,8 @@ func sharedSummary(s config.ServeConfig) string {
 	return strings.Join(parts, " ")
 }
 
-// authSummary 渲染认证段:多用户报人数,单用户报用户名,两者皆空时明确提示
-// serve 会拒绝启动。
+// authSummary 渲染认证段:多用户报人数,单用户报用户名,两者皆空时说明
+// 默认行为(Web 匿名,WebDAV/SMB 回退 sail/sail)。
 func authSummary(s config.ServeConfig) string {
 	switch {
 	case len(s.Users) > 0:
@@ -610,7 +614,7 @@ func authSummary(s config.ServeConfig) string {
 	case s.User != "" && s.Password != "":
 		return i18n.Tf("single user %s", s.User)
 	default:
-		return i18n.T("(no credentials; serve will refuse to start)")
+		return i18n.T("(no credentials; Web is anonymous, WebDAV/SMB use sail/sail)")
 	}
 }
 
@@ -641,11 +645,20 @@ func smbSummary(s config.ServeConfig) string {
 	return strings.Join(parts, " ")
 }
 
-// webSummary 渲染 Web 资源库层:监听地址与是否启用 TLS。
+// webSummary 渲染 Web 资源库层:监听地址、认证模式与是否启用 TLS。整块未配置
+// (含 require-auth 保持默认 false)时不输出该层。
 func webSummary(s config.ServeConfig) string {
+	if s.Web == (config.WebConfig{}) {
+		return ""
+	}
 	var parts []string
 	if s.Web.Listen != "" {
 		parts = append(parts, "listen="+s.Web.Listen)
+	}
+	if s.Web.RequireAuth {
+		parts = append(parts, "auth=required")
+	} else {
+		parts = append(parts, "auth=anonymous")
 	}
 	if s.Web.TLSCert != "" {
 		parts = append(parts, "tls")

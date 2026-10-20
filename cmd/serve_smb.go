@@ -136,6 +136,9 @@ func runServeSmb(cmd *cobra.Command, _ []string) error {
 	for _, line := range userSpaceLines(s.serveSettings) {
 		fmt.Fprint(os.Stderr, line)
 	}
+	for _, line := range authNoticeLines(s.serveSettings) {
+		fmt.Fprint(os.Stderr, line)
+	}
 	for _, sh := range srv.Shares() {
 		fmt.Fprint(os.Stderr, i18n.Tf("  share %s -> user %s\n", sh.Name, sh.User))
 	}
@@ -224,8 +227,8 @@ func smbMountURLs(listen string, shares []smbfs.Share) []string {
 func init() {
 	serveSmbCmd.Flags().StringVar(&serveSmbOpts.listen, "listen", ":1445", "listen address; 445 is the port SMB clients dial by default but it needs root, so this defaults to a high port and clients name it when mounting")
 	serveSmbCmd.Flags().StringVar(&serveSmbOpts.prefix, "prefix", "", "shared root prefix (mapped to /); out-of-prefix paths are always rejected")
-	serveSmbCmd.Flags().StringVar(&serveSmbOpts.user, "user", "", "NTLM user name (required)")
-	serveSmbCmd.Flags().StringVar(&serveSmbOpts.password, "password", "", "NTLM password (required)")
+	serveSmbCmd.Flags().StringVar(&serveSmbOpts.user, "user", "", "NTLM user name (empty = \"sail\" unless serve.user/serve.users is configured)")
+	serveSmbCmd.Flags().StringVar(&serveSmbOpts.password, "password", "", "NTLM password (empty = \"sail\" unless serve.password/serve.users is configured)")
 	serveSmbCmd.Flags().StringVar(&serveSmbOpts.share, "share", "sail", "share name for the single-user case; in multi-user mode each user gets a share named after them instead")
 	serveSmbCmd.Flags().StringVar(&serveSmbOpts.serverName, "server-name", "SAIL", "the name this server calls itself in the NTLM challenge (clients display it)")
 	serveSmbCmd.Flags().StringVar(&serveSmbOpts.backendMaxSize, "backend-max-object-size", "5TiB", "declared backend per-object limit (S3 has no capability negotiation, it can't be probed)")

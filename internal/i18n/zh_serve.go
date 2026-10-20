@@ -49,8 +49,8 @@ Examples:
 		// serve.go — flags
 		"listen address": "监听地址",
 		"shared root prefix (mapped to /); out-of-prefix paths are always rejected":                                    "共享根前缀(映射为 /);越界路径一律拒绝",
-		"Basic auth username (required)":                                                                               "Basic 认证用户名(必填)",
-		"Basic auth password (required)":                                                                               "Basic 认证密码(必填)",
+		"Basic auth username (empty = \"sail\" unless serve.user/serve.users is configured)":                           "Basic 认证用户名(空 = \"sail\",除非配置了 serve.user/serve.users)",
+		"Basic auth password (empty = \"sail\" unless serve.password/serve.users is configured)":                       "Basic 认证密码(空 = \"sail\",除非配置了 serve.password/serve.users)",
 		"TLS certificate file (supplying it together with --tls-key enables HTTPS)":                                    "TLS 证书文件(与 --tls-key 同时提供即启用 HTTPS)",
 		"TLS private key file (supplying it together with --tls-cert enables HTTPS)":                                   "TLS 私钥文件(与 --tls-cert 同时提供即启用 HTTPS)",
 		"declared backend per-object limit (S3 has no capability negotiation, it can't be probed)":                     "声明的后端单对象上限(S3 无能力协商,不可探测)",
@@ -235,9 +235,9 @@ Examples:
     --user alice --password '***' --share sail
   sail serve smb --profile prod --prefix shared --share sail
     # 然后挂载 smb://host:1445/sail`,
-		"listen address; 445 is the port SMB clients dial by default but it needs root, so this defaults to a high port and clients name it when mounting": "监听地址;445 是 SMB 客户端默认拨的端口,但它是特权端口,故这里默认用高位端口,由客户端在挂载时指定",
-		"NTLM user name (required)": "NTLM 用户名(必填)",
-		"NTLM password (required)":  "NTLM 口令(必填)",
+		"listen address; 445 is the port SMB clients dial by default but it needs root, so this defaults to a high port and clients name it when mounting":                                                                "监听地址;445 是 SMB 客户端默认拨的端口,但它是特权端口,故这里默认用高位端口,由客户端在挂载时指定",
+		"NTLM user name (empty = \"sail\" unless serve.user/serve.users is configured)":                                                                                                                                   "NTLM 用户名(空 = \"sail\",除非配置了 serve.user/serve.users)",
+		"NTLM password (empty = \"sail\" unless serve.password/serve.users is configured)":                                                                                                                                "NTLM 口令(空 = \"sail\",除非配置了 serve.password/serve.users)",
 		"share name for the single-user case; in multi-user mode each user gets a share named after them instead":                                                                                                         "单用户模式下的共享名;多用户模式下每个用户一个共享、共享名即用户名",
 		"the name this server calls itself in the NTLM challenge (clients display it)":                                                                                                                                    "服务端在 NTLM 挑战里自称的名字(客户端界面会显示它)",
 		"per-file size limit, defaults to --backend-max-object-size; over the limit nothing is written, but the client is not told (the check runs at close, and the library ignores that result — see the command help)": "单文件大小上限,默认取 --backend-max-object-size;超限的对象不会落库,但客户端不会被告知(判定发生在关闭句柄时,而库不看那次返回值——详见命令帮助)",
@@ -276,11 +276,17 @@ the same protocol-independent core the other gateways use, so prefix isolation, 
 storage and the delete path are one implementation, not three.
 
 Design boundaries:
-  - Authentication is HTTP Basic against the same serve.users table as WebDAV; browsers keep the
-    credentials for the session, and there is no logout short of closing the browser. Put the
-    gateway behind TLS (--tls-cert/--tls-key) whenever it is not on loopback.
-  - One user = one space: in multi-user mode each user sees only their own prefix, and the quota
-    reported in the UI is that user's serve.users quota.
+  - Anonymous by default: no login is required, so a fresh profile without a serve block works
+    out of the box. Pass --require-auth (or set serve.web.require-auth: true) to require HTTP
+    Basic; credentials then come from serve.users or serve.user/serve.password, falling back to
+    the default sail/sail when neither is configured. Browsers keep Basic credentials for the
+    session and there is no logout short of closing the browser, so require auth and put the
+    gateway behind TLS (--tls-cert/--tls-key) whenever it is not on a trusted network.
+  - If the requested port is already in use, the next free port is tried (up to 20) and the
+    startup banner prints the port actually bound.
+  - One user = one space: with require-auth and multi-user mode each user sees only their own
+    prefix, and the quota reported in the UI is that user's serve.users quota. Anonymous mode
+    serves the base prefix.
   - The browser never receives storage credentials: it only talks to this server.
   - Uploads stream straight into the core (no staging copy); with --chunked-upload on, files
     larger than --chunk-size are stored as chunks under the reserved .sail/ prefix, which the UI
@@ -291,8 +297,8 @@ Design boundaries:
     later release" placeholder and can still be downloaded; dedicated previewers are planned.
 
 Examples:
-  sail serve web --profile prod --listen :9090 --user alice --password '***'
-  sail serve web --profile prod --prefix shared --listen :9090 \
+  sail serve web --profile prod --listen :9090
+  sail serve web --profile prod --prefix shared --require-auth \
     --user alice --password '***' --tls-cert c.pem --tls-key k.pem`: `用浏览器共享某个 bucket:打开 http://主机:端口/ 就是一个媒体库
 (缩略图网格或列表、上传/下载、重命名/删除、新建文件夹、搜索、常见图片/视频/音频/PDF/CSV/
 Markdown/HTML/代码格式预览,以及一条用量条)。共享哪个 bucket 由 profile 决定,用 --profile
@@ -303,11 +309,14 @@ webdav/smb 完全一致。
 协议无关内核,因此前缀隔离、配额、分片存储与删除路径都只有一份实现,而不是三份。
 
 设计边界:
-  - 认证是与 WebDAV 同一张 serve.users 表的 HTTP Basic;浏览器会在会话内保留凭据,
-    除非关闭浏览器否则没有登出。只要不跑在回环地址上,就应把网关放到 TLS 之后
-    (--tls-cert/--tls-key)。
-  - 一个用户一个空间:多用户模式下每人只能看到自己的前缀,界面里显示的配额就是该用户
-    serve.users 里的配额。
+  - 默认匿名:不需要登录,新 profile 即使没有 serve 块也能直接启动。要登录请传
+    --require-auth(或设置 serve.web.require-auth: true);凭据取自 serve.users 或
+    serve.user/serve.password,两者都没配时回退到默认的 sail/sail。浏览器会在会话内
+    保留 Basic 凭据,除非关闭浏览器否则没有登出,所以要求登录时请把网关放到 TLS 之后
+    (--tls-cert/--tls-key),并且只放在可信网络里。
+  - 端口被占用时会向后探测(最多 20 个),启动横幅会打印实际绑定的端口。
+  - 一个用户一个空间:在 require-auth + 多用户模式下每人只能看到自己的前缀,界面里显示的
+    配额就是该用户 serve.users 里的配额;匿名模式展示 base 前缀。
   - 浏览器永远拿不到存储凭据:它只与本服务通信。
   - 上传直接流进内核(不落暂存副本);开启 --chunked-upload 后,超过 --chunk-size 的文件
     以保留前缀 .sail/ 下的分片存储,界面会隐藏它,且「复制公开链接」会拒绝
@@ -317,18 +326,19 @@ webdav/smb 完全一致。
     下载;专用预览器在计划中。
 
 示例:
-  sail serve web --profile prod --listen :9090 --user alice --password '***'
-  sail serve web --profile prod --prefix shared --listen :9090 \
+  sail serve web --profile prod --listen :9090
+  sail serve web --profile prod --prefix shared --require-auth \
     --user alice --password '***' --tls-cert c.pem --tls-key k.pem`,
 
 		// serve_web.go — flags
-		"listen address for the web library (serve.web.listen)":                                             "Web 资源库的监听地址(serve.web.listen)",
-		"HTTP Basic user name (required)":                                                                   "HTTP Basic 用户名(必填)",
-		"HTTP Basic password (required)":                                                                    "HTTP Basic 密码(必填)",
-		"TLS certificate; supply together with --tls-key to serve HTTPS (serve.web.tls-cert)":               "TLS 证书;与 --tls-key 同时提供即启用 HTTPS(serve.web.tls-cert)",
-		"TLS private key; supply together with --tls-cert (serve.web.tls-key)":                              "TLS 私钥;与 --tls-cert 同时提供(serve.web.tls-key)",
-		"per-file size limit, defaults to --backend-max-object-size (serve.max-upload-size)":                "单文件大小上限,默认取 --backend-max-object-size(serve.max-upload-size)",
-		"staging directory used by the core when it has to buffer a write, defaults to the system temp dir": "核心在需要缓冲写入时使用的暂存目录,默认系统临时目录",
+		"listen address for the web library (serve.web.listen)":                                                                                                                                    "Web 资源库的监听地址(serve.web.listen)",
+		"HTTP Basic user name (used only with --require-auth; empty = \"sail\" unless serve.user/serve.users is configured)":                                                                       "HTTP Basic 用户名(仅 --require-auth 时使用;空 = \"sail\",除非配置了 serve.user/serve.users)",
+		"HTTP Basic password (used only with --require-auth; empty = \"sail\" unless serve.password/serve.users is configured)":                                                                    "HTTP Basic 密码(仅 --require-auth 时使用;空 = \"sail\",除非配置了 serve.password/serve.users)",
+		"require HTTP Basic login (default off: anonymous access; credentials come from serve.users or serve.user/serve.password, falling back to sail/sail)":                                      "要求 HTTP Basic 登录(默认关闭:匿名访问;凭据取 serve.users 或 serve.user/serve.password,都没有时回退 sail/sail)",
+		"TLS certificate; supply together with --tls-key to serve HTTPS (serve.web.tls-cert)":                                                                                                      "TLS 证书;与 --tls-key 同时提供即启用 HTTPS(serve.web.tls-cert)",
+		"TLS private key; supply together with --tls-cert (serve.web.tls-key)":                                                                                                                     "TLS 私钥;与 --tls-cert 同时提供(serve.web.tls-key)",
+		"per-file size limit, defaults to --backend-max-object-size (serve.max-upload-size)":                                                                                                       "单文件大小上限,默认取 --backend-max-object-size(serve.max-upload-size)",
+		"staging directory used by the core when it has to buffer a write, defaults to the system temp dir":                                                                                        "核心在需要缓冲写入时使用的暂存目录,默认系统临时目录",
 		"how long a directory listing is cached (e.g. 60s, 10m; 0 disables); your own writes invalidate at once, changes made elsewhere take up to one TTL to appear":                              "目录列表缓存时长(如 60s、10m;0 关闭);自己的写操作立即失效,别处的改动最长一个 TTL 后可见",
 		"directories to keep hot in the background (comma-separated logical paths, e.g. /yiche,/modelImage); each is listed once at startup so the first visit does not pay the full listing cost": "需要后台保热的目录(逗号分隔的逻辑路径,如 /yiche,/modelImage);启动时各列一次,首次访问不再承担完整列举的开销",
 
@@ -336,5 +346,17 @@ webdav/smb 完全一致。
 		"sail web started: %s://%s  bucket=%s profile=%s%s user=%s max-object-size=%s chunked=%s\n": "sail web 已启动: %s://%s  bucket=%s profile=%s%s user=%s 单对象上限=%s 分片=%s\n",
 		"  open in a browser: %s\n": "  在浏览器中打开: %s\n",
 		"no bucket to serve: pass --bucket, set SAIL_BUCKET, or add \"bucket\" to profile %q in the config file — the web library serves a whole bucket, and without one there is nothing to show": "没有可共享的 bucket:请传 --bucket、设置 SAIL_BUCKET,或在配置文件里给 profile %q 添加 \"bucket\" —— Web 资源库展示的是整桶,没有桶就无从展示",
+
+		// 认证默认值与端口探测
+		"anonymous (no login)": "匿名(无需登录)",
+		"  anonymous access: anyone who can reach this address can read and write the bucket; set serve.web.require-auth: true to require a login\n": "  匿名访问已开启:任何能连到这个地址的人都可以读写该 bucket;要启用登录请设置 serve.web.require-auth: true\n",
+		"  no credentials configured: using the default user %q and password %q — set serve.user/serve.password or serve.users to change it\n":       "  未配置凭据:使用默认用户名 %q、默认密码 %q —— 可用 serve.user/serve.password 或 serve.users 修改\n",
+		"  listen %s is in use; using %s\n":      "  监听地址 %s 已被占用,改用 %s\n",
+		"invalid listen address %q: %w":          "监听地址 %q 不合法: %w",
+		"invalid listen port %q":                 "监听端口 %q 不合法",
+		"could not bind %s (tried %d ports): %w": "无法绑定 %s(已尝试 %d 个端口): %w",
+		"require login for the web library (no = anonymous: anyone who can reach the port can read/write)?": "Web 资源库是否要求登录(否 = 匿名:任何能连到端口的人都能读写)?",
+		"anonymous web access: no credentials needed (enable login later with require-auth)":                "Web 匿名访问:不需要配置凭据(以后要登录可打开 require-auth)",
+		"reload: anonymous web mode ignores serve.users; restart with require-auth to apply them":           "热加载:Web 匿名模式不使用 serve.users;要应用用户表请重启并打开 require-auth",
 	})
 }

@@ -75,9 +75,10 @@ sail config setup
 - `endpoint` 为必填项,留空会原地重问
 - `access-key` / `secret-key` 可直接输入明文;回车留空则引用按 profile 派生的环境变量(机制见下方"密钥安全"),写盘后会打印需要 `export` 的变量名
 - 重配已有 profile 时,已配置的明文密钥不回显,回车即保留
-- 网关(`serve:` 块,`serve webdav` 与 `serve smb` 共用)分层引导:先问是否配置,再问要配置哪些服务
-  (`webdav` | `smb` | `both`),然后依次走通用设置(前缀、认证模式——单用户或多用户、chunked-upload、
-  staging-dir),最后逐个服务问各自的专属设置(WebDAV:listen、TLS;SMB:listen、share、server-name)。
+- 网关(`serve:` 块,`serve webdav`、`serve smb` 与 `serve web` 共用)分层引导:先问是否配置,再问要配置哪些服务
+  (`webdav` | `smb` | `web` | `both` | `all`),然后依次走通用设置(前缀、认证模式——单用户或多用户、
+  chunked-upload、staging-dir),最后逐个服务问各自的专属设置(WebDAV:listen、TLS;SMB:listen、share、
+  server-name;Web:listen、require-auth、TLS)。Web 默认匿名;只选 Web 且不要求登录时,向导会跳过凭据提问。
   已有 `serve` 块默认保留,可选追加用户、重新配置或删除;未被选中的服务按原配置保留、不会被清空;
   多用户表随输入即校验(重名、前缀嵌套、quota 语法);向导不提问的字段(尺寸上限、`dir-cache-ttl`、
   `prewarm`)原样保留
@@ -167,9 +168,15 @@ profiles:
         server-name: SAIL   # 服务端在 NTLM 挑战里自称的名字
       web:
         listen: ":9090"     # Web 媒体库自己的端口,同样不继承 serve.listen
+        require-auth: false # false(默认)= 匿名;true = 用 serve.users / user+password 走 HTTP Basic
         # tls-cert: /etc/cert.pem   # 与 tls-key 同时提供即为浏览器启用 HTTPS
         # tls-key: /etc/key.pem
 ```
+
+凭据有明确的默认回退:**Web** 在 `serve.web.require-auth: true` 之前始终匿名;
+**WebDAV/SMB** 必须登录,当 `users` 与 `user`+`password` 都没配置时回退到用户名 `sail` /
+密码 `sail`(启动横幅会醒目告警——除个人环境外请务必改掉)。`user` 或 `password`
+只缺一侧时,缺的那侧独立补成 `sail`,所以只写 `user: alice` 时密码仍是默认值。
 
 ### cdn-domain 说明
 
@@ -376,7 +383,7 @@ sail serve webdav --print-windows-setup
 | `--profile` | 配置的 default-profile | 选择共享哪个 profile:桶取该 profile 的 `bucket`(可被全局 `--bucket` 或 `SAIL_BUCKET` 覆盖);三处都为空时拒绝启动 |
 | `--listen` | `:8080` | 监听地址(`serve.listen`) |
 | `--prefix` | 空 | 共享根前缀(映射为 `/`);越界路径一律拒绝(`serve.prefix`) |
-| `--user` / `--password` | 空 | Basic 认证,**为空拒绝启动**,不允许匿名共享(`serve.user`/`serve.password`)。与 `serve.users` 互斥 |
+| `--user` / `--password` | `sail` / `sail` | Basic 认证(`serve.user`/`serve.password`)。留空的一侧回退为 `sail`;非个人环境请务必都改掉。与 `serve.users` 互斥 |
 | `--tls-cert` / `--tls-key` | 空 | 同时提供即启用 HTTPS(`serve.tls-cert`/`serve.tls-key`) |
 | `--backend-max-object-size` | `5TiB` | 声明的后端单对象上限(S3 无能力协商,不可探测)(`serve.backend-max-object-size`) |
 | `--max-upload-size` | 跟随上一项 | 请求体上限,超限在读满请求体前返回 413 + 可操作指引(`serve.max-upload-size`) |
@@ -599,15 +606,20 @@ sail serve smb --profile prod --listen :1445   # serve.users: alice、bob
 前缀隔离、配额、分片存储与删除路径都只有一份实现,而不是三份。
 
 ```bash
-# 启动(默认 :9090;不在回环地址上时建议开 HTTPS)
-sail serve web --profile prod --listen :9090 \
+# 启动:默认 :9090、默认匿名访问——不需要配 user/password
+sail serve web --profile prod
+
+# 要求登录(HTTP Basic)并启用 HTTPS
+sail serve web --profile prod --require-auth \
   --user alice --password '***' --tls-cert cert.pem --tls-key key.pem
 
 # 只共享桶内某个前缀(映射为 /,越界路径一律拒绝)
-sail serve web --profile prod --prefix shared --user alice --password '***'
+sail serve web --profile prod --prefix shared
 
 # 然后打开 http://host:9090/(开了 TLS 则是 https://…)
 ```
+
+端口被占用时会向后探测(最多 20 个),启动横幅打印实际绑定的地址。
 
 浏览器里能做什么:
 
@@ -630,15 +642,17 @@ sail serve web --profile prod --prefix shared --user alice --password '***'
 | 参数 | 默认值 | 说明(`serve.web.*` 配置键) |
 |---|---|---|
 | `--listen` | `:9090` | 监听地址;刻意不继承 `serve.listen`(`serve.web.listen`) |
+| `--require-auth` | `false` | 要求 HTTP Basic 登录;凭据取 `serve.users` 或 `--user`/`--password`,都没配时回退 `sail`/`sail`(`serve.web.require-auth`) |
 | `--tls-cert` / `--tls-key` | 空 | 同时提供即为浏览器界面启用 HTTPS(`serve.web.tls-cert`/`serve.web.tls-key`) |
 
 ### 边界
 
-- **认证是与 WebDAV 同一张 `serve.users` 表的 HTTP Basic**;浏览器会在会话内保留凭据,除非关闭
-  浏览器否则没有登出。只要不跑在回环地址上,就应把网关放到 TLS 之后。
+- **默认匿名**:不需要登录,新 profile 即使没有 `serve` 块也能直接启动。要登录请打开
+  `--require-auth`(或 `serve.web.require-auth: true`),此时浏览器使用 HTTP Basic 并在会话内保留
+  凭据,除非关闭浏览器否则没有登出。只要不在可信网络里,就应把网关放到 TLS 之后。
 - **浏览器永远拿不到存储凭据**——它只与本服务通信。
-- **一个用户一个空间**:多用户模式下每人只能看到自己的前缀,界面显示的配额就是该用户
-  `serve.users` 里的配额。
+- **一个用户一个空间**:在 `--require-auth` + 多用户模式下每人只能看到自己的前缀,界面显示的配额
+  就是该用户 `serve.users` 里的配额;匿名模式展示共享的 base 前缀。
 - **分片对象会隐藏且不可外链**:列表会过滤保留前缀 `.sail/`;对分片对象「复制链接」会拒绝,
   因为预签名 URL 只会给出 manifest 而不是文件本身。
 - **目录列表有缓存**(`--dir-cache-ttl`,默认 60s);自己的写操作立即失效,别处改动最长一个

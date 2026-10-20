@@ -396,3 +396,92 @@ func TestPresignAndPublicURLCapabilities(t *testing.T) {
 		t.Fatalf("未配置时应 501,得到 %d", resp.StatusCode)
 	}
 }
+
+// ---- 匿名网关(Web 资源库默认模式) --------------------------------
+
+// newAnonymousGateway 复刻 cmd 的匿名装配:单个空间 + Anonymous=true。
+func newAnonymousGateway(t *testing.T, prefix string) *gateway {
+	t.Helper()
+	s3srv := fakes3.New()
+	t.Cleanup(s3srv.Close)
+	s3c, err := client.New(context.Background(), &config.Resolved{
+		Endpoint: s3srv.URL(), AccessKey: "ak", SecretKey: "sk",
+		Region: "us-east-1", PathStyle: true,
+	})
+	if err != nil {
+		t.Fatalf("构造 S3 client 失败: %v", err)
+	}
+	core, err := s3fs.New(s3fs.Config{Client: s3c, Bucket: bucket, Prefix: prefix, StagingDir: t.TempDir()})
+	if err != nil {
+		t.Fatalf("构造 s3fs 失败: %v", err)
+	}
+	qfs := quotafs.New(core, core, 0, 0, nil)
+	fs := webfs.NewFileSystem(qfs, time.Minute, nil)
+	gw, err := webfs.NewServer(webfs.Config{
+		Anonymous:     true,
+		Users:         []webfs.UserEntry{{Name: "anonymous", FileSystem: fs, Prefix: prefix}},
+		Profile:       "test",
+		Bucket:        bucket,
+		MaxUploadSize: 1 << 20,
+	})
+	if err != nil {
+		t.Fatalf("构造匿名网关失败: %v", err)
+	}
+	ts := httptest.NewServer(gw)
+	t.Cleanup(ts.Close)
+	return &gateway{ts: ts, s3: s3srv, s3c: s3c, qfs: qfs}
+}
+
+func TestAnonymousGatewayServesWithoutCredentials(t *testing.T) {
+	g := newAnonymousGateway(t, "")
+	// g.do 固定带 Basic 头;这里直接用 http.Get 验证「不带凭据也能用」。
+	resp, err := http.Get(g.ts.URL + "/api/session")
+	if err != nil {
+		t.Fatalf("匿名请求失败: %v", err)
+	}
+	data, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("匿名 session = %d %s", resp.StatusCode, data)
+	}
+	var sess map[string]any
+	if err := json.Unmarshal(data, &sess); err != nil {
+		t.Fatalf("session 不是 JSON: %v", err)
+	}
+	if sess["anonymous"] != true || sess["user"] != "" {
+		t.Errorf("匿名会话标记不对: %v", sess)
+	}
+
+	// 上传/列目录同样不需要凭据。
+	req, _ := http.NewRequest(http.MethodPut, g.ts.URL+"/api/file?path=/hello.txt", strings.NewReader("hi"))
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("匿名上传失败: %v", err)
+	}
+	data, _ = io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("匿名上传 = %d %s", resp.StatusCode, data)
+	}
+	resp, err = http.Get(g.ts.URL + "/api/list?path=/")
+	if err != nil {
+		t.Fatalf("匿名列目录失败: %v", err)
+	}
+	data, _ = io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK || !strings.Contains(string(data), "hello.txt") {
+		t.Fatalf("匿名列目录 = %d %s", resp.StatusCode, data)
+	}
+}
+
+func TestAnonymousGatewayRequiresExactlyOneSpace(t *testing.T) {
+	if _, err := webfs.NewServer(webfs.Config{Anonymous: true}); err == nil {
+		t.Error("匿名网关缺少空间应报错")
+	}
+	fs := webfs.NewFileSystem(nil, time.Minute, nil)
+	if _, err := webfs.NewServer(webfs.Config{Anonymous: true, Users: []webfs.UserEntry{
+		{Name: "a", FileSystem: fs}, {Name: "b", FileSystem: fs},
+	}}); err == nil {
+		t.Error("匿名网关多个空间应报错")
+	}
+}

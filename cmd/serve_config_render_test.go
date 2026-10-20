@@ -174,7 +174,7 @@ func TestRenderProfileServeBlockWebRoundtrip(t *testing.T) {
 			"prod": {
 				Endpoint: "https://s3.example.com", AccessKey: "ak", SecretKey: "sk", Bucket: "b",
 				Serve: config.ServeConfig{Web: config.WebConfig{
-					Listen: ":9090", TLSCert: "/wc.pem", TLSKey: "/wk.pem",
+					Listen: ":9090", TLSCert: "/wc.pem", TLSKey: "/wk.pem", RequireAuth: true,
 				}},
 			},
 		},
@@ -182,6 +182,9 @@ func TestRenderProfileServeBlockWebRoundtrip(t *testing.T) {
 	rendered := renderConfigFile(cfg)
 	if !strings.Contains(rendered, "      web:\n") || !strings.Contains(rendered, `        listen: ":9090"`) {
 		t.Fatalf("Web 配置块未渲染:\n%s", rendered)
+	}
+	if !strings.Contains(rendered, "        require-auth: true\n") {
+		t.Errorf("Web require-auth 未渲染:\n%s", rendered)
 	}
 
 	p := t.TempDir() + "/config.yaml"
@@ -196,7 +199,7 @@ func TestRenderProfileServeBlockWebRoundtrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Resolve: %v", err)
 	}
-	if got := r.Serve.Web; got.Listen != ":9090" || got.TLSCert != "/wc.pem" || got.TLSKey != "/wk.pem" {
+	if got := r.Serve.Web; got.Listen != ":9090" || got.TLSCert != "/wc.pem" || got.TLSKey != "/wk.pem" || !got.RequireAuth {
 		t.Errorf("Web 配置往返错误: %+v", got)
 	}
 }
