@@ -770,6 +770,7 @@
     <div class="preview-top">
       <button class="pbtn" v-if="preview.arc && (preview.arcEntry || canArcUp)" :title="preview.arcEntry ? tt.archiveBack : tt.archiveUp" @click="arcBack" v-html="icons.chevronLeft"></button>
       <div v-if="preview.arc" ref="arcTopCrumb" class="nm arc-top-crumb" :title="arcTopTitle">
+        <span class="arc-top-ico" v-html="icons.archive"></span>
         <template v-for="(c, i) in arcCrumbs" :key="i">
           <span v-if="i" class="arc-sep">/</span>
           <button class="arc-crumb-btn" :class="{ cur: i === arcCrumbs.length - 1 }" :title="c.name" @click="arcGoCrumb(i)">{{ c.name }}</button>
@@ -2251,7 +2252,34 @@
         return makeArchiveLevel(name, { zip }, list, total, truncated);
       }
 
+      function archiveBaseName(name) {
+        return String(name || "").split("/").pop().replace(/\.(tar\.gz|tgz|tar|zip|gz)$/i, "");
+      }
+
+      function stripArchiveRootDir(name, entries) {
+        if (!entries || !entries.length) return entries;
+        let root = "";
+        for (const e of entries) {
+          if (!e.name) continue;
+          const top = e.name.split("/")[0];
+          if (!top) continue;
+          if (root && top !== root) return entries;
+          root = top;
+        }
+        if (!root || root.toLowerCase() !== archiveBaseName(name).toLowerCase()) return entries;
+        const prefix = root + "/";
+        const hasDir = entries.some((e) => e.isDir && e.name === root) || entries.some((e) => e.name.startsWith(prefix));
+        if (!hasDir) return entries;
+        return entries
+          .filter((e) => e.name !== root)
+          .map((e) => ({ ...e, name: e.name.slice(prefix.length) }))
+          .filter((e) => e.name);
+      }
+
       function makeArchiveLevel(name, handle, entries, total, truncated) {
+        // 很多压缩工具会先套一层与压缩包同名的目录。展示时直接把这层剥掉,
+        // 否则用户会先看到一个同名文件夹,还要再点一次才能看到真正的目录。
+        entries = stripArchiveRootDir(name, entries);
         entries.sort((a, b) => {
           if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
           return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
