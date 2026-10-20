@@ -426,6 +426,15 @@ button, input { font-family: inherit; }
   flex: none; z-index: 5; background: var(--bg-glass-2); backdrop-filter: blur(16px); box-shadow: 0 1px 0 var(--line);
 }
 .preview-top .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 700; }
+.preview-top .nm.arc-top-crumb {
+  display: flex; align-items: center; gap: 2px;
+  overflow-x: auto; overflow-y: hidden; white-space: nowrap;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.preview-top .nm.arc-top-crumb::-webkit-scrollbar { display: none; }
+.preview-top .arc-top-crumb .arc-crumb-btn { flex: none; font-size: 12.5px; font-weight: 600; }
+.preview-top .arc-top-crumb .arc-sep { flex: none; }
+.preview-top .arc-top-file { flex: none; color: var(--accent); font-weight: 700; }
 .preview-top .cnt { font-size: 11px; color: var(--fg-dim); flex: none; font-variant-numeric: tabular-nums; }
 .pbtn {
   appearance: none; border: 1px solid var(--line-strong); background: transparent; color: var(--fg); min-width: 28px; height: 26px;
@@ -692,7 +701,7 @@ button, input { font-family: inherit; }
 .arc-crumb-btn:hover { color: var(--accent); background: var(--accent-soft); }
 .arc-crumb-btn.cur { color: var(--fg); }
 .arc-sep { flex: none; color: var(--fg-faint); opacity: .7; }
-.arc-sum { color: var(--fg-faint); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arc-sum { flex: 1; min-width: 0; color: var(--fg-faint); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pv-archive-list { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
 .pv-archive-row {
   display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 14px;

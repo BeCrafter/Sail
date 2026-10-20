@@ -769,7 +769,17 @@
   <div v-if="preview" class="preview">
     <div class="preview-top">
       <button class="pbtn" v-if="preview.arcEntry" :title="tt.archiveBack" @click="backToArchive" v-html="icons.chevronLeft"></button>
-      <div class="nm" :title="preview.entry.name">{{ preview.entry.name }}</div>
+      <div v-if="preview.arc" ref="arcTopCrumb" class="nm arc-top-crumb" :title="arcTopTitle">
+        <template v-for="(c, i) in arcCrumbs" :key="i">
+          <span v-if="i" class="arc-sep">/</span>
+          <button class="arc-crumb-btn" :class="{ cur: i === arcCrumbs.length - 1 }" :title="c.name" @click="arcGoCrumb(i)">{{ c.name }}</button>
+        </template>
+        <template v-if="preview.arcEntry">
+          <span class="arc-sep">/</span>
+          <span class="arc-top-file">{{ preview.arcEntry.base }}</span>
+        </template>
+      </div>
+      <div v-else class="nm" :title="preview.entry.name">{{ preview.entry.name }}</div>
       <template v-if="preview.kind === 'pdf'">
         <button class="pbtn" :title="tt.prev" @click="pdfGo(-1)" v-html="icons.chevronLeft"></button>
         <span class="cnt pv-page">{{ preview.page || 1 }} / {{ preview.pages || 1 }}</span>
@@ -802,15 +812,7 @@
         <div class="pv-archive-head">
           <button v-if="canArcUp" class="arc-up" :title="tt.archiveUp" @click="arcGoUp" v-html="icons.chevronLeft"></button>
           <span class="ico" v-html="icons.archive"></span>
-          <div class="arc-bar">
-            <div class="arc-crumb">
-              <template v-for="(c, i) in arcCrumbs" :key="i">
-                <span v-if="i" class="arc-sep">/</span>
-                <button class="arc-crumb-btn" :class="{ cur: i === arcCrumbs.length - 1 }" :title="c.name" @click="arcGoCrumb(i)">{{ c.name }}</button>
-              </template>
-            </div>
-            <div class="arc-sum">{{ arcSummary }}</div>
-          </div>
+          <span class="arc-sum">{{ arcSummary }}</span>
         </div>
         <div class="pv-archive-list">
           <div v-for="(e, i) in arcRows" :key="i" class="pv-archive-row" tabindex="0"
@@ -1103,6 +1105,27 @@
         }
         return out;
       });
+
+      // 顶部横条的面包屑:文件预览时把文件名作为最后一段,不再和左侧重复。
+      const arcTopTitle = computed(() => {
+        const parts = arcCrumbs.value.map((c) => c.name);
+        if (preview.value && preview.value.arcEntry) parts.push(preview.value.arcEntry.base);
+        return parts.join(" / ");
+      });
+      const arcTopCrumb = ref(null);
+      watch(
+        () => {
+          const pvNow = preview.value;
+          if (!pvNow || !pvNow.arc) return "";
+          return (pvNow.arc.dir || "") + "|" + pvNow.arc.levels.length + "|" + (pvNow.arcEntry ? pvNow.arcEntry.fullName : "");
+        },
+        () => {
+          nextTick(() => {
+            const el = arcTopCrumb.value;
+            if (el) el.scrollLeft = el.scrollWidth;
+          });
+        }
+      );
 
       const canArcUp = computed(() => {
         const arc = preview.value && preview.value.arc;
@@ -3259,7 +3282,7 @@
         docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
         drawer, searchOpen, searchBox, theme, themeTitle,
         atRoot, crumbs, filtered, previewables, previewIndex, usedPct, quotaClass, connClass, connText, canLink,
-        arcRows, arcCrumbs, canArcUp, arcSummary, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad, pdfThumbnails,
+        arcRows, arcCrumbs, arcTopCrumb, arcTopTitle, canArcUp, arcSummary, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad, pdfThumbnails,
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel, capsText,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
         go, goUp, setListMode, reload, open, openPreview, select, onCardClick, onPressStart, cancelPress,
