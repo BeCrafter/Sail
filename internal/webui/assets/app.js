@@ -543,15 +543,11 @@
           </div>
         </div>
 
-        <div class="side-foot">
-          <button class="conn-btn" :class="connClass" :title="connText" :disabled="loading" @click="reload">
-            <i class="dot"></i><span>{{ connText }}</span>
-          </button>
-          <span class="grow"></span>
-          <a class="repo-link" href="https://github.com/BeCrafter/Sail" target="_blank" rel="noopener" :title="tt.openSource">
-            <span v-html="icons.github"></span><span>BeCrafter / Sail</span>
-          </a>
-        </div>
+      </div>
+      <div class="side-foot">
+        <button class="conn-btn" :class="connClass" :title="connText" :disabled="loading" @click="reload">
+          <span>{{ connText }}</span>
+        </button>
       </div>
     </aside>
 
@@ -700,6 +696,9 @@
           <span class="quota-bar" :class="quotaClass" v-if="quota.limit > 0"><i :style="{ width: usedPct + '%' }"></i></span>
         </span>
         <button class="sb-link" @click="toggleLang">{{ tt.language }}</button>
+        <a class="repo-link" href="https://github.com/BeCrafter/Sail" target="_blank" rel="noopener" :title="tt.openSource">
+          <span v-html="icons.github"></span><span>BeCrafter / Sail</span>
+        </a>
       </div>
     </div>
 
