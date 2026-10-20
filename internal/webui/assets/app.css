@@ -580,7 +580,8 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
 }
 .settings-advanced-toggle::before { content: "+"; width: 14px; color: var(--fg-faint); }
 .settings-advanced.open .settings-advanced-toggle::before { content: "−"; }
-.settings-advanced-head .checkline { font-size: 11.5px; }
+.settings-advanced-toolbar { display: flex; justify-content: flex-end; padding-top: 4px; margin-bottom: 10px; }
+.settings-advanced-toolbar .checkline { font-size: 11.5px; }
 .settings-advanced-body { padding-bottom: 14px; }
 .settings-advanced-grid { margin-top: 2px; }
 .settings-advanced-grid .field input:disabled { background: var(--bg-soft); }
@@ -1052,7 +1053,8 @@ body.no-scroll { overflow: hidden; }
   .settings-form-grid { grid-template-columns: 1fr; gap: 12px; }
   .settings-form .field-wide { grid-column: auto; }
   .settings-advanced-head { gap: 8px; }
-  .settings-advanced-head .checkline { font-size: 11px; }
+  .settings-advanced-toolbar { padding-top: 2px; margin-bottom: 8px; }
+  .settings-advanced-toolbar .checkline { font-size: 11px; }
   .list-row { gap: 8px; padding: 8px; }
   .list-row .sz, .list-row .tm { display: none; }
   .row-actions { gap: 2px; }
