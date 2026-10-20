@@ -503,11 +503,11 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .preview-top .nm.arc-top-crumb::-webkit-scrollbar { display: none; }
-.preview-top .arc-top-ico { flex: none; display: inline-flex; align-items: center; color: var(--accent); margin-right: 1px; }
+.preview-top .arc-top-ico { flex: none; display: inline-flex; align-items: center; color: var(--fg-dim); margin-right: 1px; }
 .preview-top .arc-top-ico svg { width: 14px; height: 14px; display: block; }
 .preview-top .arc-top-crumb .arc-crumb-btn { flex: none; font-size: 12.5px; font-weight: 600; }
 .preview-top .arc-top-crumb .arc-sep { flex: none; }
-.preview-top .arc-top-file { flex: none; color: var(--accent); font-weight: 700; }
+.preview-top .arc-top-file { flex: none; color: var(--fg); font-weight: 700; }
 .preview-top .cnt { font-size: 11px; color: var(--fg-dim); flex: none; font-variant-numeric: tabular-nums; }
 .pbtn {
   appearance: none; border: 1px solid var(--line-strong); background: transparent; color: var(--fg); min-width: 28px; height: 26px;
@@ -782,7 +782,7 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
   color: var(--fg-dim); font: inherit; font-weight: 600; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; cursor: pointer; border-radius: 4px;
 }
-.arc-crumb-btn:hover { color: var(--accent); }
+.arc-crumb-btn:hover { color: var(--fg); }
 .arc-crumb-btn.cur { color: var(--fg); }
 .arc-sep { flex: none; color: var(--fg-faint); opacity: .7; }
 .pv-archive-list { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
