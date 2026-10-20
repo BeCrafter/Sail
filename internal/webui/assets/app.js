@@ -880,7 +880,10 @@
             </div>
             <div class="settings-chunk-row">
               <label class="checkline"><input type="checkbox" v-model="settingsForm.serveChunkedUpload" />{{ tt.settingsChunkedUpload }}</label>
-              <label class="field" v-if="settingsForm.serveChunkedUpload"><span>{{ tt.settingsChunkSize }}</span><input v-model="settingsForm.serveChunkSize" autocomplete="off" spellcheck="false" placeholder="4GiB" /></label>
+              <label class="field"><span>{{ tt.settingsChunkSize }}</span>
+                <input v-model="settingsForm.serveChunkSize" :disabled="!settingsForm.serveChunkedUpload"
+                       autocomplete="off" spellcheck="false" placeholder="4GiB" />
+              </label>
             </div>
           </details>
           <div class="settings-form-actions">
