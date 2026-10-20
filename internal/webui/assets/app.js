@@ -739,13 +739,17 @@
         </div>
         <div class="side-note" v-else-if="!selected.dir">{{ coarse ? tt.selectHintTouch : tt.selectHint }}</div>
       </div>
-      <div class="detail-actions">
-        <button class="btn primary" @click="open(selected)">
-          <span v-html="selected.dir ? icons.folderOpen : icons.eye"></span>{{ selected.dir ? tt.open : tt.preview }}
+      <div class="detail-footer">
+        <div class="detail-actions">
+          <button class="btn primary" @click="open(selected)">
+            <span v-html="selected.dir ? icons.folderOpen : icons.eye"></span>{{ selected.dir ? tt.open : tt.preview }}
+          </button>
+          <button class="btn" v-if="!selected.dir" :title="tt.download" @click="downloadEntry(selected)" v-html="icons.download"></button>
+          <button class="btn" :title="tt.rename" @click="renameEntry(selected)" v-html="icons.edit"></button>
+        </div>
+        <button class="detail-danger" :title="tt.del" @click="deleteEntry(selected)">
+          <span v-html="icons.trash"></span>{{ tt.del }}
         </button>
-        <button class="btn" v-if="!selected.dir" :title="tt.download" @click="downloadEntry(selected)" v-html="icons.download"></button>
-        <button class="btn" :title="tt.rename" @click="renameEntry(selected)" v-html="icons.edit"></button>
-        <button class="btn danger" :title="tt.del" @click="deleteEntry(selected)" v-html="icons.trash"></button>
       </div>
     </aside>
   </div>

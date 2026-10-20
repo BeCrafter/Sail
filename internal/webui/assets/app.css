@@ -447,8 +447,20 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
 .link-row:hover { border-color: var(--line-strong); color: var(--fg); }
 .link-row .txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .link-row svg { width: 14px; height: 14px; flex: none; }
-.detail-actions { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); display: flex; gap: 7px; flex: none; }
+.detail-footer {
+  flex: none; display: flex; flex-direction: column; gap: 7px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+}
+.detail-actions { display: flex; gap: 7px; }
 .detail-actions .btn { flex: 1; justify-content: center; }
+.detail-danger {
+  appearance: none; border: 0; background: transparent; align-self: flex-end;
+  display: inline-flex; align-items: center; gap: 5px; padding: 1px 2px;
+  color: var(--danger); opacity: .78; cursor: pointer; font: 500 11.5px var(--font);
+}
+.detail-danger:hover { opacity: 1; text-decoration: underline; }
+.detail-danger svg { width: 13px; height: 13px; display: block; flex: none; }
 .detail-close { display: inline-flex; position: absolute; top: 8px; right: 10px; }
 
 /* ---------- 状态栏 ---------- */
