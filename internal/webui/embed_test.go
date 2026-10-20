@@ -57,6 +57,16 @@ func TestHandlerServesAssetsWithTypes(t *testing.T) {
 		{"/logo.svg", "image/svg+xml"},
 		{"/lib/vue.global.prod.js", "text/javascript"},
 		{"/lib/highlight.min.js", "text/javascript"},
+		{"/lib/jszip.min.js", "text/javascript"},
+		{"/lib/docx-preview.min.js", "text/javascript"},
+		{"/lib/exceljs.min.js", "text/javascript"},
+		{"/lib/pptx-preview.bundle.js", "text/javascript"},
+		{"/lib/echarts.min.js", "text/javascript"},
+		{"/lib/three.bundle.min.js", "text/javascript"},
+		{"/lib/pako.min.js", "text/javascript"},
+		{"/lib/UTIF.js", "text/javascript"},
+		{"/lib/ag-psd.bundle.js", "text/javascript"},
+		{"/lib/heic2any.min.js", "text/javascript"},
 	}
 	h := webui.Handler()
 	for _, c := range cases {

@@ -21,7 +21,7 @@
 - **Checksum & auth**: `checksum` (md5/sha256 computation and comparison), `presign` presigned URLs, public access URLs based on a CDN domain
 - **WebDAV gateway**: `serve webdav` mounts a bucket as a network drive — macOS Finder / Windows Explorer read and write directly, with zero client install
 - **SMB gateway**: `serve smb` exports a bucket (or a prefix of it) as an SMB2 share — the same zero-install story over the protocol Finder and Explorer mount natively
-- **Web media library**: `serve web` opens a bucket in the browser — thumbnail grid/list, upload/download, rename/delete, new folder, search, and previews of common image/video/audio/PDF/Office/archive formats, with the same users, quotas and prefix isolation as the other gateways
+- **Web media library**: `serve web` opens a bucket in the browser — thumbnail grid/list, upload/download, rename/delete, new folder, search, and previews for images, video, audio, PDF, Office documents, 3D models, PSD/TIFF/HEIC images and archives, with the same users, quotas and prefix isolation as the other gateways
 - **Multi-profile config**: prod / test / staging environment switching, keys can reference env vars to avoid plaintext
 - **Cross-platform**: macOS / Linux, single binary, download and use; shell auto-completion (zsh / bash / fish)
 
@@ -687,9 +687,11 @@ What you get in the browser:
 - **Operate**: rename (files and directories), delete, new folder, and "copy link" — a CDN public
   URL when `cdn-domain` is configured, otherwise a presigned URL.
 - **Preview**: images (zoom/pan), video, audio, PDF (rendered by the browser's built-in viewer),
-  CSV tables, Markdown, sandboxed HTML, syntax-highlighted source code, and plain text.
-  Office documents, 3D models, archives and PSD/TIFF/HEIC currently show a "coming in a later
-  release" placeholder; they can still be downloaded.
+  CSV tables, Markdown, sandboxed HTML, syntax-highlighted source code and plain text; Office
+  documents (DOCX/XLSX/XLSM/PPTX; legacy .doc/.xls/.ppt prompt you to re-save), 3D models
+  (GLB/GLTF/OBJ/STL), archives (ZIP/TAR/TAR.GZ/TGZ/GZ entry listing and per-file download),
+  PSD, multi-page TIFF and HEIC/HEIF. The parsers are lazy-loaded, so the first page still ships
+  only the UI itself; formats without a preview (e.g. RAR/7z) fall back to a download button.
 
 ### Flags
 

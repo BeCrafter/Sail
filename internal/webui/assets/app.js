@@ -30,8 +30,23 @@
       deleted: "已删除", renamed: "已重命名", created: "已创建", copied: "链接已复制", 
       uploadFailed: "上传失败", uploading: "上传中", uploaded: "上传完成", 
       close: "关闭", prev: "上一个", next: "下一个", zoomIn: "放大", zoomOut: "缩小", reset: "重置",
-      noPreview: "该文件暂时无法预览", unsupportedPreview: "此格式的预览将在后续版本提供,可先下载查看",
-      binary: "二进制文件", tooBigToPreview: "文件较大,已跳过文本预览,请下载查看",
+      noPreview: "该文件暂时无法预览", unsupportedPreview: "此格式暂不支持在线预览,可先下载查看",
+      previewFailed: "预览加载失败", loadingPreview: "正在加载预览…",
+      tooBigOffice: "文件超过 40 MB,无法在线预览,请下载查看",
+      tooBigModel: "文件超过 120 MB,无法在线预览,请下载查看",
+      tooBigImage: "文件超过 80 MB,无法在线预览,请下载查看",
+      imageTooLarge: "图片像素尺寸过大,无法在浏览器中解码,请下载查看",
+      tooBigArchive: "压缩包超过 120 MB,无法在线预览,请下载解压",
+      archiveTooBigUnpacked: "解压后体积过大,无法在浏览器中预览,请下载后用本地工具解压",
+      legacyDoc: "旧版 .doc 暂不支持在线预览,请另存为 .docx 后打开",
+      legacyPpt: "旧版 .ppt 暂不支持在线预览,请另存为 .pptx 后打开",
+      legacyXls: "旧版 .xls 暂不支持在线预览,请另存为 .xlsx 后打开",
+      modelHint: "拖动旋转 · 滚轮缩放 · 双击复位视角", modelHintTouch: "单指旋转 · 双指缩放 · 双击复位", resetView: "复位视角",
+      xlsxTruncated: "内容过大,仅预览前 {rows} 行 × {cols} 列(原表 {totalRows}×{totalCols})",
+      xlsxReady: "就绪", xlsxSum: "求和={sum}", xlsxAvg: "平均={avg}", xlsxCount: "计数={count}", xlsxNumCount: "数值={n}",
+      archiveUnsupported: "此压缩格式暂不支持在线预览,可先下载后用本地工具解压",
+      archiveEmpty: "压缩包为空", archiveSummary: "{n} 个文件 · 解压后 {size}", archiveTooMany: "条目过多,仅显示前 {n} 个",
+      binary: "二进制文件",
       textTruncated: "(仅显示前 4 MB)", pdfHint: "PDF 由浏览器原生阅读器打开",
       copyFailed: "复制失败", needAuth: "登录已失效,请刷新页面重新输入账号",
       NotFound: "对象不存在", exists: "同名对象或目录已存在", too_large: "文件超过服务端上限",
@@ -41,9 +56,10 @@
       publicLink: "公开链接", presignLink: "预签名链接", linkUnavailable: "未配置 CDN / 预签名能力",
       connectionOk: "已连接", connectionLost: "连接异常", sortName: "名称", sortSize: "大小", sortTime: "时间",
       path: "路径", itemsCount: "共 {n} 项", selectHint: "右键或点 ⋯ 打开操作菜单",
+      selectHintTouch: "点 ⋯ 打开操作菜单", detailEmpty: "选择一个文件,在这里查看详情",
       markdown: "Markdown", csv: "表格", table: "表格", code: "代码", htmlPreview: "网页预览",
       folder: "文件夹", file: "文件", settings: "显示设置", language: "English",
-      dropDisabled: "上传中,请稍候", archiveSoon: "压缩包预览将在后续版本提供",
+      dropDisabled: "上传中,请稍候",
     },
     en: {
       appTitle: "Sail Media",
@@ -65,8 +81,23 @@
       deleted: "Deleted", renamed: "Renamed", created: "Created", copied: "Link copied",
       uploadFailed: "Upload failed", uploading: "Uploading", uploaded: "Uploaded",
       close: "Close", prev: "Previous", next: "Next", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Reset",
-      noPreview: "This file cannot be previewed", unsupportedPreview: "Preview for this format is coming in a later release; download it for now",
-      binary: "Binary file", tooBigToPreview: "File is large, skipped the text preview; download it instead",
+      noPreview: "This file cannot be previewed", unsupportedPreview: "Preview is not available for this format; download it instead",
+      previewFailed: "Failed to load preview", loadingPreview: "Loading preview…",
+      tooBigOffice: "File is larger than 40 MB and cannot be previewed here; download it instead",
+      tooBigModel: "File is larger than 120 MB and cannot be previewed here; download it instead",
+      tooBigImage: "File is larger than 80 MB and cannot be previewed here; download it instead",
+      imageTooLarge: "The image has too many pixels to decode in the browser; download it instead",
+      tooBigArchive: "Archive is larger than 120 MB and cannot be previewed here; download and extract it",
+      archiveTooBigUnpacked: "The archive is too large after decompression to preview here; download and extract it locally",
+      legacyDoc: "Legacy .doc is not supported. Save it as .docx and reopen.",
+      legacyPpt: "Legacy .ppt is not supported. Save it as .pptx and reopen.",
+      legacyXls: "Legacy .xls is not supported. Save it as .xlsx and reopen.",
+      modelHint: "Drag to rotate · scroll to zoom · double-click to reset", modelHintTouch: "Drag to rotate · pinch to zoom · double-tap to reset", resetView: "Reset view",
+      xlsxTruncated: "Large sheet: showing the first {rows} rows × {cols} columns (of {totalRows}×{totalCols}). Download for the full file.",
+      xlsxReady: "Ready", xlsxSum: "Sum={sum}", xlsxAvg: "Avg={avg}", xlsxCount: "Count={count}", xlsxNumCount: "Numeric={n}",
+      archiveUnsupported: "This archive format cannot be previewed here; download it and extract it locally",
+      archiveEmpty: "The archive is empty", archiveSummary: "{n} files · {size} uncompressed", archiveTooMany: "Too many entries; showing the first {n}",
+      binary: "Binary file",
       textTruncated: "(showing the first 4 MB)", pdfHint: "PDF is rendered by the browser's built-in viewer",
       copyFailed: "Copy failed", needAuth: "Session expired — reload the page and sign in again",
       NotFound: "Not found", exists: "A file or folder with that name already exists", too_large: "File exceeds the server limit",
@@ -76,9 +107,10 @@
       publicLink: "Public link", presignLink: "Presigned link", linkUnavailable: "CDN / presign not configured",
       connectionOk: "Connected", connectionLost: "Connection problem", sortName: "Name", sortSize: "Size", sortTime: "Time",
       path: "Path", itemsCount: "{n} items", selectHint: "Right-click or press ⋯ for actions",
+      selectHintTouch: "Tap ⋯ for actions", detailEmpty: "Select a file to see its details here",
       markdown: "Markdown", csv: "Spreadsheet", table: "Table", code: "Code", htmlPreview: "HTML preview",
       folder: "Folder", file: "File", settings: "Settings", language: "中文",
-      dropDisabled: "Upload in progress, please wait", archiveSoon: "Archive preview is coming in a later release",
+      dropDisabled: "Upload in progress, please wait",
     },
   };
 
@@ -133,10 +165,12 @@
     md: "md", markdown: "md",
     csv: "csv", tsv: "csv",
     html: "html", htm: "html",
-    docx: "office", doc: "office", xlsx: "office", xls: "office", pptx: "office", ppt: "office",
-    zip: "archive", tar: "archive", gz: "archive", tgz: "archive", bz2: "archive", xz: "archive", "7z": "archive",
+    docx: "docx", doc: "legacyDoc", xlsx: "xlsx", xlsm: "xlsx", xls: "legacyXls",
+    pptx: "pptx", ppt: "legacyPpt",
+    zip: "archive", tar: "archive", gz: "archive", tgz: "archive", bz2: "archive", xz: "archive",
+    "7z": "archive", rar: "archive", zst: "archive",
     glb: "model", gltf: "model", obj: "model", stl: "model",
-    psd: "psd", psb: "psd", tif: "convert", tiff: "convert", heic: "convert", heif: "convert",
+    psd: "psd", psb: "psd", tif: "tiff", tiff: "tiff", heic: "heic", heif: "heic",
     json: "code", jsonc: "code", yaml: "code", yml: "code", xml: "code", toml: "code", ini: "code",
     js: "code", mjs: "code", cjs: "code", ts: "code", tsx: "code", jsx: "code", vue: "code", svelte: "code",
     go: "code", py: "code", rb: "code", rs: "code", java: "code", kt: "code", swift: "code", php: "code",
@@ -175,15 +209,17 @@
 
   const KIND_ICON = {
     dir: "folder", image: "image", video: "video", audio: "audio", pdf: "pdf", md: "file",
-    csv: "office", html: "code", office: "office", archive: "archive", model: "model",
-    psd: "image", convert: "image", code: "code", text: "file",
+    csv: "office", html: "code", docx: "office", xlsx: "office", pptx: "office",
+    legacyDoc: "office", legacyXls: "office", legacyPpt: "office", archive: "archive", model: "model",
+    psd: "image", tiff: "image", heic: "image", code: "code", text: "file",
   };
 
   // 磁贴配色类:KIND_CLASS 按预览类别,EXT_BADGE 是角标用的短名(长扩展名压缩成通用写法)。
   const KIND_CLASS = {
     dir: "t-folder", image: "t-image", video: "t-video", audio: "t-audio", pdf: "t-pdf",
-    md: "t-md", csv: "t-csv", html: "t-html", office: "t-doc", archive: "t-archive",
-    model: "t-model", psd: "t-psd", convert: "t-psd", code: "t-code", text: "t-file",
+    md: "t-md", csv: "t-csv", html: "t-html", docx: "t-doc", xlsx: "t-sheet", pptx: "t-slide",
+    legacyDoc: "t-doc", legacyXls: "t-sheet", legacyPpt: "t-slide", archive: "t-archive",
+    model: "t-model", psd: "t-psd", tiff: "t-image", heic: "t-image", code: "t-code", text: "t-file",
   };
 
   const EXT_BADGE = {
@@ -246,6 +282,61 @@
     remove: (paths, recursive) => request("/api/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paths, recursive: !!recursive }) }),
     url: (p, mode) => request("/api/url?path=" + encPath(p) + "&mode=" + mode),
   };
+
+  // ---------------- 懒加载的内置预览库 ----------------
+  // Office/3D 预览库体积较大(合计约 3.8 MB),只有真正打开对应文件时才加载,
+  // 不拖慢资源库首屏。全部随二进制内置,离线/内网同样可用。
+  const LIB_REGISTRY = {
+    jszip: { src: "/lib/jszip.min.js", global: "JSZip" },
+    docx: { src: "/lib/docx-preview.min.js", global: "docx", deps: ["jszip"] },
+    exceljs: { src: "/lib/exceljs.min.js", global: "ExcelJS" },
+    echarts: { src: "/lib/echarts.min.js", global: "echarts" }, // pptx-preview 的图表节点
+    pptx: { src: "/lib/pptx-preview.bundle.js", global: "pptxPreview", deps: ["echarts"] },
+    pako: { src: "/lib/pako.min.js", global: "pako" }, // UTIF 解压 TIFF / 解压 tar.gz
+    utif: { src: "/lib/UTIF.js", global: "UTIF", deps: ["pako"] },
+    agpsd: { src: "/lib/ag-psd.bundle.js", global: "agPsd" },
+    heic: { src: "/lib/heic2any.min.js", global: "heic2any" },
+  };
+  const libCache = new Map();
+  function loadLib(name) {
+    const spec = LIB_REGISTRY[name];
+    if (!spec) return Promise.reject(new Error("unknown library: " + name));
+    if (!libCache.has(name)) {
+      const p = (async () => {
+        if (spec.deps) await Promise.all(spec.deps.map(loadLib));
+        if (window[spec.global]) return window[spec.global];
+        await new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = spec.src;
+          s.onload = () => (window[spec.global] ? resolve() : reject(new Error("library failed: " + name)));
+          s.onerror = () => { s.remove(); reject(new Error("library failed: " + name)); };
+          document.head.appendChild(s);
+        });
+        return window[spec.global];
+      })();
+      p.catch(() => libCache.delete(name));
+      libCache.set(name, p);
+    }
+    return libCache.get(name);
+  }
+
+  // ES module(three.js 与 xlsx 网格工具)走动态 import;同样做单例缓存和失败重试。
+  const moduleCache = new Map();
+  function loadModule(path) {
+    if (!moduleCache.has(path)) {
+      const p = import(new URL(path, location.origin).href);
+      p.catch(() => moduleCache.delete(path));
+      moduleCache.set(path, p);
+    }
+    return moduleCache.get(path);
+  }
+
+  const PV_OFFICE_MAX = 40 * 1024 * 1024;
+  const PV_MODEL_MAX = 120 * 1024 * 1024;
+  const PV_IMAGE_MAX = 80 * 1024 * 1024;
+  const PV_IMAGE_PIXELS = 80 * 1000 * 1000;
+  const PV_ARCHIVE_MAX = 120 * 1024 * 1024;
+  const PV_ARCHIVE_UNPACKED_MAX = 512 * 1024 * 1024;
 
   // 解析 CSV/TSV:支持引号包裹、引号转义、字段内换行。
   function parseDelimited(text, delim) {
@@ -510,38 +601,45 @@
       </div>
     </div>
 
-    <aside class="detail" v-if="selected">
-      <div class="detail-preview" :class="thumbClass(selected)">
-        <span v-if="selected.dir" class="thumb-ico" v-html="icons.folder"></span>
-        <template v-else>
-          <span class="thumb-ico" v-if="!selected._thumb || !selected._thumbLoaded || selected._thumbFailed" v-html="iconFor(selected)"></span>
-          <img v-if="selected._thumb" :src="selected._thumb" :alt="selected.name"
-               :class="{ loaded: selected._thumbLoaded && !selected._thumbFailed }"
-               @load="selected._thumbLoaded = true" @error="selected._thumbFailed = true" />
-        </template>
-      </div>
-      <div class="detail-head">
-        <button class="btn ico detail-close" :title="tt.close" @click="select(null)" v-html="icons.close"></button>
-        <div class="nm">{{ selected.name }}</div>
-        <div class="kind">{{ kindLabel(selected) }}</div>
-      </div>
-      <div class="detail-body">
-        <div class="kv" v-if="!selected.dir"><span class="k">{{ tt.size }}</span><span class="v">{{ fmtSize(selected.size) }}</span></div>
-        <div class="kv"><span class="k">{{ tt.modified }}</span><span class="v">{{ fmtTime(selected.mtime) || '—' }}</span></div>
-        <div class="kv"><span class="k">{{ tt.path }}</span><span class="v mono">{{ selected.path }}</span></div>
-        <div class="kv" v-if="selected.contentType"><span class="k">Content-Type</span><span class="v mono">{{ selected.contentType }}</span></div>
-        <div class="link-row" v-if="!selected.dir && canLink" @click="copyLink(selected)">
-          <span v-html="icons.link"></span><span class="txt">{{ tt.publicLink }}</span>
+    <div class="detail-scrim" v-if="selected" @click="select(null)"></div>
+    <aside class="detail" :class="{ empty: !selected }">
+      <template v-if="selected">
+        <div class="detail-preview" :class="thumbClass(selected)">
+          <span v-if="selected.dir" class="thumb-ico" v-html="icons.folder"></span>
+          <template v-else>
+            <span class="thumb-ico" v-if="!selected._thumb || !selected._thumbLoaded || selected._thumbFailed" v-html="iconFor(selected)"></span>
+            <img v-if="selected._thumb" :src="selected._thumb" :alt="selected.name"
+                 :class="{ loaded: selected._thumbLoaded && !selected._thumbFailed }"
+                 @load="selected._thumbLoaded = true" @error="selected._thumbFailed = true" />
+          </template>
         </div>
-        <div class="side-note" v-else-if="!selected.dir">{{ tt.selectHint }}</div>
-      </div>
-      <div class="detail-actions">
-        <button class="btn primary" @click="open(selected)">
-          <span v-html="selected.dir ? icons.folderOpen : icons.eye"></span>{{ selected.dir ? tt.open : tt.preview }}
-        </button>
-        <button class="btn" v-if="!selected.dir" :title="tt.download" @click="downloadEntry(selected)" v-html="icons.download"></button>
-        <button class="btn" :title="tt.rename" @click="renameEntry(selected)" v-html="icons.edit"></button>
-        <button class="btn danger" :title="tt.del" @click="deleteEntry(selected)" v-html="icons.trash"></button>
+        <div class="detail-head">
+          <button class="btn ico detail-close" :title="tt.close" @click="select(null)" v-html="icons.close"></button>
+          <div class="nm">{{ selected.name }}</div>
+          <div class="kind">{{ kindLabel(selected) }}</div>
+        </div>
+        <div class="detail-body">
+          <div class="kv" v-if="!selected.dir"><span class="k">{{ tt.size }}</span><span class="v">{{ fmtSize(selected.size) }}</span></div>
+          <div class="kv"><span class="k">{{ tt.modified }}</span><span class="v">{{ fmtTime(selected.mtime) || '—' }}</span></div>
+          <div class="kv"><span class="k">{{ tt.path }}</span><span class="v mono">{{ selected.path }}</span></div>
+          <div class="kv" v-if="selected.contentType"><span class="k">Content-Type</span><span class="v mono">{{ selected.contentType }}</span></div>
+          <div class="link-row" v-if="!selected.dir && canLink" @click="copyLink(selected)">
+            <span v-html="icons.link"></span><span class="txt">{{ tt.publicLink }}</span>
+          </div>
+          <div class="side-note" v-else-if="!selected.dir">{{ coarse ? tt.selectHintTouch : tt.selectHint }}</div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn primary" @click="open(selected)">
+            <span v-html="selected.dir ? icons.folderOpen : icons.eye"></span>{{ selected.dir ? tt.open : tt.preview }}
+          </button>
+          <button class="btn" v-if="!selected.dir" :title="tt.download" @click="downloadEntry(selected)" v-html="icons.download"></button>
+          <button class="btn" :title="tt.rename" @click="renameEntry(selected)" v-html="icons.edit"></button>
+          <button class="btn danger" :title="tt.del" @click="deleteEntry(selected)" v-html="icons.trash"></button>
+        </div>
+      </template>
+      <div class="detail-empty" v-else>
+        <span class="empty-ico" v-html="icons.file"></span>
+        <div>{{ tt.detailEmpty }}</div>
       </div>
     </aside>
   </div>
@@ -577,8 +675,14 @@
   <div v-if="preview" class="preview">
     <div class="preview-top">
       <div class="nm" :title="preview.entry.name">{{ preview.entry.name }}</div>
-      <span class="cnt" v-if="previewIndex >= 0">{{ previewIndex + 1 }} / {{ previewables.length }}</span>
+      <template v-if="(preview.kind === 'pptx' && preview.pages) || (preview.decoded && preview.pages > 1)">
+        <button class="pbtn" :title="tt.prev" @click="previewGo(-1)" v-html="icons.chevronLeft"></button>
+        <span class="cnt pv-page">{{ preview.page + 1 }} / {{ preview.pages }}</span>
+        <button class="pbtn" :title="tt.next" @click="previewGo(1)" v-html="icons.chevronRight"></button>
+      </template>
+      <span class="cnt" v-else-if="previewIndex >= 0">{{ previewIndex + 1 }} / {{ previewables.length }}</span>
       <button class="pbtn pct" v-if="preview.kind === 'image'" :title="tt.reset" @click="resetZoom">{{ Math.round(pv.zoom * 100) }}%</button>
+      <button class="pbtn" v-if="preview.kind === 'model'" :title="tt.resetView" @click="resetModelCamera" v-html="icons.reset"></button>
       <button class="pbtn" v-if="preview.kind === 'image'" :title="tt.zoomOut" @click="zoom(0.8)" v-html="icons.zoomOut"></button>
       <button class="pbtn" v-if="preview.kind === 'image'" :title="tt.zoomIn" @click="zoom(1.25)" v-html="icons.zoomIn"></button>
       <button class="pbtn" v-if="canLink" :title="tt.copyLink" @click="copyLink(preview.entry)" v-html="icons.link"></button>
@@ -586,10 +690,15 @@
       <button class="pbtn" :title="tt.close" @click="closePreview" v-html="icons.close"></button>
     </div>
 
-    <div class="stage" :class="{ light: preview.kind !== 'image' }" @wheel.prevent="onWheel"
+    <div class="stage" :class="{ light: preview.kind !== 'image' }" @wheel="onWheel"
          @touchstart.passive="onTouchStart" @touchend="onTouchEnd" @dblclick="preview.kind === 'image' && toggleZoom()"
          @click.self="closePreview">
-      <template v-if="preview.kind === 'image'">
+      <div class="pv-empty" v-if="preview.message">
+        <div class="empty-ico" v-html="icons.warn"></div>
+        <div>{{ preview.message }}</div>
+        <button class="btn" @click="downloadEntry(preview.entry)"><span v-html="icons.download"></span>{{ tt.download }}</button>
+      </div>
+      <template v-else-if="preview.kind === 'image'">
         <img :src="preview.url" :alt="preview.entry.name" :class="{ zoomed: pv.zoom > 1 }"
              :style="{ transform: 'translate(' + pv.x + 'px,' + pv.y + 'px) scale(' + pv.zoom + ')' }"
              @pointerdown="onImgDown" @pointermove="onImgMove" @pointerup="onImgUp" @pointercancel="onImgUp"
@@ -603,6 +712,29 @@
       <audio v-else-if="preview.kind === 'audio'" :src="preview.url" controls autoplay></audio>
       <div class="frame-wrap" v-else-if="preview.kind === 'pdf'"><iframe :src="preview.url" :title="preview.entry.name"></iframe></div>
       <div class="frame-wrap" v-else-if="preview.kind === 'html' && preview.html"><iframe sandbox :srcdoc="preview.html" :title="preview.entry.name"></iframe></div>
+      <div class="pv-office docx" v-else-if="preview.kind === 'docx'" ref="docxHost"></div>
+      <div class="pv-office xlsx" v-else-if="preview.kind === 'xlsx'" ref="xlsxHost"></div>
+      <div class="pv-office pptx" v-else-if="preview.kind === 'pptx'" ref="pptxHost"></div>
+      <div class="pv-model" v-else-if="preview.kind === 'model'">
+        <canvas ref="modelCanvas" class="pv-canvas" :title="coarse ? tt.modelHintTouch : tt.modelHint" @dblclick="resetModelCamera"></canvas>
+        <div class="pv-model-hint">{{ coarse ? tt.modelHintTouch : tt.modelHint }}</div>
+      </div>
+      <div class="pv-archive" v-else-if="preview.kind === 'archive'">
+        <div class="pv-archive-head">
+          <span class="ico" v-html="icons.archive"></span>
+          <span class="txt">{{ preview.archiveSummary }}</span>
+        </div>
+        <div class="pv-archive-list">
+          <div v-for="(e, i) in preview.archive" :key="i" class="pv-archive-row" :class="{ dir: e.isDir }">
+            <span class="ico" v-html="e.isDir ? icons.folder : icons.file"></span>
+            <span class="nm" :title="e.name">{{ e.name }}</span>
+            <span class="sz" v-if="!e.isDir">{{ fmtSize(e.size) }}</span>
+            <button v-if="!e.isDir" class="lnk" @click="downloadArchiveEntry(e)">{{ tt.download }}</button>
+          </div>
+          <div v-if="!preview.archive.length" class="pv-archive-empty">{{ tt.archiveEmpty }}</div>
+        </div>
+        <div v-if="preview.archiveTruncated" class="pv-archive-note">{{ tt.archiveTooMany.replace('{n}', '2000') }}</div>
+      </div>
       <div class="table-wrap" v-else-if="preview.kind === 'csv' && preview.table">
         <table>
           <thead><tr><th v-for="(c, i) in preview.table[0]" :key="i">{{ c }}</th></tr></thead>
@@ -619,11 +751,15 @@
         <div>{{ tt.unsupportedPreview }}</div>
         <button class="btn" @click="downloadEntry(preview.entry)"><span v-html="icons.download"></span>{{ tt.download }}</button>
       </div>
+      <div class="pv-loading" v-if="preview.loading">
+        <span class="spin"></span>
+        <span>{{ preview.progressText || tt.loadingPreview }}</span>
+      </div>
       <div class="trunc" v-if="preview.truncated">{{ tt.textTruncated }}</div>
     </div>
 
-    <button class="pv-nav left" v-if="previewIndex > 0" :title="tt.prev" @click="stepPreview(-1)" v-html="icons.chevronLeft"></button>
-    <button class="pv-nav right" v-if="previewIndex >= 0 && previewIndex < previewables.length - 1" :title="tt.next" @click="stepPreview(1)" v-html="icons.chevronRight"></button>
+    <button class="pv-nav left" v-if="previewIndex > 0 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.prev" @click="stepPreview(-1)" v-html="icons.chevronLeft"></button>
+    <button class="pv-nav right" v-if="previewIndex >= 0 && previewIndex < previewables.length - 1 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.next" @click="stepPreview(1)" v-html="icons.chevronRight"></button>
   </div>
 
   <!-- 上传队列 -->
@@ -672,6 +808,28 @@
       const lang = ref(localStorage.getItem("sail.lang") || (String(navigator.language || "").toLowerCase().startsWith("zh") ? "zh-CN" : "en"));
       const preview = ref(null);
       const pv = reactive({ zoom: 1, x: 0, y: 0, dragging: false, sx: 0, sy: 0, ox: 0, oy: 0 });
+      // Office / 3D 预览的挂载点与运行时资源(同一时间只可能有一个预览打开)。
+      const docxHost = ref(null);
+      const xlsxHost = ref(null);
+      const pptxHost = ref(null);
+      const modelCanvas = ref(null);
+      let previewToken = 0;       // 换文件/关闭时作废进行中的异步加载
+      let officeDispose = null;   // docx/xlsx 的清理函数
+      let pptxApi = null;         // pptx-preview 模块
+      let pptxViewer = null;      // pptx-preview 实例
+      let pptxBuf = null;
+      let pptxAspect = 16 / 9;
+      let pptxSize = { w: 0, h: 0 };
+      let pptxRemounting = false;
+      let pptxResizeTimer = 0;
+      let xlsxSheets = null;
+      let xlsxUnbind = null;
+      let modelHandle = null;     // { dispose, resetCamera }
+      let modelObserver = null;
+      let docxObserver = null;
+      let decodedState = null;    // TIFF/PSD/HEIC 解码后的画布/页数据
+      let decodedURL = "";        // 解码图片的 object URL,关闭时 revoke
+      let archiveHandle = null;   // 压缩包句柄(zip 或解压后的 tar 字节)
       const quota = ref(null);
       const drawer = ref(false);
       const searchOpen = ref(false);
@@ -765,11 +923,9 @@
         if (it.dir) return "t-folder";
         const ext = extOf(it.name);
         if (ext === "docx" || ext === "doc" || ext === "rtf") return "t-doc";
-        if (ext === "xlsx" || ext === "xls") return "t-sheet";
+        if (ext === "xlsx" || ext === "xlsm" || ext === "xls") return "t-sheet";
         if (ext === "pptx" || ext === "ppt") return "t-slide";
-        const k = kindOf(it);
-        if (k === "office") return "t-doc";
-        return KIND_CLASS[k] || "t-file";
+        return KIND_CLASS[kindOf(it)] || "t-file";
       }
 
       // badgeOf 是磁贴右上角的类型角标(大写扩展名);目录与无扩展名不给角标。
@@ -977,12 +1133,74 @@
       async function openPreview(it) {
         if (!it) return;
         const kind = kindOf(it);
+        const token = ++previewToken;
+        disposePreviewResources();
         preview.value = {
           entry: it, kind: kind || "none", url: fileURL(it.path), text: "", lines: [],
           highlighted: "", html: "", table: null, truncated: false, error: false,
+          loading: false, message: "", page: 0, pages: 0, progress: -1, progressText: "",
+          archive: [], archiveSummary: "", archiveTruncated: false, decoded: false,
         };
         pv.zoom = 1; pv.x = 0; pv.y = 0;
-        if (!kind || ["image", "video", "audio", "pdf"].includes(kind) || kind === "office" || kind === "archive" || kind === "model" || kind === "psd" || kind === "convert") return;
+
+        // 旧版二进制 Office 格式没有可靠的纯 JS 解析器:明确提示另存为新格式,
+        // 而不是丢一个永远转圈的空壳。
+        if (kind === "legacyDoc" || kind === "legacyPpt" || kind === "legacyXls") {
+          preview.value.message = tt.value[kind];
+          return;
+        }
+
+        if (kind === "docx" || kind === "xlsx" || kind === "pptx") {
+          if (it.size > PV_OFFICE_MAX) {
+            preview.value.message = tt.value.tooBigOffice;
+            return;
+          }
+          preview.value.loading = true;
+          await nextTick();
+          if (token !== previewToken) return;
+          const job = kind === "docx" ? mountDocx : kind === "xlsx" ? mountXlsx : mountPptx;
+          job(it, token).catch((e) => failPreview(token, e));
+          return;
+        }
+
+        if (kind === "model") {
+          if (it.size > PV_MODEL_MAX) {
+            preview.value.message = tt.value.tooBigModel;
+            return;
+          }
+          preview.value.loading = true;
+          await nextTick();
+          if (token !== previewToken) return;
+          mountModel(it, token).catch((e) => failPreview(token, e));
+          return;
+        }
+
+        // PSD / TIFF / HEIC 浏览器不能直接显示,先在本地解码成位图再复用图片预览。
+        if (kind === "psd" || kind === "tiff" || kind === "heic") {
+          if (it.size > PV_IMAGE_MAX) {
+            preview.value.message = tt.value.tooBigImage;
+            return;
+          }
+          preview.value.loading = true;
+          await nextTick();
+          if (token !== previewToken) return;
+          mountDecodedImage(it, kind, token).catch((e) => failPreview(token, e));
+          return;
+        }
+
+        if (kind === "archive") {
+          if (it.size > PV_ARCHIVE_MAX) {
+            preview.value.message = tt.value.tooBigArchive;
+            return;
+          }
+          preview.value.loading = true;
+          await nextTick();
+          if (token !== previewToken) return;
+          mountArchive(it, token).catch((e) => failPreview(token, e));
+          return;
+        }
+
+        if (!kind || ["image", "video", "audio", "pdf"].includes(kind)) return;
 
         // 文本类预览:先看大小,避免把几百 MB 的日志拉进浏览器。
         const MAX = 4 * 1024 * 1024;
@@ -993,6 +1211,7 @@
           const res = await fetch(preview.value.url, { credentials: "same-origin" });
           if (!res.ok) throw new Error("HTTP " + res.status);
           const text = await res.text();
+          if (token !== previewToken) return;
           const cut = text.length > MAX ? text.slice(0, MAX) : text;
           preview.value.text = cut;
           preview.value.truncated = preview.value.truncated || text.length > MAX;
@@ -1010,9 +1229,912 @@
             preview.value.lines = cut.split("\n");
           }
         } catch (e) {
-          preview.value.error = true;
+          if (token === previewToken) {
+            preview.value.message = tt.value.previewFailed + (e && e.message ? ": " + e.message : "");
+          }
         }
       }
+
+      // ---- Office / 3D 预览:按需加载库、独立挂载、关闭时彻底释放 ----
+      function disposePreviewResources() {
+        if (officeDispose) { try { officeDispose(); } catch { /* ignore */ } officeDispose = null; }
+        if (docxObserver) { try { docxObserver.disconnect(); } catch { /* ignore */ } docxObserver = null; }
+        if (modelObserver) { try { modelObserver.disconnect(); } catch { /* ignore */ } modelObserver = null; }
+        if (pptxViewer) { try { pptxViewer.destroy(); } catch { /* ignore */ } pptxViewer = null; }
+        if (xlsxUnbind) { try { xlsxUnbind(); } catch { /* ignore */ } xlsxUnbind = null; }
+        if (modelHandle) { try { modelHandle.dispose(); } catch { /* ignore */ } modelHandle = null; }
+        if (pptxResizeTimer) { clearTimeout(pptxResizeTimer); pptxResizeTimer = 0; }
+        pptxApi = null;
+        pptxBuf = null;
+        pptxSize = { w: 0, h: 0 };
+        xlsxSheets = null;
+        decodedState = null;
+        archiveHandle = null;
+        if (decodedURL) {
+          try { URL.revokeObjectURL(decodedURL); } catch { /* ignore */ }
+          decodedURL = "";
+        }
+      }
+
+      function failPreview(token, e) {
+        if (token !== previewToken || !preview.value) return;
+        preview.value.loading = false;
+        preview.value.message = tt.value.previewFailed + (e && e.message ? ": " + e.message : "");
+      }
+
+      async function fetchPreviewBuffer(it, token, limit) {
+        const res = await fetch(fileURL(it.path), { credentials: "same-origin" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const buf = await res.arrayBuffer();
+        if (token === previewToken && limit && buf.byteLength > limit) {
+          throw new Error(tt.value.tooBigOffice);
+        }
+        return buf;
+      }
+
+      // DOCX:docx-preview 渲染分页纸面,再做 CJK 字体/行高修补与「缩到容器宽度」。
+      async function mountDocx(it, token) {
+        try {
+          const [docxLib, JSZip, fonts] = await Promise.all([
+            loadLib("docx"), loadLib("jszip"), loadModule("/lib/preview_docx_fonts.js"),
+          ]);
+          const buf = await fetchPreviewBuffer(it, token, PV_OFFICE_MAX);
+          if (token !== previewToken) return;
+          const theme = await readDocxTheme(JSZip, fonts, buf);
+          if (token !== previewToken) return;
+          const host = docxHost.value;
+          if (!host) throw new Error("preview host missing");
+          host.innerHTML = "";
+          await docxLib.renderAsync(buf, host, null, {
+            className: "docx", inWrapper: true, ignoreWidth: false, breakPages: true,
+          });
+          if (token !== previewToken) return;
+          fonts.patchDocxPreview(host, theme);
+          applyDocxFit(host, fonts);
+          if (typeof ResizeObserver !== "undefined") {
+            docxObserver = new ResizeObserver(() => applyDocxFit(host, fonts));
+            docxObserver.observe(host);
+          }
+          preview.value.loading = false;
+        } catch (e) {
+          failPreview(token, e);
+        }
+      }
+
+      async function readDocxTheme(JSZip, fonts, buf) {
+        try {
+          const zip = await JSZip.loadAsync(buf);
+          const theme = zip.file("word/theme/theme1.xml");
+          const styles = zip.file("word/styles.xml");
+          return {
+            ...(theme ? fonts.themeEastAsiaFonts(await theme.async("text")) : {}),
+            defaultParagraph: styles ? fonts.defaultParagraphFont(await styles.async("text")) : "",
+          };
+        } catch {
+          return {};
+        }
+      }
+
+      function applyDocxFit(host, fonts) {
+        if (!host) return;
+        const wrap = host.querySelector(".docx-wrapper") || host;
+        const page = host.querySelector("section.docx") || host.querySelector(".docx-wrapper > .docx");
+        if (!page) return;
+        wrap.style.zoom = "1";
+        const cs = window.getComputedStyle(host);
+        const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+        const avail = Math.max(0, host.clientWidth - pad);
+        const pageW = page.offsetWidth || page.getBoundingClientRect().width || 0;
+        const z = fonts && fonts.docxFitZoom ? fonts.docxFitZoom(pageW, avail) : 1;
+        wrap.style.zoom = String(z || 1);
+      }
+
+      // XLSX:ExcelJS 解析 + 只读网格(与 vanor 预览同一套表格工具),支持多表切换、
+      // 单元格选区、公式栏、行列统计与复制。
+      async function mountXlsx(it, token) {
+        try {
+          const [ExcelJS, JSZip, px] = await Promise.all([
+            loadLib("exceljs"), loadLib("jszip"), loadModule("/lib/preview_xlsx.js"),
+          ]);
+          const buf = await fetchPreviewBuffer(it, token, PV_OFFICE_MAX);
+          if (token !== previewToken) return;
+          const wb = new ExcelJS.Workbook();
+          await wb.xlsx.load(buf);
+          if (token !== previewToken) return;
+          const sheets = px.workbookToSheets(wb);
+          if (!sheets.length) throw new Error("empty workbook");
+
+          // 浮动图片是可选增强:解析失败不影响表格主体。
+          try {
+            const pxi = await loadModule("/lib/preview_xlsx_images.js");
+            const zip = await JSZip.loadAsync(buf);
+            const entries = {};
+            await Promise.all(Object.entries(zip.files).map(async ([p, f]) => {
+              if (f.dir) return;
+              if (!/^(xl\/|\[Content_Types\]\.xml)/.test(p)) return;
+              entries[p] = await f.async(/\.(png|jpe?g|gif|webp|bmp)$/i.test(p) ? "uint8array" : "string");
+            }));
+            px.mergeSheetImages(sheets, pxi.collectXlsxImages(entries));
+          } catch (e) {
+            console.warn("[xlsx images]", e);
+          }
+          if (token !== previewToken) return;
+
+          const host = xlsxHost.value;
+          if (!host) throw new Error("preview host missing");
+          host.innerHTML = px.sheetsToHtml(sheets, 0);
+          const note = host.querySelector(".pv-xlsx-note[data-truncated]");
+          if (note) {
+            const s = sheets.find((x) => x.truncated) || sheets[0];
+            note.textContent = tt.value.xlsxTruncated
+              .replace("{rows}", s.rows).replace("{cols}", s.cols)
+              .replace("{totalRows}", s.totalRows).replace("{totalCols}", s.totalCols);
+          }
+          xlsxSheets = sheets;
+          xlsxUnbind = bindXlsx(host, sheets, px);
+          preview.value.loading = false;
+        } catch (e) {
+          failPreview(token, e);
+        }
+      }
+
+      // 表格交互:切表、点选/拖选、方向键移动、复制、公式栏与选区统计。
+      function bindXlsx(host, sheets, px) {
+        const root = host.querySelector(".pv-xlsx");
+        if (!root) return null;
+        let sel = null;
+        let dragging = false;
+
+        const activeSheet = () => {
+          const tab = root.querySelector(".pv-xlsx-tab.active");
+          return tab ? Number(tab.getAttribute("data-sheet")) || 0 : 0;
+        };
+        const range = () => {
+          if (!sel) return null;
+          return {
+            r0: Math.min(sel.r0, sel.r1), c0: Math.min(sel.c0, sel.c1),
+            r1: Math.max(sel.r0, sel.r1), c1: Math.max(sel.c0, sel.c1),
+          };
+        };
+        const paintFx = () => {
+          const nameEl = root.querySelector("[data-fx-name]");
+          const valEl = root.querySelector("[data-fx-val]");
+          const status = root.querySelector("[data-xlsx-status]");
+          const g = sel ? sheets[sel.sheet] : null;
+          if (!sel || !g) {
+            if (nameEl) nameEl.textContent = "";
+            if (valEl) { valEl.textContent = ""; valEl.removeAttribute("title"); }
+            if (status) status.textContent = tt.value.xlsxReady;
+            return;
+          }
+          if (nameEl) nameEl.textContent = px.formatCellRef(sel.ar, sel.ac);
+          const cell = g.cells && g.cells[sel.ar - 1] ? g.cells[sel.ar - 1][sel.ac - 1] : null;
+          const text = cell && !cell.skip ? String(cell.text == null ? "" : cell.text) : "";
+          if (valEl) { valEl.textContent = text; valEl.title = text; }
+          if (status) {
+            const st = px.selectionStats(g, range());
+            const parts = [];
+            if (st.numericCount > 0) {
+              parts.push(tt.value.xlsxSum.replace("{sum}", fmtStat(st.sum)));
+              if (st.numericCount > 1) parts.push(tt.value.xlsxAvg.replace("{avg}", fmtStat(st.avg)));
+              parts.push(tt.value.xlsxNumCount.replace("{n}", st.numericCount));
+            }
+            parts.push(tt.value.xlsxCount.replace("{count}", st.count));
+            status.textContent = parts.join("  ");
+          }
+        };
+        const paint = () => {
+          root.querySelectorAll(".pv-xlsx-sel, .pv-xlsx-active").forEach((el) => {
+            el.classList.remove("pv-xlsx-sel", "pv-xlsx-active");
+          });
+          if (!sel) return paintFx();
+          const g = sheets[sel.sheet];
+          const r = range();
+          const panel = root.querySelector('.pv-xlsx-panel[data-sheet="' + sel.sheet + '"]');
+          if (g && panel && r) {
+            panel.querySelectorAll("td[data-r][data-c]").forEach((td) => {
+              const rr = +td.getAttribute("data-r");
+              const cc = +td.getAttribute("data-c");
+              if (rr >= r.r0 && rr <= r.r1 && cc >= r.c0 && cc <= r.c1) td.classList.add("pv-xlsx-sel");
+              if (rr === sel.ar && cc === sel.ac) td.classList.add("pv-xlsx-active");
+            });
+          }
+          paintFx();
+        };
+        const fmtStat = (n) => {
+          if (!Number.isFinite(n)) return "";
+          const a = Math.abs(n);
+          if (a >= 1e9 || (a > 0 && a < 1e-6)) return String(n);
+          return String(Math.round(n * 1000) / 1000);
+        };
+        const hit = (target) => {
+          if (!target || !target.closest) return null;
+          const td = target.closest("td[data-r][data-c]");
+          if (td) {
+            const r = +td.getAttribute("data-r");
+            const c = +td.getAttribute("data-c");
+            const o = px.clampToOriginCell(sheets[activeSheet()], r, c);
+            return { kind: "cell", r, c, ar: o.r, ac: o.c };
+          }
+          const col = target.closest("th.pv-xlsx-colh[data-c]");
+          if (col) return { kind: "col", c: +col.getAttribute("data-c") };
+          const row = target.closest("th.pv-xlsx-rowh[data-r]");
+          if (row) return { kind: "row", r: +row.getAttribute("data-r") };
+          if (target.closest("th.pv-xlsx-corner")) return { kind: "corner" };
+          return null;
+        };
+
+        root.querySelectorAll(".pv-xlsx-tab").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const i = btn.getAttribute("data-sheet");
+            root.querySelectorAll(".pv-xlsx-tab").forEach((b) => b.classList.toggle("active", b === btn));
+            root.querySelectorAll(".pv-xlsx-panel").forEach((p) => {
+              p.classList.toggle("active", p.getAttribute("data-sheet") === i);
+            });
+            sel = null;
+            paint();
+          });
+        });
+
+        const onDown = (e) => {
+          if (e.button != null && e.button !== 0) return;
+          if (e.target.closest && e.target.closest(".pv-xlsx-tab")) return;
+          if (!e.target.closest || !e.target.closest(".pv-xlsx-scroll")) return;
+          const h = hit(e.target);
+          if (!h) return;
+          const g = sheets[activeSheet()];
+          if (!g) return;
+          e.preventDefault();
+          try { root.focus({ preventScroll: true }); } catch { /* ignore */ }
+          const sheet = activeSheet();
+          if (h.kind === "cell") {
+            sel = { sheet, r0: h.r, c0: h.c, r1: h.r, c1: h.c, ar: h.ar, ac: h.ac };
+          } else if (h.kind === "col") {
+            sel = { sheet, r0: 1, c0: h.c, r1: g.rows, c1: h.c, ar: 1, ac: h.c };
+          } else if (h.kind === "row") {
+            sel = { sheet, r0: h.r, c0: 1, r1: h.r, c1: g.cols, ar: h.r, ac: 1 };
+          } else {
+            sel = { sheet, r0: 1, c0: 1, r1: g.rows, c1: g.cols, ar: 1, ac: 1 };
+          }
+          dragging = true;
+          paint();
+        };
+        const onMove = (e) => {
+          if (!dragging || !sel) return;
+          const el = document.elementFromPoint && document.elementFromPoint(e.clientX, e.clientY);
+          const h = hit(el);
+          if (!h || h.kind !== "cell") return;
+          sel.r1 = h.r;
+          sel.c1 = h.c;
+          paint();
+        };
+        const onUp = () => { dragging = false; };
+        const onKey = (e) => {
+          if (!preview.value || preview.value.kind !== "xlsx") return;
+          const g = sheets[activeSheet()];
+          if (!g) return;
+          const mod = e.metaKey || e.ctrlKey;
+          if (mod && e.key.toLowerCase() === "c" && sel) {
+            e.preventDefault();
+            e.stopPropagation();
+            copyText(px.selectionToTsv(g, range()))
+              .then(() => toast(tt.value.copied, "", "ok"))
+              .catch(() => toast(tt.value.copyFailed, "", "err"));
+            return;
+          }
+          if (mod && e.key.toLowerCase() === "a") {
+            e.preventDefault();
+            e.stopPropagation();
+            sel = { sheet: activeSheet(), r0: 1, c0: 1, r1: g.rows, c1: g.cols, ar: 1, ac: 1 };
+            paint();
+            return;
+          }
+          if (e.key === "Escape") {
+            if (!sel) return;
+            e.preventDefault();
+            e.stopPropagation();
+            sel = null;
+            paint();
+            return;
+          }
+          if (!sel) return;
+          const map = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+          const d = map[e.key];
+          if (!d) return;
+          e.preventDefault();
+          e.stopPropagation();
+          let ar = Math.max(1, Math.min(g.rows, sel.ar + d[0]));
+          let ac = Math.max(1, Math.min(g.cols, sel.ac + d[1]));
+          while (g.rowHidden && g.rowHidden[ar - 1] && ar > 1 && ar < g.rows) ar += d[0];
+          while (g.colHidden && g.colHidden[ac - 1] && ac > 1 && ac < g.cols) ac += d[1];
+          const o = px.clampToOriginCell(g, ar, ac);
+          if (e.shiftKey) {
+            sel.r1 = o.r;
+            sel.c1 = o.c;
+          } else {
+            sel = { sheet: sel.sheet, r0: o.r, c0: o.c, r1: o.r, c1: o.c, ar: o.r, ac: o.c };
+          }
+          paint();
+        };
+
+        root.addEventListener("pointerdown", onDown);
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+        document.addEventListener("pointercancel", onUp);
+        root.addEventListener("keydown", onKey);
+        paint();
+        return () => {
+          root.removeEventListener("pointerdown", onDown);
+          document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
+          document.removeEventListener("pointercancel", onUp);
+          root.removeEventListener("keydown", onKey);
+        };
+      }
+
+      // PPTX:pptx-preview 逐页渲染;先修掉 pptxgenjs 常见的幽灵 Content-Type 条目。
+      async function mountPptx(it, token) {
+        try {
+          const [api, JSZip] = await Promise.all([loadLib("pptx"), loadLib("jszip")]);
+          const raw = await fetchPreviewBuffer(it, token, PV_OFFICE_MAX);
+          if (token !== previewToken) return;
+          const buf = await sanitizePptx(JSZip, raw);
+          if (token !== previewToken) return;
+          const host = pptxHost.value;
+          if (!host) throw new Error("preview host missing");
+          pptxApi = api;
+          pptxBuf = buf;
+          pptxSize = { w: 0, h: 0 };
+          await remountPptx(host, token, true);
+          preview.value.loading = false;
+        } catch (e) {
+          failPreview(token, e);
+        }
+      }
+
+      async function sanitizePptx(JSZip, buf) {
+        pptxAspect = 16 / 9;
+        const zip = await JSZip.loadAsync(buf);
+        try {
+          const pres = zip.file("ppt/presentation.xml");
+          if (pres) {
+            const xml = await pres.async("text");
+            const tag = /<p:sldSz\b[^>/]*/.exec(xml) ? /<p:sldSz\b[^>/]*/.exec(xml)[0] : "";
+            const cx = Number(/cx="(\d+)"/.exec(tag) ? /cx="(\d+)"/.exec(tag)[1] : 0);
+            const cy = Number(/cy="(\d+)"/.exec(tag) ? /cy="(\d+)"/.exec(tag)[1] : 0);
+            pptxAspect = cx > 0 && cy > 0 ? cx / cy : 16 / 9;
+          }
+        } catch {
+          pptxAspect = 16 / 9;
+        }
+        const ctFile = zip.file("[Content_Types].xml");
+        if (!ctFile) return buf;
+        const ct = await ctFile.async("text");
+        const fixed = ct.replace(/<Override\b[^>]*\/>/g, (tag) => {
+          const m = /PartName="([^"]+)"/.exec(tag);
+          if (!m) return tag;
+          const entry = zip.files[m[1].replace(/^\//, "")];
+          return entry && !entry.dir ? tag : "";
+        });
+        if (fixed === ct) return buf;
+        zip.file("[Content_Types].xml", fixed);
+        return zip.generateAsync({ type: "arraybuffer" });
+      }
+
+      function pptxFitSize(aw, ah, ar) {
+        const pad = 8;
+        const ratio = ar > 0 ? ar : 16 / 9;
+        let maxW = Math.floor(aw || 0) - pad;
+        let maxH = Math.floor(ah || 0) - pad;
+        if (maxW < 8 || maxH < 8) { maxW = 760; maxH = 540; }
+        let w = maxW;
+        let h = Math.round(w / ratio);
+        if (h > maxH) { h = maxH; w = Math.round(h * ratio); }
+        return { w: Math.max(1, w), h: Math.max(1, h) };
+      }
+
+      async function remountPptx(host, token, force) {
+        if (!pptxApi || !pptxBuf || pptxRemounting || !host) return;
+        const rect = host.getBoundingClientRect();
+        const { w, h } = pptxFitSize(rect.width, rect.height, pptxAspect);
+        if (!force && Math.abs(w - pptxSize.w) < 2 && Math.abs(h - pptxSize.h) < 2) return;
+        pptxRemounting = true;
+        const idx = pptxViewer ? Math.max(0, pptxViewer.currentIndex || 0) : 0;
+        try {
+          try { if (pptxViewer) pptxViewer.destroy(); } catch { /* ignore */ }
+          pptxViewer = null;
+          host.innerHTML = "";
+          pptxViewer = pptxApi.init(host, { width: w, height: h, mode: "slide" });
+          pptxSize = { w, h };
+          await pptxViewer.preview(pptxBuf);
+          if (token !== previewToken) return;
+          const pages = pptxViewer.slideCount || 0;
+          preview.value.pages = pages;
+          const go = idx > 0 && idx < pages ? idx : 0;
+          if (go > 0) pptxViewer.renderSingleSlide(go);
+          preview.value.page = go;
+        } finally {
+          pptxRemounting = false;
+        }
+      }
+
+      function pptxGo(delta) {
+        if (!pptxViewer || !preview.value || preview.value.kind !== "pptx") return;
+        const pages = preview.value.pages || pptxViewer.slideCount || 0;
+        if (!pages) return;
+        const next = ((preview.value.page || 0) + delta + pages) % pages;
+        pptxViewer.renderSingleSlide(next);
+        preview.value.page = next;
+      }
+
+      // 3D:GLB/GLTF/OBJ/STL,OrbitControls + 环境光照,自动居中并按最大边缩放。
+      async function mountModel(it, token) {
+        let renderer = null, scene = null, camera = null, controls = null, root = null;
+        let raf = 0;
+        let disposed = false;
+        // 清理函数要在渲染器创建后就能用:关闭预览时模型可能仍在下载,不能等 loadAsync 返回。
+        const cleanup = () => {
+          if (disposed) return;
+          disposed = true;
+          cancelAnimationFrame(raf);
+          if (modelObserver) { try { modelObserver.disconnect(); } catch { /* ignore */ } modelObserver = null; }
+          if (controls) { try { controls.dispose(); } catch { /* ignore */ } controls = null; }
+          if (root) { disposeObject3D(root); root = null; }
+          if (scene && scene.environment) { try { scene.environment.dispose(); } catch { /* ignore */ } }
+          if (renderer) {
+            try { renderer.forceContextLoss(); } catch { /* ignore */ }
+            try { renderer.dispose(); } catch { /* ignore */ }
+            renderer = null;
+          }
+        };
+        try {
+          const THREE = await loadModule("/lib/three.bundle.min.js");
+          const canvas = modelCanvas.value;
+          if (!canvas) throw new Error("canvas missing");
+          const host = canvas.parentElement;
+          if (!host) throw new Error("canvas host missing");
+
+          renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+          renderer.outputColorSpace = THREE.SRGBColorSpace;
+          renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          scene = new THREE.Scene();
+          camera = new THREE.PerspectiveCamera(45, 1, 0.01, 1000);
+          camera.position.set(0, 0.6, 3.2);
+
+          const pmrem = new THREE.PMREMGenerator(renderer);
+          scene.environment = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
+          pmrem.dispose();
+          scene.add(new THREE.HemisphereLight(0xffffff, 0x334455, 1.1));
+          const key = new THREE.DirectionalLight(0xffffff, 1.15);
+          key.position.set(3, 5, 4);
+          scene.add(key);
+          const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+          fill.position.set(-4, -2, -3);
+          scene.add(fill);
+
+          controls = new THREE.OrbitControls(camera, canvas);
+          controls.enableDamping = true;
+          controls.dampingFactor = 0.08;
+          controls.target.set(0, 0, 0);
+          controls.update();
+          // 载入完成前先挂一个「可取消」的句柄,关闭预览能立即停掉 RAF/观察器。
+          modelHandle = { resetCamera: () => {}, dispose: cleanup };
+
+          const resize = () => {
+            const w = host.clientWidth || 1;
+            const h = host.clientHeight || 1;
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+          };
+          resize();
+          modelObserver = new ResizeObserver(resize);
+          modelObserver.observe(host);
+
+          const manager = new THREE.LoadingManager();
+          manager.onProgress = (_url, loaded, total) => {
+            if (token !== previewToken || !preview.value) return;
+            preview.value.progress = total > 0 ? Math.min(100, Math.round((loaded / total) * 100)) : -1;
+            preview.value.progressText = total > 0 ? loaded + " / " + total : "";
+          };
+          // .gltf 的外部 .bin/贴图按「同目录兄弟对象」解析,否则会落到 /api/xxx。
+          const dir = it.path.slice(0, it.path.lastIndexOf("/") + 1);
+          manager.setURLModifier((url) => {
+            if (/^(data:|blob:|https?:)/i.test(url)) return url;
+            if (url.indexOf("/api/file?") === 0) return url;
+            if (url.indexOf("/api/") === 0) return fileURL(dir + url.slice(5));
+            // GLTFLoader 会把 .gltf 里的相对 .bin/贴图路径原样交给这里;
+            // 统一按「模型所在目录的兄弟对象」映射到 /api/file。
+            const clean = String(url).replace(/^\.\//, "");
+            return fileURL(dir + clean.replace(/^\//, ""));
+          });
+
+          const ext = extOf(it.name);
+          if (ext === "glb" || ext === "gltf") {
+            const gltf = await new THREE.GLTFLoader(manager).loadAsync(fileURL(it.path));
+            root = gltf.scene;
+          } else if (ext === "obj") {
+            root = await new THREE.OBJLoader(manager).loadAsync(fileURL(it.path));
+          } else if (ext === "stl") {
+            const geo = await new THREE.STLLoader(manager).loadAsync(fileURL(it.path));
+            const mat = new THREE.MeshStandardMaterial({ color: 0x9aa3b2, metalness: 0.15, roughness: 0.55 });
+            root = new THREE.Mesh(geo, mat);
+          } else {
+            throw new Error("unsupported model format");
+          }
+          if (token !== previewToken) {
+            cleanup();
+            return;
+          }
+
+          // OBJ 常见没有标准材质:给个中性灰,否则在 environment 下会发黑。
+          if (ext === "obj") {
+            root.traverse((o) => {
+              if (o.isMesh && (!o.material || (o.material.type === "MeshPhongMaterial" && !o.material.map))) {
+                o.material = new THREE.MeshStandardMaterial({ color: 0xaab2c0, metalness: 0.1, roughness: 0.65 });
+              }
+            });
+          }
+
+          scene.add(root);
+          const home = fitModelObject(THREE, root, camera, controls);
+          const resetCamera = () => {
+            camera.position.copy(home.pos);
+            controls.target.set(0, 0, 0);
+            controls.update();
+          };
+          preview.value.loading = false;
+          preview.value.progressText = "";
+          const loop = () => {
+            if (token !== previewToken) return;
+            controls.update();
+            renderer.render(scene, camera);
+            raf = requestAnimationFrame(loop);
+          };
+          loop();
+          modelHandle = { resetCamera, dispose: cleanup };
+        } catch (e) {
+          cleanup();
+          failPreview(token, e);
+        }
+      }
+
+      // PSD / TIFF / HEIC:解码成位图后切换成普通图片预览(缩放/平移/下载都复用)。
+      async function mountDecodedImage(it, kind, token) {
+        try {
+          const buf = await fetchPreviewBuffer(it, token, PV_IMAGE_MAX);
+          if (token !== previewToken) return;
+          if (kind === "heic") {
+            const heic2any = await loadLib("heic");
+            const out = await heic2any({
+              blob: new Blob([buf], { type: "image/heic" }),
+              toType: "image/jpeg",
+              quality: 0.92,
+            });
+            if (token !== previewToken) return;
+            const blob = Array.isArray(out) ? out[0] : out;
+            if (!blob) throw new Error("HEIC 中没有可显示的图像");
+            setDecodedImage(URL.createObjectURL(blob), 1, 0);
+            return;
+          }
+          if (kind === "psd") {
+            const agPsd = await loadLib("agpsd");
+            const psd = agPsd.readPsd(buf, {
+              useImageData: true,
+              skipLayerImageData: true,
+              skipThumbnail: true,
+              skipLinkedFilesData: true,
+            });
+            if (token !== previewToken) return;
+            if (!psd || !psd.imageData) throw new Error("PSD 没有合成图像");
+            if (psd.imageData.width * psd.imageData.height > PV_IMAGE_PIXELS) {
+              throw new Error(tt.value.imageTooLarge);
+            }
+            const blob = await imageDataToBlob(psd.imageData);
+            if (token !== previewToken) return;
+            setDecodedImage(URL.createObjectURL(blob), 1, 0);
+            return;
+          }
+          // TIFF:解出全部 IFD,先显示第一页;多页时顶部可翻页。
+          const UTIF = await loadLib("utif");
+          const ifds = UTIF.decode(buf);
+          if (!ifds || !ifds.length) throw new Error("TIFF 中没有图像");
+          decodedState = { type: "tiff", buf, ifds, UTIF };
+          await showTiffPage(0, token);
+        } catch (e) {
+          failPreview(token, e);
+        }
+      }
+
+      async function showTiffPage(index, token) {
+        if (!decodedState || decodedState.type !== "tiff" || !preview.value) return;
+        const { UTIF, buf, ifds } = decodedState;
+        const page = Math.max(0, Math.min(ifds.length - 1, index));
+        const ifd = ifds[page];
+        // 多页 TIFF 只解码当前页,避免一次把几十页全部展开。
+        if (!ifd.data) UTIF.decodeImage(buf, ifd);
+        const w = Number(ifd.width) || 1;
+        const h = Number(ifd.height) || 1;
+        if (!ifd.data || w < 1 || h < 1) throw new Error("TIFF 页面解码失败");
+        if (w * h > PV_IMAGE_PIXELS) throw new Error(tt.value.imageTooLarge);
+        const rgba = UTIF.toRGBA8(ifd);
+        const blob = await rgbaToBlob(rgba, w, h);
+        if (token !== previewToken) return;
+        setDecodedImage(URL.createObjectURL(blob), ifds.length, page);
+      }
+
+      function setDecodedImage(url, pages, page) {
+        const pvNow = preview.value;
+        if (!pvNow) {
+          try { URL.revokeObjectURL(url); } catch { /* ignore */ }
+          return;
+        }
+        if (decodedURL) {
+          try { URL.revokeObjectURL(decodedURL); } catch { /* ignore */ }
+        }
+        decodedURL = url;
+        pvNow.url = url;
+        pvNow.kind = "image";
+        pvNow.decoded = true;
+        pvNow.pages = pages;
+        pvNow.page = page;
+        pvNow.loading = false;
+        pvNow.progressText = "";
+        pv.zoom = 1;
+        pv.x = 0;
+        pv.y = 0;
+      }
+
+      function decodedGo(delta) {
+        if (!decodedState || decodedState.type !== "tiff" || !preview.value) return;
+        const pages = decodedState.ifds.length;
+        if (pages < 2) return;
+        const next = ((preview.value.page || 0) + delta + pages) % pages;
+        showTiffPage(next, previewToken).catch((e) => failPreview(previewToken, e));
+      }
+
+      function previewGo(delta) {
+        if (!preview.value) return;
+        if (preview.value.kind === "pptx") return pptxGo(delta);
+        if (preview.value.decoded) return decodedGo(delta);
+      }
+
+      function imageDataToBlob(imageData) {
+        const canvas = document.createElement("canvas");
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return Promise.reject(new Error("canvas unavailable"));
+        ctx.putImageData(imageData, 0, 0);
+        return canvasToBlob(canvas);
+      }
+
+      function rgbaToBlob(rgba, w, h) {
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return Promise.reject(new Error("canvas unavailable"));
+        const data = new ImageData(new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, rgba.byteLength), w, h);
+        ctx.putImageData(data, 0, 0);
+        return canvasToBlob(canvas);
+      }
+
+      function canvasToBlob(canvas) {
+        return new Promise((resolve, reject) => {
+          try {
+            canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("encode failed")), "image/png");
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+
+      // 压缩包:zip 用 JSZip 读目录,tar/tar.gz 用内置 tar 头解析;只做目录预览与单文件下载。
+      async function mountArchive(it, token) {
+        try {
+          const buf = await fetchPreviewBuffer(it, token, PV_ARCHIVE_MAX);
+          if (token !== previewToken) return;
+          const ext = extOf(it.name);
+          if (ext === "zip") {
+            const JSZip = await loadLib("jszip");
+            const zip = await JSZip.loadAsync(buf);
+            if (token !== previewToken) return;
+            const list = [];
+            let total = 0;
+            let truncated = false;
+            for (const [name, f] of Object.entries(zip.files)) {
+              if (list.length >= 2000) { truncated = true; break; }
+              if (isArchiveJunk(name)) continue;
+              const clean = cleanArchiveName(name);
+              if (!clean) continue;
+              const size = f.dir ? 0 : Number(f._data && f._data.uncompressedSize) || 0;
+              total += size;
+              list.push({ name: clean, isDir: !!f.dir, size, zipName: name });
+            }
+            archiveHandle = { zip };
+            setArchive(list, total, truncated);
+            return;
+          }
+          if (ext === "tar" || ext === "gz" || ext === "tgz") {
+            const isTarGz = ext === "tgz" || (ext === "gz" && /\.tar\.gz$/i.test(it.name));
+            let data = new Uint8Array(buf);
+            if (ext === "gz" || ext === "tgz") {
+              const pako = await loadLib("pako");
+              const unpacked = gzipUnpackedSize(data);
+              if (unpacked > PV_ARCHIVE_UNPACKED_MAX) {
+                throw new Error(tt.value.archiveTooBigUnpacked);
+              }
+              try {
+                data = pako.ungzip(data);
+              } catch {
+                throw new Error("gzip 数据损坏或不完整");
+              }
+            }
+            if (token !== previewToken) return;
+            let list = [];
+            if (ext === "tar" || isTarGz) list = parseTar(data);
+            if (!list.length && ext === "gz" && !isTarGz) {
+              // 单个 .gz 不是 tar:按一个文件展示,点击可下载解压后的内容。
+              list = [{ name: it.name.replace(/\.gz$/i, ""), isDir: false, size: data.length, offset: 0 }];
+            } else if (!list.length) {
+              throw new Error("不是可识别的 tar 包");
+            }
+            archiveHandle = { data };
+            const total = list.reduce((s, e) => s + (e.isDir ? 0 : e.size), 0);
+            setArchive(list.slice(0, 2000), total, list.length > 2000);
+            return;
+          }
+          preview.value.message = tt.value.archiveUnsupported;
+          preview.value.loading = false;
+        } catch (e) {
+          failPreview(token, e);
+        }
+      }
+
+      function setArchive(entries, total, truncated) {
+        entries.sort((a, b) => {
+          if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        });
+        const pvNow = preview.value;
+        if (!pvNow) return;
+        pvNow.archive = entries;
+        pvNow.archiveSummary = tt.value.archiveSummary
+          .replace("{n}", entries.filter((e) => !e.isDir).length)
+          .replace("{size}", fmtSize(total));
+        pvNow.archiveTruncated = truncated;
+        pvNow.loading = false;
+      }
+
+      function cleanArchiveName(name) {
+        return String(name || "").replace(/^\.\//, "").replace(/\/{2,}/g, "/");
+      }
+
+      function isArchiveJunk(name) {
+        const n = cleanArchiveName(name);
+        if (!n) return true;
+        if (n === ".DS_Store" || n.endsWith("/.DS_Store")) return true;
+        if (n.startsWith("__MACOSX/")) return true;
+        if (n.split("/").some((p) => p.startsWith("._"))) return true;
+        return false;
+      }
+
+      function gzipUnpackedSize(data) {
+        if (!data || data.length < 18) return 0;
+        const n = data[data.length - 4] | (data[data.length - 3] << 8) |
+          (data[data.length - 2] << 16) | (data[data.length - 1] << 24);
+        return n >>> 0;
+      }
+
+      function parseTar(bytes) {
+        const dec = new TextDecoder("utf-8");
+        const cstr = (b, off, len) => {
+          let end = off;
+          const max = Math.min(b.length, off + len);
+          while (end < max && b[end] !== 0) end++;
+          return dec.decode(b.subarray(off, end)).trim();
+        };
+        const out = [];
+        let off = 0;
+        let longName = "";
+        while (off + 512 <= bytes.length) {
+          let zero = true;
+          for (let i = 0; i < 512; i++) {
+            if (bytes[off + i] !== 0) { zero = false; break; }
+          }
+          if (zero) break;
+          const block = bytes.subarray(off, off + 512);
+          const size = parseInt(cstr(block, 124, 12) || "0", 8) || 0;
+          const type = String.fromCharCode(block[156] || 48);
+          const dataOff = off + 512;
+          if (type === "L") {
+            longName = dec.decode(bytes.subarray(dataOff, dataOff + size)).replace(/\0+$/, "");
+            off = dataOff + Math.ceil(size / 512) * 512;
+            continue;
+          }
+          if (type === "x" || type === "g") {
+            off = dataOff + Math.ceil(size / 512) * 512;
+            continue;
+          }
+          let name = longName || cstr(block, 0, 100);
+          longName = "";
+          const prefix = cstr(block, 345, 155);
+          if (prefix) name = prefix + "/" + name;
+          name = cleanArchiveName(name);
+          const isDir = type === "5" || name.endsWith("/");
+          const mtime = (parseInt(cstr(block, 136, 12) || "0", 8) || 0) * 1000;
+          if (name && !isArchiveJunk(name)) {
+            out.push({ name, isDir, size: isDir ? 0 : size, mtime, offset: dataOff });
+          }
+          off = dataOff + (isDir ? 0 : Math.ceil(size / 512) * 512);
+        }
+        return out;
+      }
+
+      async function downloadArchiveEntry(entry) {
+        try {
+          let blob = null;
+          if (archiveHandle && archiveHandle.zip) {
+            const f = archiveHandle.zip.file(entry.zipName || entry.name);
+            if (!f) throw new Error("条目不存在");
+            blob = await f.async("blob");
+          } else if (archiveHandle && archiveHandle.data) {
+            const slice = archiveHandle.data.subarray(entry.offset, entry.offset + entry.size);
+            blob = new Blob([slice]);
+          }
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = entry.name.split("/").pop() || "file";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 10000);
+        } catch (e) {
+          toast(tt.value.previewFailed, String((e && e.message) || e), "err");
+        }
+      }
+
+      function fitModelObject(THREE, root, camera, controls) {
+        const box = new THREE.Box3().setFromObject(root);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z, 0.001);
+        root.position.sub(center);
+        root.scale.setScalar(2 / maxDim);
+        // 按包围球而不是最大边长取景:立方体/斜放的模型才不会被裁掉四角。
+        const radius = Math.max(0.001, (size.length() / 2) * (2 / maxDim));
+        const fov = (camera.fov * Math.PI) / 180;
+        const dist = (radius / Math.sin(fov / 2)) * 1.28;
+        // 3/4 视角:正对模型时立方体只会看到一个平面,看不出体积。
+        const pos = new THREE.Vector3(0.62, 0.48, 0.82).normalize().multiplyScalar(dist);
+        camera.position.copy(pos);
+        camera.near = Math.max(0.001, dist / 1000);
+        camera.far = Math.max(100, dist * 100);
+        camera.updateProjectionMatrix();
+        controls.target.set(0, 0, 0);
+        controls.update();
+        return { pos };
+      }
+
+      function disposeObject3D(root) {
+        if (!root) return;
+        root.traverse((o) => {
+          if (o.geometry) { try { o.geometry.dispose(); } catch { /* ignore */ } }
+          const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+          for (const m of mats) {
+            for (const v of Object.values(m)) {
+              if (v && v.isTexture) { try { v.dispose(); } catch { /* ignore */ } }
+            }
+            try { m.dispose(); } catch { /* ignore */ }
+          }
+        });
+      }
+
+      function resetModelCamera() { if (modelHandle) modelHandle.resetCamera(); }
 
       function highlightText(text, name) {
         const code = escapeHTML(text);
@@ -1030,6 +2152,8 @@
       }
 
       function closePreview() {
+        previewToken += 1;
+        disposePreviewResources();
         preview.value = null;
         pv.zoom = 1; pv.x = 0; pv.y = 0;
       }
@@ -1054,6 +2178,7 @@
       function resetZoom() { pv.zoom = 1; pv.x = 0; pv.y = 0; }
       function onWheel(e) {
         if (!preview.value || preview.value.kind !== "image") return;
+        e.preventDefault();
         zoom(e.deltaY < 0 ? 1.12 : 0.9);
       }
       function onImgDown(e) {
@@ -1300,6 +2425,17 @@
         winW.value = window.innerWidth;
         if (!drawerMode.value) drawer.value = false;
         if (!tiny.value) searchOpen.value = false;
+        // pptx-preview 的幻灯片尺寸在 init 时固定,容器变化后按新比例重挂;
+        // 防抖避免拖拽窗口时反复销毁/重建。
+        if (preview.value && preview.value.kind === "pptx" && pptxBuf) {
+          if (pptxResizeTimer) clearTimeout(pptxResizeTimer);
+          pptxResizeTimer = setTimeout(() => {
+            pptxResizeTimer = 0;
+            if (preview.value && preview.value.kind === "pptx" && pptxHost.value) {
+              remountPptx(pptxHost.value, previewToken, false).catch((e) => console.warn("[pptx remount]", e));
+            }
+          }, 120);
+        }
       }
 
       // ---- 触屏手势 ----
@@ -1317,6 +2453,8 @@
         if (!t) return;
         const dx = t.clientX - s.x, dy = t.clientY - s.y;
         if (preview.value.kind === "image" && pv.zoom > 1) return; // 放大后留给拖拽平移
+        // Office/3D 里横向滑动用于滚动/旋转,不抢成「上一个/下一个」。
+        if (["docx", "xlsx", "pptx", "model"].includes(preview.value.kind)) return;
         if (Math.abs(dx) > 64 && Math.abs(dx) > Math.abs(dy) * 1.3) stepPreview(dx < 0 ? 1 : -1);
       }
 
@@ -1335,12 +2473,27 @@
           return;
         }
         if (preview.value) {
-          if (e.key === "ArrowLeft") { e.preventDefault(); return stepPreview(-1); }
-          if (e.key === "ArrowRight") { e.preventDefault(); return stepPreview(1); }
+          // PPTX/多页 TIFF:左右键翻页;XLSX:左右键交给表格选区;其余类型左右键切换文件。
+          if (preview.value.decoded && preview.value.pages > 1) {
+            if (e.key === "ArrowLeft") { e.preventDefault(); return decodedGo(-1); }
+            if (e.key === "ArrowRight") { e.preventDefault(); return decodedGo(1); }
+          } else if (preview.value.kind === "pptx") {
+            if (e.key === "ArrowLeft") { e.preventDefault(); return pptxGo(-1); }
+            if (e.key === "ArrowRight") { e.preventDefault(); return pptxGo(1); }
+          } else if (preview.value.kind === "xlsx") {
+            // 由 bindXlsx 的 keydown 处理;这里不再抢方向键。
+          } else {
+            if (e.key === "ArrowLeft") { e.preventDefault(); return stepPreview(-1); }
+            if (e.key === "ArrowRight") { e.preventDefault(); return stepPreview(1); }
+          }
           if (preview.value.kind === "image") {
             if (e.key === "+" || e.key === "=") { e.preventDefault(); return zoom(1.25); }
             if (e.key === "-" || e.key === "_") { e.preventDefault(); return zoom(0.8); }
             if (e.key === "0") { e.preventDefault(); return resetZoom(); }
+          }
+          if (preview.value.kind === "model" && (e.key === "0" || e.key === "r" || e.key === "R")) {
+            e.preventDefault();
+            return resetModelCamera();
           }
           return;
         }
@@ -1379,13 +2532,14 @@
       return {
         icons, tt, session, path, entries, loading, error, search, listMode, selected,
         dragOver, menu, dialog, picker, dlgInput, toasts, uploads, preview, quota, pv, version,
+        docxHost, xlsxHost, pptxHost, modelCanvas,
         drawer, searchOpen, searchBox, theme, themeTitle,
         atRoot, crumbs, filtered, previewables, previewIndex, usedPct, quotaClass, connClass, connText, canLink,
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel, capsText,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
         go, goUp, setListMode, reload, open, openPreview, select, onCardClick, onPressStart, cancelPress,
         closePreview, stepPreview, zoom, resetZoom, toggleZoom, onWheel, onImgDown, onImgMove, onImgUp,
-        onTouchStart, onTouchEnd, toggleTheme,
+        onTouchStart, onTouchEnd, toggleTheme, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,
         downloadEntry, askMkdir, renameEntry, deleteEntry, copyLink, openMenu, runMenu,
         pickFiles, onPicked, onDragOver, onDragLeave, onDrop, closeDialog, confirmDialog, toggleLang,
       };

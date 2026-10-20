@@ -21,7 +21,7 @@
 - **校验与鉴权**:`checksum`(md5/sha256 计算与比对)、`presign` 预签名 URL、基于 CDN 域名的公开访问地址
 - **WebDAV 网关**:`serve webdav` 把 bucket 挂成网络盘,macOS Finder / Windows 资源管理器直接读写,零客户端安装
 - **SMB 网关**:`serve smb` 把 bucket(或其中某个前缀)导出为 SMB2 共享——同一个「零客户端安装」的故事,换成 Finder / 资源管理器原生挂载的协议
-- **Web 媒体库**:`serve web` 在浏览器里打开 bucket——缩略图网格/列表、上传/下载、重命名/删除、新建文件夹、搜索,以及常见图片/视频/音频/PDF/CSV/Markdown/HTML/代码格式的预览;用户表、配额与前缀隔离与其它网关完全一致
+- **Web 媒体库**:`serve web` 在浏览器里打开 bucket——缩略图网格/列表、上传/下载、重命名/删除、新建文件夹、搜索,以及图片/视频/音频/PDF/Office/3D/PSD/TIFF/HEIC/压缩包预览;用户表、配额与前缀隔离与其它网关完全一致
 - **多 profile 配置**:prod / test / staging 等多环境切换,密钥可引用环境变量避免明文
 - **跨平台**:macOS / Linux,单二进制下载即用;支持 shell 自动补全(zsh / bash / fish)
 
@@ -629,9 +629,10 @@ sail serve web --profile prod --prefix shared
 - **操作**:重命名(文件与目录)、删除、新建文件夹、复制链接——配置了 `cdn-domain` 时给 CDN
   公开地址,否则给预签名 URL。
 - **预览**:图片(缩放/平移)、视频、音频、PDF(交给浏览器内置查看器)、CSV 表格、Markdown、
-  沙箱 HTML、带语法高亮的源代码、纯文本。
-  Office 文档、3D 模型、压缩包与 PSD/TIFF/HEIC 目前显示「后续版本提供」的占位提示,
-  仍可下载。
+  沙箱 HTML、带语法高亮的源代码、纯文本;Office 文档(DOCX/XLSX/XLSM/PPTX,旧版
+  .doc/.xls/.ppt 会提示另存为新格式)、3D 模型(GLB/GLTF/OBJ/STL)、压缩包
+  (ZIP/TAR/TAR.GZ/TGZ/GZ 的目录列表与单文件下载)、PSD、多页 TIFF 与 HEIC/HEIF。
+  这些解析库按需懒加载,首屏仍然只加载界面本身;不支持的格式(如 RAR/7z)给出下载入口。
 
 ### 参数
 
