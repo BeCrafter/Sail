@@ -546,7 +546,7 @@
       </div>
       <div class="side-foot">
         <button class="conn-btn" :class="connClass" :title="connText" :disabled="loading" @click="reload">
-          <span>{{ connText }}</span>
+          <i class="dot"></i><span>{{ connText }}</span>
         </button>
       </div>
     </aside>
@@ -687,8 +687,6 @@
       </div>
 
       <div class="statusbar">
-        <span class="app-nm">{{ tt.appTitle }}<template v-if="versionLabel"> {{ versionLabel }}</template></span>
-        <span class="grow"></span>
         <span class="item sb-bucket" v-if="session"><span v-html="icons.home"></span><span class="txt">{{ bucketLabel }}</span></span>
         <span class="item sb-usage" v-if="quota" :title="tt.quotaNote">
           <span class="k">{{ tt.used }}</span>
@@ -696,9 +694,11 @@
           <span class="quota-bar" :class="quotaClass" v-if="quota.limit > 0"><i :style="{ width: usedPct + '%' }"></i></span>
         </span>
         <button class="sb-link" @click="toggleLang">{{ tt.language }}</button>
+        <span class="grow"></span>
         <a class="repo-link" href="https://github.com/BeCrafter/Sail" target="_blank" rel="noopener" :title="tt.openSource">
           <span v-html="icons.github"></span><span>BeCrafter / Sail</span>
         </a>
+        <span class="sb-version" v-if="versionLabel">{{ versionLabel }}</span>
       </div>
     </div>
 
@@ -995,7 +995,11 @@
       const drawerMode = computed(() => winW.value <= 1024);
       const crumbCompact = computed(() => winW.value <= 640);
       const tiny = computed(() => winW.value <= 560);
-      const versionLabel = computed(() => (/\d/.test(version.value) ? "v" + version.value : ""));
+      const versionLabel = computed(() => {
+        const v = String(version.value || "").trim();
+        if (!v) return "";
+        return /^\d/.test(v) ? "v" + v : v;
+      });
       const bucketLabel = computed(() => {
         const s = session.value;
         if (!s) return "—";

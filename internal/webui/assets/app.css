@@ -172,8 +172,9 @@ button, input { font-family: inherit; }
   padding: 0; border: 0; background: transparent; color: var(--fg-dim);
   font-size: 11px; cursor: pointer; transition: color var(--dur);
 }
-.conn-btn:hover { color: var(--accent); text-decoration: underline; }
+.conn-btn:hover { color: var(--accent); }
 .conn-btn:disabled { cursor: wait; opacity: .65; }
+.conn-btn .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: currentColor; }
 .conn-btn.ok { color: var(--ok); }
 .conn-btn.err { color: var(--danger); }
 .repo-link {
@@ -183,6 +184,7 @@ button, input { font-family: inherit; }
 .repo-link:hover { color: var(--accent); background: var(--bg-hover); }
 .repo-link svg { width: 13px; height: 13px; display: block; flex: none; }
 .statusbar .repo-link { flex: none; font-size: 11px; }
+.statusbar .sb-version { flex: none; color: var(--fg-faint); font-variant-numeric: tabular-nums; }
 
 /* ---------- 主区 ---------- */
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
