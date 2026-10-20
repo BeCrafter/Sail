@@ -1,6 +1,8 @@
 // ExcelJS workbook → 只读 HTML 网格（纯函数，可 node:test；不依赖浏览器 DOM）。
 // <vanor-file-preview> 挂载时调用 workbookToSheets / sheetsToHtml。
 
+import { evaluateWorkbookFormulas } from "./preview_xlsx_formula.js";
+
 export const XLSX_MAX_ROWS = 1000;
 export const XLSX_MAX_COLS = 64;
 export const XLSX_COL_HEAD_W = 40;
@@ -512,6 +514,11 @@ export function worksheetToGrid(sheet, opts = {}) {
         text = "";
       }
       const wrap = !!(cell.style?.alignment?.wrapText) || /[\r\n]/.test(text);
+      let formula = "";
+      if (cell.value && typeof cell.value === "object") {
+        if (cell.value.formula != null) formula = "=" + String(cell.value.formula).replace(/^=/, "");
+        else if (cell.value.sharedFormula != null) formula = "=" + String(cell.value.sharedFormula);
+      }
       let css = styleToCss(cell.style, themeCtx);
       const num = typeof cell.value === "number" ? cell.value
         : (typeof cell.value === "object" && typeof cell.value?.result === "number" ? cell.value.result : null);
@@ -522,6 +529,7 @@ export function worksheetToGrid(sheet, opts = {}) {
       const color = (css.match(/(?:^|;)color:([^;]+)/) || [])[1] || "";
       rowArr.push({
         text,
+        formula,
         html: cellInnerHtml(cell, themeCtx),
         css,
         bg,
@@ -557,6 +565,14 @@ export function worksheetToGrid(sheet, opts = {}) {
 
 /** ExcelJS Workbook → sheet 网格列表。 */
 export function workbookToSheets(workbook, opts = {}) {
+  // 很多导出器不写公式缓存值;先算一遍,避免把 "=SUM(A1:A9)" 当文本显示。
+  if (opts.calculateFormulas !== false) {
+    try {
+      evaluateWorkbookFormulas(workbook);
+    } catch (e) {
+      console.warn("[xlsx formulas]", e);
+    }
+  }
   const themeCtx = opts.themeCtx || themeCtxFromWorkbook(workbook);
   const sheets = [];
   workbook.eachSheet((sheet) => {

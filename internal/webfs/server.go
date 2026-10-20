@@ -205,6 +205,19 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // route 是 API 路由表。方法不匹配返回 405,未知路径 404——都是 JSON,
 // 前端不必猜 HTML 错误页。
 func (s *Server) route(req *request, w http.ResponseWriter) {
+	// /api/raw/<逻辑路径> 是给 HTML 预览用的「保留目录结构」出口:iframe 里的
+	// 相对链接(CSS/JS/图片)会按 URL 层级继续落到这里,而不是落到 SPA 回退页。
+	// 它和 /api/file 共享同一套 stat/open/Range 实现,只是路径来自 URL 而不是 query。
+	if strings.HasPrefix(req.raw.URL.Path, "/api/raw/") {
+		if req.raw.Method != http.MethodGet {
+			w.Header().Set("Allow", http.MethodGet)
+			writeJSON(w, http.StatusMethodNotAllowed, errorBody("method_not_allowed", "method "+req.raw.Method+" is not allowed here"))
+			return
+		}
+		req.handleRaw(w)
+		return
+	}
+
 	path := strings.TrimSuffix(req.raw.URL.Path, "/")
 	if path == "" {
 		path = "/"

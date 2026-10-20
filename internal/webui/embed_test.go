@@ -67,6 +67,8 @@ func TestHandlerServesAssetsWithTypes(t *testing.T) {
 		{"/lib/UTIF.js", "text/javascript"},
 		{"/lib/ag-psd.bundle.js", "text/javascript"},
 		{"/lib/heic2any.min.js", "text/javascript"},
+		{"/lib/preview_xlsx.js", "text/javascript"},
+		{"/lib/preview_xlsx_formula.js", "text/javascript"},
 	}
 	h := webui.Handler()
 	for _, c := range cases {

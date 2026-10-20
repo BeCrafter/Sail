@@ -31,6 +31,7 @@
       uploadFailed: "上传失败", uploading: "上传中", uploaded: "上传完成", 
       close: "关闭", prev: "上一个", next: "下一个", zoomIn: "放大", zoomOut: "缩小", reset: "重置",
       noPreview: "该文件暂时无法预览", unsupportedPreview: "此格式暂不支持在线预览,可先下载查看",
+      mediaError: "无法播放此视频或音频,可能是文件损坏,或浏览器不支持该编码",
       previewFailed: "预览加载失败", loadingPreview: "正在加载预览…",
       tooBigOffice: "文件超过 40 MB,无法在线预览,请下载查看",
       tooBigModel: "文件超过 120 MB,无法在线预览,请下载查看",
@@ -82,6 +83,7 @@
       uploadFailed: "Upload failed", uploading: "Uploading", uploaded: "Uploaded",
       close: "Close", prev: "Previous", next: "Next", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Reset",
       noPreview: "This file cannot be previewed", unsupportedPreview: "Preview is not available for this format; download it instead",
+      mediaError: "Cannot play this video or audio. The file may be damaged or use a codec this browser does not support.",
       previewFailed: "Failed to load preview", loadingPreview: "Loading preview…",
       tooBigOffice: "File is larger than 40 MB and cannot be previewed here; download it instead",
       tooBigModel: "File is larger than 120 MB and cannot be previewed here; download it instead",
@@ -250,6 +252,12 @@
 
   function fileURL(p, download) {
     return "/api/file?path=" + encPath(p) + (download ? "&download=1" : "");
+  }
+
+  // HTML 预览走保留目录结构的出口:页面里的 ./app.css、../logo.png 会按
+  // 浏览器规则继续请求 /api/raw/...,而不是落到 SPA 的 index.html。
+  function rawURL(p) {
+    return "/api/raw" + String(p || "/").split("/").map(encodeURIComponent).join("/");
   }
 
   // joinKey 用于「当前目录 + 新名字」;目录保持结尾斜杠。
@@ -521,7 +529,7 @@
                @pointerdown="onPressStart($event, it)" @pointerup="cancelPress" @pointercancel="cancelPress"
                @pointerleave="cancelPress" @pointermove="cancelPress"
                @keydown.enter.prevent="open(it)" @keydown.space.prevent="select(it)">
-            <div class="thumb" :class="thumbClass(it)">
+            <div class="thumb" :class="thumbClass(it)" @click="it.dir && open(it)">
               <span class="thumb-ico" v-if="it.dir" v-html="icons.folder"></span>
               <template v-else>
                 <span class="thumb-ico" v-if="!it._thumb || !it._thumbLoaded || it._thumbFailed" v-html="iconFor(it)"></span>
@@ -530,7 +538,7 @@
                      @load="it._thumbLoaded = true" @error="it._thumbFailed = true" />
               </template>
               <span class="badge" v-if="badgeOf(it)">{{ badgeOf(it) }}</span>
-              <div class="card-overlay" @click.stop="onCardClick(it)">
+              <div class="card-overlay" @click.stop="onCardClick(it)" @dblclick.stop="open(it)">
                 <button class="card-act-btn" :title="it.dir ? tt.open : tt.preview" @click.stop="open(it)"
                         v-html="it.dir ? icons.folderOpen : icons.eye"></button>
                 <button class="card-act-btn" :title="tt.rename" @click.stop="renameEntry(it)" v-html="icons.edit"></button>
@@ -702,16 +710,30 @@
         <img :src="preview.url" :alt="preview.entry.name" :class="{ zoomed: pv.zoom > 1 }"
              :style="{ transform: 'translate(' + pv.x + 'px,' + pv.y + 'px) scale(' + pv.zoom + ')' }"
              @pointerdown="onImgDown" @pointermove="onImgMove" @pointerup="onImgUp" @pointercancel="onImgUp"
-             draggable="false" @error="preview.error = true" />
+             draggable="false" @error="preview && (preview.error = true)" />
         <div class="pv-empty" v-if="preview.error">
           <div class="empty-ico" v-html="icons.warn"></div>
           {{ tt.noPreview }}
         </div>
       </template>
-      <video v-else-if="preview.kind === 'video'" :src="preview.url" controls autoplay playsinline></video>
-      <audio v-else-if="preview.kind === 'audio'" :src="preview.url" controls autoplay></audio>
+      <div class="pv-media" v-else-if="preview.kind === 'video' || preview.kind === 'audio'">
+        <video v-if="preview.kind === 'video'" :src="preview.url" controls autoplay playsinline
+               @canplay="preview && (preview.loading = false, preview.mediaError = false)"
+               @error="preview && (preview.loading = false, preview.mediaError = true)"></video>
+        <audio v-else :src="preview.url" controls autoplay
+               @canplay="preview && (preview.loading = false, preview.mediaError = false)"
+               @error="preview && (preview.loading = false, preview.mediaError = true)"></audio>
+        <div class="pv-empty" v-if="preview.mediaError">
+          <div class="empty-ico" v-html="icons.warn"></div>
+          <div>{{ tt.mediaError }}</div>
+          <a :href="preview.url + '&download=1'" download>{{ tt.download }}</a>
+        </div>
+      </div>
       <div class="frame-wrap" v-else-if="preview.kind === 'pdf'"><iframe :src="preview.url" :title="preview.entry.name"></iframe></div>
-      <div class="frame-wrap" v-else-if="preview.kind === 'html' && preview.html"><iframe sandbox :srcdoc="preview.html" :title="preview.entry.name"></iframe></div>
+      <div class="frame-wrap" v-else-if="preview.kind === 'html'">
+        <iframe :src="preview.url" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
+                :title="preview.entry.name"></iframe>
+      </div>
       <div class="pv-office docx" v-else-if="preview.kind === 'docx'" ref="docxHost"></div>
       <div class="pv-office xlsx" v-else-if="preview.kind === 'xlsx'" ref="xlsxHost"></div>
       <div class="pv-office pptx" v-else-if="preview.kind === 'pptx'" ref="pptxHost"></div>
@@ -746,7 +768,7 @@
         <div class="line" v-for="(l, i) in preview.lines" :key="i"><span class="ln">{{ i + 1 }}</span>{{ l }}</div>
       </div>
       <div class="md" v-else-if="preview.kind === 'markdown'" v-html="preview.html"></div>
-      <div class="pv-empty" v-else>
+      <div class="pv-empty" v-else-if="preview.kind === 'none'">
         <div class="empty-ico" v-html="icons.warn"></div>
         <div>{{ tt.unsupportedPreview }}</div>
         <button class="btn" @click="downloadEntry(preview.entry)"><span v-html="icons.download"></span>{{ tt.download }}</button>
@@ -1137,7 +1159,7 @@
         disposePreviewResources();
         preview.value = {
           entry: it, kind: kind || "none", url: fileURL(it.path), text: "", lines: [],
-          highlighted: "", html: "", table: null, truncated: false, error: false,
+          highlighted: "", html: "", table: null, truncated: false, error: false, mediaError: false,
           loading: false, message: "", page: 0, pages: 0, progress: -1, progressText: "",
           archive: [], archiveSummary: "", archiveTruncated: false, decoded: false,
         };
@@ -1200,13 +1222,26 @@
           return;
         }
 
-        if (!kind || ["image", "video", "audio", "pdf"].includes(kind)) return;
+        // HTML 直接交给 iframe 流式加载:不经过 fetch/srcdoc,页面里的相对
+        // CSS/JS/图片才能保持原有目录关系,页面脚本也能正常执行。
+        if (kind === "html") {
+          preview.value.url = rawURL(it.path);
+          return;
+        }
+
+        if (!kind || kind === "image" || kind === "pdf") return;
+        if (kind === "video" || kind === "audio") {
+          // 大视频(MOV 可能几十 MB)在 canplay 前先给一个加载态,避免黑屏。
+          preview.value.loading = true;
+          return;
+        }
 
         // 文本类预览:先看大小,避免把几百 MB 的日志拉进浏览器。
         const MAX = 4 * 1024 * 1024;
         if (it.size > MAX) {
           preview.value.truncated = true;
         }
+        preview.value.loading = true;
         try {
           const res = await fetch(preview.value.url, { credentials: "same-origin" });
           if (!res.ok) throw new Error("HTTP " + res.status);
@@ -1220,8 +1255,6 @@
           } else if (kind === "csv") {
             const delim = extOf(it.name) === "tsv" ? "\t" : ",";
             preview.value.table = parseDelimited(cut, delim);
-          } else if (kind === "html") {
-            preview.value.html = cut;
           } else if (kind === "md") {
             preview.value.html = renderMarkdown(cut);
             preview.value.kind = "markdown";
@@ -1232,6 +1265,8 @@
           if (token === previewToken) {
             preview.value.message = tt.value.previewFailed + (e && e.message ? ": " + e.message : "");
           }
+        } finally {
+          if (token === previewToken) preview.value.loading = false;
         }
       }
 
@@ -1410,7 +1445,9 @@
           if (nameEl) nameEl.textContent = px.formatCellRef(sel.ar, sel.ac);
           const cell = g.cells && g.cells[sel.ar - 1] ? g.cells[sel.ar - 1][sel.ac - 1] : null;
           const text = cell && !cell.skip ? String(cell.text == null ? "" : cell.text) : "";
-          if (valEl) { valEl.textContent = text; valEl.title = text; }
+          // 公式栏优先显示原公式,结果已经在网格里;这样复制/核对公式才有意义。
+          const shown = cell && !cell.skip && cell.formula ? String(cell.formula) : text;
+          if (valEl) { valEl.textContent = shown; valEl.title = shown; }
           if (status) {
             const st = px.selectionStats(g, range());
             const parts = [];
@@ -1698,6 +1735,8 @@
           renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
           renderer.outputColorSpace = THREE.SRGBColorSpace;
           renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          renderer.toneMappingExposure = 1.05;
+          renderer.setClearColor(0x000000, 0);
           scene = new THREE.Scene();
           camera = new THREE.PerspectiveCamera(45, 1, 0.01, 1000);
           camera.position.set(0, 0.6, 3.2);

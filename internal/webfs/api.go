@@ -195,12 +195,36 @@ func (r *request) handleURL(w http.ResponseWriter) {
 // Range/条件请求交给 http.ServeContent,内核的读句柄本身就是 io.Seeker
 // (Seek 只重定位偏移,不整文件入内存)。
 func (r *request) handleDownload(w http.ResponseWriter) {
-	ctx := r.raw.Context()
 	logical, err := queryPath(r.raw.URL.Query(), "path")
 	if err != nil {
 		fail(w, err)
 		return
 	}
+	r.serveFile(w, logical, r.raw.URL.Query().Get("download") == "1", false)
+}
+
+// handleRaw 提供保留目录结构的原始文件出口,供 HTML 预览 iframe 加载。
+// 路径来自 URL 本身:/api/raw/dir/page.html 的相对资源会自然解析成
+// /api/raw/dir/app.css、/api/raw/dir/logo.png,不会落到 SPA 的 index.html。
+// HTML/SVG 加上 CSP sandbox:即使有人在顶层标签页直接打开上传的恶意 HTML,
+// 它也只能在独立源里跑脚本,不能读取本应用的 API/凭据。
+func (r *request) handleRaw(w http.ResponseWriter) {
+	logical, err := logicalPath(strings.TrimPrefix(r.raw.URL.Path, "/api/raw/"))
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	if logical == "/" || hasTrailingSlash(logical) {
+		writeJSON(w, http.StatusBadRequest, errorBody("invalid", "path is a directory"))
+		return
+	}
+	r.serveFile(w, logical, false, true)
+}
+
+// serveFile 是 download/raw 两条出口的共用实现。raw=true 时按 HTML/SVG
+// 预览的威胁模型加沙箱 CSP。
+func (r *request) serveFile(w http.ResponseWriter, logical string, download, raw bool) {
+	ctx := r.raw.Context()
 	fi, err := r.fs.Stat(ctx, logical)
 	if err != nil {
 		fail(w, err)
@@ -225,10 +249,13 @@ func (r *request) handleDownload(w http.ResponseWriter) {
 	if ct != "" {
 		w.Header().Set("Content-Type", ct)
 	}
+	if raw && (strings.HasPrefix(ct, "text/html") || strings.HasPrefix(ct, "image/svg+xml")) {
+		w.Header().Set("Content-Security-Policy", "sandbox allow-scripts allow-forms allow-modals allow-popups allow-downloads")
+	}
 	if fi.ETag != "" {
 		w.Header().Set("ETag", `"`+fi.ETag+`"`)
 	}
-	if r.raw.URL.Query().Get("download") == "1" {
+	if download {
 		w.Header().Set("Content-Disposition", contentDisposition("attachment", name))
 	} else {
 		w.Header().Set("Content-Disposition", contentDisposition("inline", name))

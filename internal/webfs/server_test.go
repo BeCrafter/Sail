@@ -217,6 +217,36 @@ func TestRangeRequestIsServed(t *testing.T) {
 	}
 }
 
+// HTML 预览用 /api/raw/<路径> 保留目录关系,相对 CSS/JS 才能继续命中。
+func TestRawPathServesRelativeAssets(t *testing.T) {
+	g := newGateway(t, 0, "")
+	g.upload(t, "/site/index.html", `<link rel="stylesheet" href="./app.css"><script src="app.js"></script>`, "text/html; charset=utf-8")
+	g.upload(t, "/site/app.css", "body{color:red}", "text/css")
+	g.upload(t, "/site/app.js", "console.log(1)", "text/javascript")
+
+	resp, body := g.do(t, http.MethodGet, "/api/raw/site/index.html", nil, nil)
+	if resp.StatusCode != http.StatusOK || !strings.Contains(string(body), "app.css") {
+		t.Fatalf("raw HTML 失败: %d %q", resp.StatusCode, body)
+	}
+	if !strings.Contains(resp.Header.Get("Content-Security-Policy"), "sandbox") {
+		t.Fatalf("raw HTML 缺少沙箱 CSP: %q", resp.Header.Get("Content-Security-Policy"))
+	}
+	for _, p := range []string{"/api/raw/site/app.css", "/api/raw/site/app.js"} {
+		resp, body = g.do(t, http.MethodGet, p, nil, nil)
+		if resp.StatusCode != http.StatusOK || len(body) == 0 {
+			t.Fatalf("raw 子资源 %s 失败: %d %q", p, resp.StatusCode, body)
+		}
+	}
+	resp, body = g.do(t, http.MethodGet, "/api/raw/site/app.js", nil, map[string]string{"Range": "bytes=0-2"})
+	if resp.StatusCode != http.StatusPartialContent || string(body) != "con" {
+		t.Fatalf("raw Range 失败: %d %q", resp.StatusCode, body)
+	}
+	// 路径逃逸必须被 logicalPath 拦截。
+	if resp, _ = g.do(t, http.MethodGet, "/api/raw/site/%2e%2e/secret", nil, nil); resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("raw 路径逃逸应 404,得到 %d", resp.StatusCode)
+	}
+}
+
 func TestMkdirRenameDelete(t *testing.T) {
 	g := newGateway(t, 0, "")
 

@@ -687,11 +687,13 @@ What you get in the browser:
 - **Operate**: rename (files and directories), delete, new folder, and "copy link" — a CDN public
   URL when `cdn-domain` is configured, otherwise a presigned URL.
 - **Preview**: images (zoom/pan), video, audio, PDF (rendered by the browser's built-in viewer),
-  CSV tables, Markdown, sandboxed HTML, syntax-highlighted source code and plain text; Office
-  documents (DOCX/XLSX/XLSM/PPTX; legacy .doc/.xls/.ppt prompt you to re-save), 3D models
-  (GLB/GLTF/OBJ/STL), archives (ZIP/TAR/TAR.GZ/TGZ/GZ entry listing and per-file download),
-  PSD, multi-page TIFF and HEIC/HEIF. The parsers are lazy-loaded, so the first page still ships
-  only the UI itself; formats without a preview (e.g. RAR/7z) fall back to a download button.
+  CSV tables, Markdown, sandboxed HTML (scripts run and relative assets resolve against the
+  original folder, without gaining same-origin access to the app), syntax-highlighted source code
+  and plain text; Office documents (DOCX/XLSX/XLSM/PPTX, with XLSX formula results; legacy
+  .doc/.xls/.ppt prompt you to re-save), 3D models (GLB/GLTF/OBJ/STL), archives
+  (ZIP/TAR/TAR.GZ/TGZ/GZ entry listing and per-file download), PSD, multi-page TIFF and HEIC/HEIF.
+  The parsers are lazy-loaded, so the first page still ships only the UI itself; formats without a
+  preview (e.g. RAR/7z) fall back to a download button.
 
 ### Flags
 
