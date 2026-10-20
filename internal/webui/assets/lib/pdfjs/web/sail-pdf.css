@@ -1,0 +1,202 @@
+/*
+ * Sail 资源库 PDF 预览外观。
+ *
+ * PDF.js viewer 自带的工具栏在 Sail 中由外层预览顶栏接管(页码、缩放、搜索),
+ * 这里只保留 PDF 纸面和查找条。颜色与 app.css 的 Calm Glass 令牌保持一致,
+ * 但 viewer 是独立文档,所以用固定颜色而不是 var(--...)。
+ */
+
+:root {
+  --toolbar-height: 0px !important;
+  --body-bg-color: #eef0f3;
+  --main-color: #1b222e;
+  --toolbar-icon-bg-color: #1b222e;
+  --toolbar-icon-hover-bg-color: #1b222e;
+  --field-color: #1b222e;
+  --field-bg-color: #ffffff;
+  --field-border-color: rgba(18, 25, 38, 0.18);
+  --button-hover-color: rgba(18, 25, 38, 0.07);
+  --toolbar-bg-color: #ffffff;
+  --toolbar-border-color: rgba(18, 25, 38, 0.1);
+  --toolbar-box-shadow: none;
+  --scrollbar-color: rgba(18, 25, 38, 0.1) transparent;
+  --scrollbar-bg-color: transparent;
+  --page-bg-color: #ffffff;
+  color-scheme: light;
+}
+
+html[data-sail-theme="dark"] {
+  --body-bg-color: #0b0d11;
+  --main-color: #e9ecf1;
+  --toolbar-icon-bg-color: #e9ecf1;
+  --toolbar-icon-hover-bg-color: #e9ecf1;
+  --field-color: #e9ecf1;
+  --field-bg-color: #171b22;
+  --field-border-color: rgba(255, 255, 255, 0.15);
+  --button-hover-color: rgba(255, 255, 255, 0.08);
+  --toolbar-bg-color: #12151a;
+  --toolbar-border-color: rgba(255, 255, 255, 0.08);
+  --toolbar-box-shadow: none;
+  --scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  --scrollbar-bg-color: transparent;
+  --page-bg-color: #ffffff;
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--body-bg-color);
+}
+
+/* 外层顶栏已经提供导航/缩放/搜索,隐藏 PDF.js 自带工具栏。 */
+.toolbar,
+#toolbarContainer,
+#secondaryToolbarToggle {
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+  padding: 0 !important;
+}
+
+#outerContainer,
+#mainContainer,
+#viewerContainer {
+  top: 0 !important;
+}
+
+#mainContainer {
+  width: 100% !important;
+}
+
+#viewerContainer {
+  inset: 0 !important;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-color);
+}
+
+#viewerContainer::-webkit-scrollbar,
+.sidebar ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+#viewerContainer::-webkit-scrollbar-thumb,
+.sidebar ::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-color);
+  border-radius: 5px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+#viewerContainer::-webkit-scrollbar-corner,
+.sidebar ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 纸面:与 Markdown/HTML 预览的浅色阅读区保持同一套阴影和圆角。 */
+.pdfViewer .page {
+  margin: 14px auto !important;
+  border: 1px solid rgba(18, 25, 38, 0.12) !important;
+  border-radius: 2px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.14);
+  background-color: #fff !important;
+}
+
+html[data-sail-theme="dark"] .pdfViewer .page {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* 搜索条:外层只放搜索入口,真正的查找条仍由 PDF.js 提供并浮在右上角。 */
+#findbar,
+.editorParamsToolbar {
+  visibility: visible !important;
+  position: fixed !important;
+  top: 8px !important;
+  inset-inline-end: 12px !important;
+  inset-inline-start: auto !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 4px !important;
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: min(520px, calc(100% - 24px)) !important;
+  height: auto !important;
+  padding: 5px 8px !important;
+  white-space: normal !important;
+  color: var(--main-color) !important;
+  background: var(--field-bg-color) !important;
+  border: 1px solid var(--field-border-color) !important;
+  border-radius: 9px !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18) !important;
+  font: 13px/30px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif !important;
+  z-index: 20 !important;
+}
+
+#findbar.hidden,
+.editorParamsToolbar.hidden {
+  display: none !important;
+}
+
+#findbar input,
+#findbar button,
+#findbar label,
+.editorParamsToolbar input,
+.editorParamsToolbar button,
+.editorParamsToolbar label {
+  font: inherit !important;
+  color: inherit !important;
+}
+
+#findInput {
+  width: 180px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  background: var(--field-bg-color) !important;
+  color: var(--field-color) !important;
+  border: 1px solid var(--field-border-color) !important;
+}
+
+#findbar > *,
+#findbar .toolbarHorizontalGroup {
+  height: auto !important;
+  width: auto !important;
+  flex: none !important;
+  justify-content: flex-start !important;
+  padding: 0 !important;
+}
+
+#findbar .toolbarButton {
+  width: 28px !important;
+  height: 28px !important;
+  aspect-ratio: auto !important;
+}
+
+#findbar .splitToolbarButtonSeparator {
+  display: none !important;
+}
+
+#findbar .toolbarLabel,
+#findResultsCount,
+#findMsg {
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  line-height: 22px !important;
+}
+
+#findResultsCount {
+  padding: 0 2px !important;
+  background: transparent !important;
+  color: #667085 !important;
+}
+
+html[data-sail-theme="dark"] #findResultsCount {
+  color: #99a1ad !important;
+}

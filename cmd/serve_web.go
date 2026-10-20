@@ -54,10 +54,11 @@ Design boundaries:
     hides and which makes "copy public link" refuse (a presigned URL would return the manifest).
   - Directory listings are cached for --dir-cache-ttl; your own writes invalidate them at once,
     changes made elsewhere become visible within one TTL.
-  - Previewers ship in the binary and load on demand: images, video, audio, PDF, CSV, Markdown,
-    HTML and code; Office (DOCX/XLSX/XLSM/PPTX), 3D (GLB/GLTF/OBJ/STL), archives
-    (ZIP/TAR/TAR.GZ/TGZ/GZ), PSD, multi-page TIFF and HEIC/HEIF. XLSX formula results are
-    evaluated for display, and formats without a preview fall back to download.
+  - Previewers ship in the binary and load on demand: images, video, audio, PDF (PDF.js viewer),
+    CSV, Markdown, HTML and code; Office (DOCX/XLSX/XLSM/PPTX), 3D (GLB/GLTF/OBJ/STL), archives
+    (ZIP/TAR/TAR.GZ/TGZ/GZ with directory navigation and nested-archive preview), PSD, multi-page
+    TIFF and HEIC/HEIF. XLSX formula results are evaluated for display, and formats without a
+    preview fall back to download.
 
 Examples:
   sail serve web --profile prod --listen :9090

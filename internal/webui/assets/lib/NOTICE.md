@@ -2,7 +2,7 @@
 
 These files are checked in because `sail` must stay a single static binary with
 no runtime dependencies (no Node, no npm, no CDN). They are served as-is by
-`internal/webui` and are not modified.
+`internal/webui` except for the PDF.js viewer hook noted at the end of this file.
 
 | File | Version | License | Project |
 | --- | --- | --- | --- |
@@ -18,6 +18,7 @@ no runtime dependencies (no Node, no npm, no CDN). They are served as-is by
 | `lib/UTIF.js` | 3.1.0 | MIT | <https://github.com/photopea/UTIF.js> |
 | `lib/ag-psd.bundle.js` | 27.0.0 | MIT | <https://github.com/Agamnentzar/ag-psd> |
 | `lib/heic2any.min.js` | 0.0.4 (libheif WASM) | MIT | <https://github.com/alexcorvi/heic2any> |
+| `lib/pdfjs/` | 6.2.108 | Apache-2.0 | <https://github.com/mozilla/pdf.js> |
 
 `lib/preview_xlsx.js`, `lib/preview_xlsx_images.js` and `lib/preview_docx_fonts.js`
 are Sail's own xlsx grid / OOXML image / DOCX CJK-font helpers (ported from the
@@ -36,7 +37,9 @@ The Office/3D/decoder libraries above are **lazy-loaded** by `app.js` the first
 time a matching file is opened (`loadLib` / `loadModule`), so the initial page
 still ships only Vue, highlight.js and the app itself.
 
-Libraries intentionally **not** vendored: PDF rendering uses the browser's
-built-in viewer (an `<iframe>` pointing at `/api/file`), so `pdf.js` and its
-8 MB of assets are not shipped; Markdown is rendered by a small built-in
-renderer in `app.js` (escaped first, no raw HTML passthrough).
+PDF rendering uses the vendored PDF.js viewer (`lib/pdfjs/web/viewer.html`) so
+the preview matches the Vanor app's page layout, search and selection behavior.
+`web/sail-pdf-theme.js` and `web/sail-pdf.css` are Sail's small theme/chrome
+adapters; the upstream viewer/build files are otherwise unmodified. Markdown is
+rendered by a small built-in renderer in `app.js` (escaped first, no raw HTML
+passthrough).

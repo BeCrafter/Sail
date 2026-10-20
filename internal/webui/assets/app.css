@@ -455,6 +455,9 @@ button, input { font-family: inherit; }
 .preview .stage iframe { width: 100%; height: 100%; border: none; background: var(--surface-page); }
 .preview .stage .frame-wrap { width: 100%; height: 100%; padding: 10px; }
 .preview .stage .frame-wrap iframe { border-radius: 10px; }
+/* PDF.js 自带纸面和滚动区,不再套内边距,让阅读区域尽量大。 */
+.preview .stage .frame-wrap.pdf-frame { padding: 0; }
+.preview .stage .frame-wrap.pdf-frame iframe { border-radius: 0; background: var(--bg-sunken); }
 /* HTML 与 Markdown 一样按阅读宽度居中,不在宽屏上铺满整行。 */
 .preview .stage .frame-wrap.html-frame { width: min(100%, 960px); max-width: 960px; margin: 0 auto; }
 .preview .stage .code-box {
@@ -635,34 +638,58 @@ button, input { font-family: inherit; }
   color: rgba(255, 255, 255, 0.78); font-size: 11px; white-space: nowrap; pointer-events: none;
 }
 
-/* 压缩包:目录列表 + 单文件下载。 */
+/* 压缩包:可导航目录 + 内层文件预览 + 嵌套压缩包。 */
 .preview .stage .pv-archive {
   flex: 1; align-self: stretch; min-height: 0; display: flex; flex-direction: column;
   background: var(--surface-page);
 }
 .pv-archive-head {
-  flex: none; display: flex; align-items: center; gap: 9px; padding: 10px 14px;
+  flex: none; display: flex; align-items: center; gap: 9px; padding: 9px 14px;
   border-bottom: 1px solid var(--line); color: var(--fg-dim); font-size: 12px;
 }
+.arc-up {
+  flex: none; appearance: none; width: 27px; height: 27px; padding: 0; border-radius: 7px;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--fg-dim);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.arc-up:hover { background: var(--bg-hover); color: var(--fg); }
+.arc-up svg { width: 14px; height: 14px; }
+.pv-archive-head .ico { flex: none; display: inline-flex; color: var(--accent); }
 .pv-archive-head .ico svg { width: 17px; height: 17px; display: block; }
-.pv-archive-head .txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arc-bar { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.arc-crumb { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; row-gap: 1px; min-width: 0; overflow: hidden; }
+.arc-crumb-btn {
+  appearance: none; border: 0; background: transparent; padding: 0 2px; min-width: 0; max-width: 100%;
+  color: var(--fg-dim); font: inherit; font-weight: 600; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; cursor: pointer; border-radius: 4px;
+}
+.arc-crumb-btn:hover { color: var(--accent); background: var(--accent-soft); }
+.arc-crumb-btn.cur { color: var(--fg); }
+.arc-sep { flex: none; color: var(--fg-faint); opacity: .7; }
+.arc-sum { color: var(--fg-faint); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pv-archive-list { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
 .pv-archive-row {
-  display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+  display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 14px;
   border-bottom: 1px solid var(--line); font-size: 12px; color: var(--fg-dim);
+  cursor: pointer; user-select: none;
 }
-.pv-archive-row:hover { background: var(--bg-soft); }
+.pv-archive-row:hover, .pv-archive-row:focus-visible { background: var(--bg-soft); }
 .pv-archive-row .ico { flex: none; display: inline-flex; color: var(--fg-faint); }
 .pv-archive-row .ico svg { width: 16px; height: 16px; display: block; }
 .pv-archive-row.dir .ico { color: var(--accent); }
 .pv-archive-row.dir .nm { color: var(--fg); font-weight: 600; }
+.pv-archive-row.nested .ico { color: var(--accent); }
+.pv-archive-row.nested .nm { color: var(--fg); }
 .pv-archive-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pv-archive-row .sz { flex: none; color: var(--fg-faint); font-variant-numeric: tabular-nums; }
-.pv-archive-row .lnk {
-  flex: none; appearance: none; border: 1px solid var(--line-strong); background: transparent;
-  color: var(--accent); border-radius: 6px; height: 28px; padding: 0 10px; font-size: 11px; cursor: pointer;
+.arc-actions { flex: none; display: inline-flex; align-items: center; }
+.pv-archive-row .arc-action {
+  appearance: none; border: 1px solid transparent; background: transparent; color: var(--accent);
+  border-radius: 6px; width: 28px; height: 28px; padding: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
 }
-.pv-archive-row .lnk:hover { background: var(--accent-soft); }
+.pv-archive-row .arc-action svg { width: 14px; height: 14px; }
+.pv-archive-row .arc-action:hover { background: var(--accent-soft); border-color: var(--line); }
 .pv-archive-empty { padding: 30px 16px; text-align: center; color: var(--fg-faint); font-size: 12px; }
 .pv-archive-note {
   flex: none; padding: 7px 14px calc(7px + env(safe-area-inset-bottom));
@@ -804,6 +831,11 @@ body.no-scroll { overflow: hidden; }
   .preview-top .cnt:not(.pv-page) { display: none; }
   .pbtn { min-width: 26px; height: 24px; padding: 0 6px; }
   .pbtn.pct { width: 42px; }
+  .pbtn.pdf-zoom { display: none; }
+  .pv-archive-head { gap: 7px; padding: 7px 10px; }
+  .arc-sum { display: none; }
+  .pv-archive-row { padding: 6px 10px; }
+  .pv-archive-row .sz { display: none; }
   .pv-nav { width: 34px; height: 46px; border-radius: 10px; }
   .pv-nav.left { left: 6px; }
   .pv-nav.right { right: 6px; }

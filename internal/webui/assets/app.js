@@ -40,7 +40,7 @@
       cancel: "取消", confirm: "确定", save: "保存",
       deleted: "已删除", renamed: "已重命名", created: "已创建", copied: "链接已复制", 
       uploadFailed: "上传失败", uploading: "上传中", uploaded: "上传完成", 
-      close: "关闭", prev: "上一个", next: "下一个", zoomIn: "放大", zoomOut: "缩小", reset: "重置",
+      close: "关闭", prev: "上一个", next: "下一个", zoomIn: "放大", zoomOut: "缩小", reset: "重置", fitWidth: "适应宽度", findInPDF: "在 PDF 中查找",
       noPreview: "该文件暂时无法预览", unsupportedPreview: "此格式暂不支持在线预览,可先下载查看",
       mediaError: "无法播放此视频或音频,可能是文件损坏,或浏览器不支持该编码",
       previewFailed: "预览加载失败", loadingPreview: "正在加载预览…",
@@ -49,6 +49,7 @@
       tooBigImage: "文件超过 80 MB,无法在线预览,请下载查看",
       imageTooLarge: "图片像素尺寸过大,无法在浏览器中解码,请下载查看",
       tooBigArchive: "压缩包超过 120 MB,无法在线预览,请下载解压",
+      tooBigText: "文件超过 32 MB,无法在线预览,请下载查看",
       archiveTooBigUnpacked: "解压后体积过大,无法在浏览器中预览,请下载后用本地工具解压",
       legacyDoc: "旧版 .doc 暂不支持在线预览,请另存为 .docx 后打开",
       legacyPpt: "旧版 .ppt 暂不支持在线预览,请另存为 .pptx 后打开",
@@ -58,8 +59,12 @@
       xlsxReady: "就绪", xlsxSum: "求和={sum}", xlsxAvg: "平均={avg}", xlsxCount: "计数={count}", xlsxNumCount: "数值={n}",
       archiveUnsupported: "此压缩格式暂不支持在线预览,可先下载后用本地工具解压",
       archiveEmpty: "压缩包为空", archiveSummary: "{n} 个文件 · 解压后 {size}", archiveTooMany: "条目过多,仅显示前 {n} 个",
+      archiveBack: "返回压缩包", archiveUp: "上一级目录", archiveRoot: "压缩包根目录",
+      archiveEntryUnsupported: "此文件格式暂不支持在线预览,可下载后查看",
+      archiveEntryFailed: "压缩包内的文件读取失败", archiveLoading: "正在读取压缩包…",
+      archiveOpen: "打开", archiveContents: "压缩包内容", archiveNested: "压缩包内的压缩包",
       binary: "二进制文件",
-      textTruncated: "(仅显示前 4 MB)", pdfHint: "PDF 由浏览器原生阅读器打开",
+      textTruncated: "(仅显示前 4 MB)", pdfHint: "PDF 由内置 PDF.js 阅读器打开",
       copyFailed: "复制失败", needAuth: "登录已失效,请刷新页面重新输入账号",
       NotFound: "对象不存在", exists: "同名对象或目录已存在", too_large: "文件超过服务端上限",
       quota_exceeded: "超出空间配额", insufficient_storage: "存储空间不足", unsupported: "该能力未启用",
@@ -92,7 +97,7 @@
       cancel: "Cancel", confirm: "Confirm", save: "Save",
       deleted: "Deleted", renamed: "Renamed", created: "Created", copied: "Link copied",
       uploadFailed: "Upload failed", uploading: "Uploading", uploaded: "Uploaded",
-      close: "Close", prev: "Previous", next: "Next", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Reset",
+      close: "Close", prev: "Previous", next: "Next", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Reset", fitWidth: "Fit width", findInPDF: "Find in PDF",
       noPreview: "This file cannot be previewed", unsupportedPreview: "Preview is not available for this format; download it instead",
       mediaError: "Cannot play this video or audio. The file may be damaged or use a codec this browser does not support.",
       previewFailed: "Failed to load preview", loadingPreview: "Loading preview…",
@@ -101,6 +106,7 @@
       tooBigImage: "File is larger than 80 MB and cannot be previewed here; download it instead",
       imageTooLarge: "The image has too many pixels to decode in the browser; download it instead",
       tooBigArchive: "Archive is larger than 120 MB and cannot be previewed here; download and extract it",
+      tooBigText: "File is larger than 32 MB and cannot be previewed here; download it instead",
       archiveTooBigUnpacked: "The archive is too large after decompression to preview here; download and extract it locally",
       legacyDoc: "Legacy .doc is not supported. Save it as .docx and reopen.",
       legacyPpt: "Legacy .ppt is not supported. Save it as .pptx and reopen.",
@@ -110,8 +116,12 @@
       xlsxReady: "Ready", xlsxSum: "Sum={sum}", xlsxAvg: "Avg={avg}", xlsxCount: "Count={count}", xlsxNumCount: "Numeric={n}",
       archiveUnsupported: "This archive format cannot be previewed here; download it and extract it locally",
       archiveEmpty: "The archive is empty", archiveSummary: "{n} files · {size} uncompressed", archiveTooMany: "Too many entries; showing the first {n}",
+      archiveBack: "Back to archive", archiveUp: "Parent folder", archiveRoot: "Archive root",
+      archiveEntryUnsupported: "Preview is not available for this format; download the file to open it",
+      archiveEntryFailed: "Could not read the file inside this archive", archiveLoading: "Reading archive…",
+      archiveOpen: "Open", archiveContents: "Archive contents", archiveNested: "Nested archive",
       binary: "Binary file",
-      textTruncated: "(showing the first 4 MB)", pdfHint: "PDF is rendered by the browser's built-in viewer",
+      textTruncated: "(showing the first 4 MB)", pdfHint: "PDF is rendered by the built-in PDF.js viewer",
       copyFailed: "Copy failed", needAuth: "Session expired — reload the page and sign in again",
       NotFound: "Not found", exists: "A file or folder with that name already exists", too_large: "File exceeds the server limit",
       quota_exceeded: "Quota exceeded", insufficient_storage: "Not enough storage", unsupported: "Not enabled",
@@ -190,7 +200,17 @@
     c: "code", h: "code", cpp: "code", hpp: "code", cs: "code", sh: "code", bash: "code", zsh: "code",
     css: "code", scss: "code", less: "code", sql: "code", lua: "code", r: "code", pl: "code", scala: "code",
     txt: "text", log: "text", text: "text", ini2: "text", env: "text",
+    mod: "text", sum: "text", lock: "text", gitignore: "text", gitattributes: "text",
+    editorconfig: "text", npmrc: "text", yarnrc: "text", dockerignore: "text", properties: "text",
+    conf: "text", config: "text", service: "text", mk: "text", cmake: "text", gradle: "text",
+    proto: "code", graphql: "code", gql: "code", nix: "code", tf: "code", hcl: "code",
   };
+
+  // 压缩包里没有对象存储的 Content-Type;这些无扩展名/特殊文件按文本预览。
+  const TEXT_BASENAMES = new Set([
+    "dockerfile", "makefile", "license", "licence", "readme", "changelog", "authors",
+    "notice", "copying", "contributing", "codeowners", "procfile", "vagrantfile",
+  ]);
 
   const HLJS_LANG = {
     js: "javascript", mjs: "javascript", cjs: "javascript", ts: "typescript", tsx: "typescript", jsx: "javascript",
@@ -220,6 +240,29 @@
     return null;
   }
 
+  function extIsArchive(name) {
+    return EXT_KIND[extOf(name)] === "archive";
+  }
+
+  function archiveKindOf(name) {
+    const kind = kindOf({ name });
+    if (kind) return kind;
+    const base = String(name || "").split("/").pop().toLowerCase();
+    if (TEXT_BASENAMES.has(base)) return "text";
+    return null;
+  }
+
+  // Sail 内置的压缩包读取器覆盖 zip / tar / tar.gz / 单文件 gz;
+  // bz2、xz、7z、rar、zst 仍显示压缩包图标,但打开时明确提示下载后解压。
+  function archiveFlavor(name) {
+    const ext = extOf(name);
+    if (ext === "zip") return "zip";
+    if (ext === "tar") return "tar";
+    if (ext === "tgz") return "targz";
+    if (ext === "gz") return /\.tar\.gz$/i.test(String(name || "")) ? "targz" : "gz";
+    return "";
+  }
+
   const KIND_ICON = {
     dir: "folder", image: "image", video: "video", audio: "audio", pdf: "pdf", md: "file",
     csv: "office", html: "code", docx: "office", xlsx: "office", pptx: "office",
@@ -239,6 +282,34 @@
     markdown: "md", jpeg: "jpg", tiff: "tif", psb: "psd", heif: "heic", yaml: "yml",
     htm: "html", apng: "png", jsonc: "json", text: "txt",
   };
+
+  // 压缩包内条目没有对象存储的 Content-Type,生成 Blob / PDF 阅读器 URL 时
+  // 按扩展名补一个。只覆盖预览会直接交给浏览器的格式。
+  const MIME_BY_EXT = {
+    png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", webp: "image/webp",
+    svg: "image/svg+xml", bmp: "image/bmp", ico: "image/x-icon", avif: "image/avif",
+    mp4: "video/mp4", webm: "video/webm", mov: "video/quicktime", mkv: "video/x-matroska",
+    avi: "video/x-msvideo", m4v: "video/mp4", ogv: "video/ogg",
+    mp3: "audio/mpeg", wav: "audio/wav", flac: "audio/flac", ogg: "audio/ogg", m4a: "audio/mp4",
+    aac: "audio/aac", opus: "audio/ogg",
+    pdf: "application/pdf", html: "text/html;charset=utf-8", htm: "text/html;charset=utf-8",
+    md: "text/markdown;charset=utf-8", markdown: "text/markdown;charset=utf-8",
+    csv: "text/csv;charset=utf-8", tsv: "text/tab-separated-values;charset=utf-8",
+    txt: "text/plain;charset=utf-8", log: "text/plain;charset=utf-8", json: "application/json;charset=utf-8",
+    css: "text/css;charset=utf-8", js: "text/javascript;charset=utf-8", mjs: "text/javascript;charset=utf-8",
+    xml: "application/xml;charset=utf-8", svgz: "image/svg+xml",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    xlsm: "application/vnd.ms-excel.sheet.macroEnabled.12",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    zip: "application/zip", tar: "application/x-tar", gz: "application/gzip", tgz: "application/gzip",
+    glb: "model/gltf-binary", gltf: "model/gltf+json", obj: "text/plain;charset=utf-8", stl: "model/stl",
+    psd: "image/vnd.adobe.photoshop", tif: "image/tiff", tiff: "image/tiff", heic: "image/heic", heif: "image/heif",
+  };
+
+  function mimeOf(name) {
+    return MIME_BY_EXT[extOf(name)] || "application/octet-stream";
+  }
 
   // ---------------- 小工具 ----------------
   function fmtSize(n) {
@@ -356,6 +427,7 @@
   const PV_IMAGE_PIXELS = 80 * 1000 * 1000;
   const PV_ARCHIVE_MAX = 120 * 1024 * 1024;
   const PV_ARCHIVE_UNPACKED_MAX = 512 * 1024 * 1024;
+  const PV_TEXT_MAX = 4 * 1024 * 1024;
 
   // 解析 CSV/TSV:支持引号包裹、引号转义、字段内换行。
   function parseDelimited(text, delim) {
@@ -693,19 +765,29 @@
   <!-- 预览 -->
   <div v-if="preview" class="preview">
     <div class="preview-top">
+      <button class="pbtn" v-if="preview.arcEntry" :title="tt.archiveBack" @click="backToArchive" v-html="icons.chevronLeft"></button>
       <div class="nm" :title="preview.entry.name">{{ preview.entry.name }}</div>
-      <template v-if="(preview.kind === 'pptx' && preview.pages) || (preview.decoded && preview.pages > 1)">
+      <template v-if="preview.kind === 'pdf'">
+        <button class="pbtn" :title="tt.prev" @click="pdfGo(-1)" v-html="icons.chevronLeft"></button>
+        <span class="cnt pv-page">{{ preview.page || 1 }} / {{ preview.pages || 1 }}</span>
+        <button class="pbtn" :title="tt.next" @click="pdfGo(1)" v-html="icons.chevronRight"></button>
+        <button class="pbtn pdf-zoom" :title="tt.zoomOut" @click="pdfZoom(0.9)" v-html="icons.zoomOut"></button>
+        <button class="pbtn pct pdf-zoom" :title="tt.fitWidth" @click="pdfFit">{{ pdfScalePct }}</button>
+        <button class="pbtn pdf-zoom" :title="tt.zoomIn" @click="pdfZoom(1.25)" v-html="icons.zoomIn"></button>
+        <button class="pbtn pdf-find" :title="tt.findInPDF" @click="pdfSearch" v-html="icons.search"></button>
+      </template>
+      <template v-else-if="(preview.kind === 'pptx' && preview.pages) || (preview.decoded && preview.pages > 1)">
         <button class="pbtn" :title="tt.prev" @click="previewGo(-1)" v-html="icons.chevronLeft"></button>
         <span class="cnt pv-page">{{ preview.page + 1 }} / {{ preview.pages }}</span>
         <button class="pbtn" :title="tt.next" @click="previewGo(1)" v-html="icons.chevronRight"></button>
       </template>
-      <span class="cnt" v-else-if="previewIndex >= 0">{{ previewIndex + 1 }} / {{ previewables.length }}</span>
+      <span class="cnt" v-else-if="previewIndex >= 0 && !preview.arcEntry">{{ previewIndex + 1 }} / {{ previewables.length }}</span>
       <button class="pbtn pct" v-if="preview.kind === 'image'" :title="tt.reset" @click="resetZoom">{{ Math.round(pv.zoom * 100) }}%</button>
       <button class="pbtn" v-if="preview.kind === 'model'" :title="tt.resetView" @click="resetModelCamera" v-html="icons.reset"></button>
       <button class="pbtn" v-if="preview.kind === 'image'" :title="tt.zoomOut" @click="zoom(0.8)" v-html="icons.zoomOut"></button>
       <button class="pbtn" v-if="preview.kind === 'image'" :title="tt.zoomIn" @click="zoom(1.25)" v-html="icons.zoomIn"></button>
-      <button class="pbtn" v-if="canLink" :title="tt.copyLink" @click="copyLink(preview.entry)" v-html="icons.link"></button>
-      <button class="pbtn" :title="tt.download" @click="downloadEntry(preview.entry)"><span v-html="icons.download"></span></button>
+      <button class="pbtn" v-if="canLink && !preview.arcEntry" :title="tt.copyLink" @click="copyLink(preview.entry)" v-html="icons.link"></button>
+      <button class="pbtn" :title="tt.download" @click="downloadCurrent"><span v-html="icons.download"></span></button>
       <button class="pbtn" :title="tt.close" @click="closePreview" v-html="icons.close"></button>
     </div>
 
@@ -715,10 +797,10 @@
       <div class="pv-empty" v-if="preview.message">
         <div class="empty-ico" v-html="icons.warn"></div>
         <div>{{ preview.message }}</div>
-        <button class="btn" @click="downloadEntry(preview.entry)"><span v-html="icons.download"></span>{{ tt.download }}</button>
+        <button class="btn" @click="downloadCurrent"><span v-html="icons.download"></span>{{ tt.download }}</button>
       </div>
       <template v-else-if="preview.kind === 'image'">
-        <img :src="preview.url" :alt="preview.entry.name" :class="{ zoomed: pv.zoom > 1 }"
+        <img v-if="preview.url" :src="preview.url" :alt="preview.entry.name" :class="{ zoomed: pv.zoom > 1 }"
              :style="{ transform: 'translate(' + pv.x + 'px,' + pv.y + 'px) scale(' + pv.zoom + ')' }"
              @pointerdown="onImgDown" @pointermove="onImgMove" @pointerup="onImgUp" @pointercancel="onImgUp"
              draggable="false" @error="preview && (preview.error = true)" />
@@ -728,21 +810,26 @@
         </div>
       </template>
       <div class="pv-media" v-else-if="preview.kind === 'video' || preview.kind === 'audio'">
-        <video v-if="preview.kind === 'video'" :src="preview.url" controls autoplay playsinline
+        <video v-if="preview.kind === 'video' && preview.url" :src="preview.url" controls autoplay playsinline
                @canplay="preview && (preview.loading = false, preview.mediaError = false)"
                @error="preview && (preview.loading = false, preview.mediaError = true)"></video>
-        <audio v-else :src="preview.url" controls autoplay
+        <audio v-else-if="preview.url" :src="preview.url" controls autoplay
                @canplay="preview && (preview.loading = false, preview.mediaError = false)"
                @error="preview && (preview.loading = false, preview.mediaError = true)"></audio>
         <div class="pv-empty" v-if="preview.mediaError">
           <div class="empty-ico" v-html="icons.warn"></div>
           <div>{{ tt.mediaError }}</div>
-          <a :href="preview.url + '&download=1'" download>{{ tt.download }}</a>
+          <button class="btn" @click="downloadCurrent"><span v-html="icons.download"></span>{{ tt.download }}</button>
         </div>
       </div>
-      <div class="frame-wrap" v-else-if="preview.kind === 'pdf'"><iframe :src="preview.url" :title="preview.entry.name"></iframe></div>
+      <div class="frame-wrap pdf-frame" v-else-if="preview.kind === 'pdf' && preview.url">
+        <iframe ref="pdfFrame" :src="pdfViewerURL(preview.url)" :title="preview.entry.name" @load="onPdfLoad"></iframe>
+      </div>
       <div class="frame-wrap html-frame" v-else-if="preview.kind === 'html'">
-        <iframe :src="preview.url" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
+        <iframe v-if="preview.htmlSrcdoc" :srcdoc="preview.htmlSrcdoc"
+                sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
+                :title="preview.entry.name"></iframe>
+        <iframe v-else-if="preview.url" :src="preview.url" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
                 :title="preview.entry.name"></iframe>
       </div>
       <div class="pv-office docx" v-else-if="preview.kind === 'docx'" ref="docxHost"></div>
@@ -754,19 +841,31 @@
       </div>
       <div class="pv-archive" v-else-if="preview.kind === 'archive'">
         <div class="pv-archive-head">
+          <button v-if="canArcUp" class="arc-up" :title="tt.archiveUp" @click="arcGoUp" v-html="icons.chevronLeft"></button>
           <span class="ico" v-html="icons.archive"></span>
-          <span class="txt">{{ preview.archiveSummary }}</span>
+          <div class="arc-bar">
+            <div class="arc-crumb">
+              <template v-for="(c, i) in arcCrumbs" :key="i">
+                <span v-if="i" class="arc-sep">/</span>
+                <button class="arc-crumb-btn" :class="{ cur: i === arcCrumbs.length - 1 }" :title="c.name" @click="arcGoCrumb(i)">{{ c.name }}</button>
+              </template>
+            </div>
+            <div class="arc-sum">{{ arcSummary }}</div>
+          </div>
         </div>
         <div class="pv-archive-list">
-          <div v-for="(e, i) in preview.archive" :key="i" class="pv-archive-row" :class="{ dir: e.isDir }">
-            <span class="ico" v-html="e.isDir ? icons.folder : icons.file"></span>
-            <span class="nm" :title="e.name">{{ e.name }}</span>
+          <div v-for="(e, i) in arcRows" :key="i" class="pv-archive-row" tabindex="0"
+               :class="{ dir: e.isDir, nested: e.isArchive }" @click="arcOpen(e)" @keydown.enter.prevent="arcOpen(e)">
+            <span class="ico" v-html="e.isDir ? icons.folder : iconFor({ name: e.base, dir: false })"></span>
+            <span class="nm" :title="e.fullName">{{ e.base }}</span>
             <span class="sz" v-if="!e.isDir">{{ fmtSize(e.size) }}</span>
-            <button v-if="!e.isDir" class="lnk" @click="downloadArchiveEntry(e)">{{ tt.download }}</button>
+            <span class="arc-actions">
+              <button v-if="!e.isDir" class="lnk arc-action" :title="tt.download" @click.stop="downloadArchiveEntry(e)" v-html="icons.download"></button>
+            </span>
           </div>
-          <div v-if="!preview.archive.length" class="pv-archive-empty">{{ tt.archiveEmpty }}</div>
+          <div v-if="!arcRows.length" class="pv-archive-empty">{{ tt.archiveEmpty }}</div>
         </div>
-        <div v-if="preview.archiveTruncated" class="pv-archive-note">{{ tt.archiveTooMany.replace('{n}', '2000') }}</div>
+        <div v-if="arcTruncated" class="pv-archive-note">{{ tt.archiveTooMany.replace('{n}', '2000') }}</div>
       </div>
       <div class="table-wrap" v-else-if="preview.kind === 'csv' && preview.table">
         <table>
@@ -791,8 +890,8 @@
       <div class="trunc" v-if="preview.truncated">{{ tt.textTruncated }}</div>
     </div>
 
-    <button class="pv-nav left" v-if="previewIndex > 0 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.prev" @click="stepPreview(-1)" v-html="icons.chevronLeft"></button>
-    <button class="pv-nav right" v-if="previewIndex >= 0 && previewIndex < previewables.length - 1 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.next" @click="stepPreview(1)" v-html="icons.chevronRight"></button>
+    <button class="pv-nav left" v-if="!preview.arcEntry && previewIndex > 0 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.prev" @click="stepPreview(-1)" v-html="icons.chevronLeft"></button>
+    <button class="pv-nav right" v-if="!preview.arcEntry && previewIndex >= 0 && previewIndex < previewables.length - 1 && preview.kind !== 'pptx' && !(preview.decoded && preview.pages > 1)" :title="tt.next" @click="stepPreview(1)" v-html="icons.chevronRight"></button>
   </div>
 
   <!-- 上传队列 -->
@@ -846,6 +945,7 @@
       const xlsxHost = ref(null);
       const pptxHost = ref(null);
       const modelCanvas = ref(null);
+      const pdfFrame = ref(null);
       let previewToken = 0;       // 换文件/关闭时作废进行中的异步加载
       let officeDispose = null;   // docx/xlsx 的清理函数
       let pptxApi = null;         // pptx-preview 模块
@@ -862,7 +962,9 @@
       let docxObserver = null;
       let decodedState = null;    // TIFF/PSD/HEIC 解码后的画布/页数据
       let decodedURL = "";        // 解码图片的 object URL,关闭时 revoke
-      let archiveHandle = null;   // 压缩包句柄(zip 或解压后的 tar 字节)
+      let archiveObjectURLs = []; // 压缩包内条目预览产生的 Blob URL
+      let pdfPollTimer = 0;       // PDF.js 文档就绪前的轮询句柄
+      let pdfUnbind = null;       // 解除 PDF.js eventBus 监听
       const quota = ref(null);
       const drawer = ref(false);
       const searchOpen = ref(false);
@@ -928,6 +1030,91 @@
       const previewIndex = computed(() => {
         if (!preview.value) return -1;
         return previewables.value.findIndex((e) => e.path === preview.value.entry.path);
+      });
+
+      // ---- 压缩包目录视图 ----
+      function currentArcLevel() {
+        const arc = preview.value && preview.value.arc;
+        if (!arc || !arc.levels || !arc.levels.length) return null;
+        return arc.levels[arc.levels.length - 1];
+      }
+
+      // arcRows 只返回「当前目录的直接子项」。zip 里经常只有文件路径、没有显式
+      // 目录条目,所以父目录在这里按路径前缀补出来;嵌套压缩包沿用同一套。
+      const arcRows = computed(() => {
+        const level = currentArcLevel();
+        if (!level) return [];
+        const dir = (preview.value.arc && preview.value.arc.dir) || "";
+        const prefix = dir ? dir.replace(/\/+$/, "") + "/" : "";
+        const map = new Map();
+        for (const e of level.entries) {
+          if (!e.name || !e.name.startsWith(prefix)) continue;
+          const rest = e.name.slice(prefix.length);
+          if (!rest) continue;
+          const slash = rest.indexOf("/");
+          if (slash >= 0) {
+            const base = rest.slice(0, slash);
+            if (!base) continue;
+            const fullName = prefix + base;
+            const old = map.get(base);
+            map.set(base, {
+              base, fullName, isDir: true, isArchive: false, size: 0,
+              entry: old && old.entry ? old.entry : null,
+            });
+          } else {
+            if (e.isDir) {
+              map.set(rest, { base: rest, fullName: prefix + rest, isDir: true, isArchive: false, size: 0, entry: e });
+            } else {
+              const base = rest;
+              map.set(base, {
+                base, fullName: e.name, isDir: false, isArchive: extIsArchive(e.name),
+                size: e.size || 0, entry: e,
+              });
+            }
+          }
+        }
+        return Array.from(map.values()).sort((a, b) => {
+          if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+          return a.base.localeCompare(b.base, undefined, { numeric: true, sensitivity: "base" });
+        });
+      });
+
+      const arcCrumbs = computed(() => {
+        const arc = preview.value && preview.value.arc;
+        if (!arc) return [];
+        const out = arc.levels.map((lv, i) => ({ name: lv.name, level: i, dir: "" }));
+        const dir = arc.dir || "";
+        if (dir) {
+          const parts = dir.split("/").filter(Boolean);
+          parts.forEach((part, i) => {
+            out.push({ name: part, level: arc.levels.length - 1, dir: parts.slice(0, i + 1).join("/") });
+          });
+        }
+        return out;
+      });
+
+      const canArcUp = computed(() => {
+        const arc = preview.value && preview.value.arc;
+        if (!arc) return false;
+        return !!(arc.dir || (arc.levels && arc.levels.length > 1));
+      });
+
+      const arcSummary = computed(() => {
+        const level = currentArcLevel();
+        if (!level) return "";
+        return tt.value.archiveSummary
+          .replace("{n}", level.fileCount)
+          .replace("{size}", fmtSize(level.total));
+      });
+
+      const arcTruncated = computed(() => {
+        const level = currentArcLevel();
+        return !!(level && level.truncated);
+      });
+
+      const pdfScalePct = computed(() => {
+        const scale = preview.value && preview.value.pdfScale;
+        return Math.round((scale || 1) * 100) + "%";
       });
 
       const usedPct = computed(() => {
@@ -1170,9 +1357,9 @@
         disposePreviewResources();
         preview.value = {
           entry: it, kind: kind || "none", url: fileURL(it.path), text: "", lines: [],
-          highlighted: "", html: "", table: null, truncated: false, error: false, mediaError: false,
+          highlighted: "", html: "", htmlSrcdoc: "", table: null, truncated: false, error: false, mediaError: false,
           loading: false, message: "", page: 0, pages: 0, progress: -1, progressText: "",
-          archive: [], archiveSummary: "", archiveTruncated: false, decoded: false,
+          arc: null, arcRoot: null, arcEntry: null, decoded: false, pdfScale: 1,
         };
         pv.zoom = 1; pv.x = 0; pv.y = 0;
 
@@ -1250,7 +1437,7 @@
         }
 
         // 文本类预览:先看大小,避免把几百 MB 的日志拉进浏览器。
-        const MAX = 4 * 1024 * 1024;
+        const MAX = PV_TEXT_MAX;
         if (it.size > MAX) {
           preview.value.truncated = true;
         }
@@ -1297,7 +1484,11 @@
         pptxSize = { w: 0, h: 0 };
         xlsxSheets = null;
         decodedState = null;
-        archiveHandle = null;
+        unbindPdf();
+        for (const url of archiveObjectURLs) {
+          try { URL.revokeObjectURL(url); } catch { /* ignore */ }
+        }
+        archiveObjectURLs = [];
         if (decodedURL) {
           try { URL.revokeObjectURL(decodedURL); } catch { /* ignore */ }
           decodedURL = "";
@@ -1311,7 +1502,8 @@
       }
 
       async function fetchPreviewBuffer(it, token, limit) {
-        const res = await fetch(fileURL(it.path), { credentials: "same-origin" });
+        // 压缩包内条目没有自己的 /api/file 路径,由 arcPreview 先解出 Blob URL。
+        const res = await fetch(it.url || fileURL(it.path), { credentials: "same-origin" });
         if (!res.ok) throw new Error("HTTP " + res.status);
         const buf = await res.arrayBuffer();
         if (token === previewToken && limit && buf.byteLength > limit) {
@@ -1796,20 +1988,24 @@
             if (/^(data:|blob:|https?:)/i.test(url)) return url;
             if (url.indexOf("/api/file?") === 0) return url;
             if (url.indexOf("/api/") === 0) return fileURL(dir + url.slice(5));
+            // 压缩包内的 .gltf 无法从对象存储相对路径取兄弟文件;自包含的
+            // GLB/OBJ/STL 仍可预览,引用外部 .bin/贴图的 GLTF 会按原样失败。
+            if (it._arc) return String(url).replace(/^\.\//, "");
             // GLTFLoader 会把 .gltf 里的相对 .bin/贴图路径原样交给这里;
             // 统一按「模型所在目录的兄弟对象」映射到 /api/file。
             const clean = String(url).replace(/^\.\//, "");
             return fileURL(dir + clean.replace(/^\//, ""));
           });
 
+          const modelURL = it.url || fileURL(it.path);
           const ext = extOf(it.name);
           if (ext === "glb" || ext === "gltf") {
-            const gltf = await new THREE.GLTFLoader(manager).loadAsync(fileURL(it.path));
+            const gltf = await new THREE.GLTFLoader(manager).loadAsync(modelURL);
             root = gltf.scene;
           } else if (ext === "obj") {
-            root = await new THREE.OBJLoader(manager).loadAsync(fileURL(it.path));
+            root = await new THREE.OBJLoader(manager).loadAsync(modelURL);
           } else if (ext === "stl") {
-            const geo = await new THREE.STLLoader(manager).loadAsync(fileURL(it.path));
+            const geo = await new THREE.STLLoader(manager).loadAsync(modelURL);
             const mat = new THREE.MeshStandardMaterial({ color: 0x9aa3b2, metalness: 0.15, roughness: 0.55 });
             root = new THREE.Mesh(geo, mat);
           } else {
@@ -1983,85 +2179,460 @@
         });
       }
 
-      // 压缩包:zip 用 JSZip 读目录,tar/tar.gz 用内置 tar 头解析;只做目录预览与单文件下载。
+      // ---- 压缩包浏览器 ----
+      // 目录在浏览器里直接解析 zip/tar,gz 用 pako 解压;内层压缩包可以继续进入,
+      // 内层普通文件复用外层同一套预览器(先解成 Blob URL,再交给对应 mount* 函数)。
+      async function parseArchiveBuffer(buf, name) {
+        const flavor = archiveFlavor(name);
+        if (!flavor) throw new Error(tt.value.archiveUnsupported);
+        if (flavor === "zip") {
+          const JSZip = await loadLib("jszip");
+          const zip = await JSZip.loadAsync(buf);
+          return archiveLevelFromZip(name, zip);
+        }
+        let data = new Uint8Array(buf);
+        if (flavor === "targz" || flavor === "gz") {
+          const pako = await loadLib("pako");
+          const unpacked = gzipUnpackedSize(data);
+          if (unpacked > PV_ARCHIVE_UNPACKED_MAX) throw new Error(tt.value.archiveTooBigUnpacked);
+          try {
+            data = pako.ungzip(data);
+          } catch {
+            throw new Error("gzip 数据损坏或不完整");
+          }
+          if (data.length > PV_ARCHIVE_UNPACKED_MAX) throw new Error(tt.value.archiveTooBigUnpacked);
+        }
+        let list = [];
+        if (flavor === "tar" || flavor === "targz") list = parseTar(data);
+        if (!list.length && flavor === "gz") {
+          // 单个 .gz 不是 tar:按一个文件展示,点击可下载解压后的内容。
+          list = [{ name: name.replace(/\.gz$/i, ""), isDir: false, size: data.length, offset: 0 }];
+        } else if (!list.length) {
+          throw new Error("不是可识别的 tar 包");
+        }
+        const total = list.reduce((sum, e) => sum + (e.isDir ? 0 : e.size), 0);
+        return makeArchiveLevel(name, { data }, list, total, list.length > 2000);
+      }
+
+      function archiveLevelFromZip(name, zip) {
+        const list = [];
+        let total = 0;
+        let truncated = false;
+        for (const [zipName, f] of Object.entries(zip.files)) {
+          if (list.length >= 2000) { truncated = true; break; }
+          if (isArchiveJunk(zipName)) continue;
+          const clean = cleanArchiveName(zipName);
+          if (!clean) continue;
+          const size = f.dir ? 0 : Number(f._data && f._data.uncompressedSize) || 0;
+          total += size;
+          list.push({ name: clean, isDir: !!f.dir, size, zipName });
+        }
+        return makeArchiveLevel(name, { zip }, list, total, truncated);
+      }
+
+      function makeArchiveLevel(name, handle, entries, total, truncated) {
+        entries.sort((a, b) => {
+          if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+          return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+        });
+        const capped = entries.slice(0, 2000);
+        return {
+          name, handle, entries: capped, total,
+          truncated: !!truncated || entries.length > capped.length,
+          fileCount: capped.filter((e) => !e.isDir).length,
+        };
+      }
+
+      async function readArchiveEntry(level, entry) {
+        if (!level || !entry) throw new Error("entry missing");
+        if (level.handle && level.handle.zip) {
+          const f = level.handle.zip.file(entry.zipName || entry.name);
+          if (!f) throw new Error("条目不存在");
+          return await f.async("uint8array");
+        }
+        if (level.handle && level.handle.data) {
+          if (entry.offset == null) return level.handle.data;
+          return level.handle.data.subarray(entry.offset, entry.offset + entry.size);
+        }
+        throw new Error("archive handle missing");
+      }
+
       async function mountArchive(it, token) {
         try {
           const buf = await fetchPreviewBuffer(it, token, PV_ARCHIVE_MAX);
           if (token !== previewToken) return;
-          const ext = extOf(it.name);
-          if (ext === "zip") {
-            const JSZip = await loadLib("jszip");
-            const zip = await JSZip.loadAsync(buf);
-            if (token !== previewToken) return;
-            const list = [];
-            let total = 0;
-            let truncated = false;
-            for (const [name, f] of Object.entries(zip.files)) {
-              if (list.length >= 2000) { truncated = true; break; }
-              if (isArchiveJunk(name)) continue;
-              const clean = cleanArchiveName(name);
-              if (!clean) continue;
-              const size = f.dir ? 0 : Number(f._data && f._data.uncompressedSize) || 0;
-              total += size;
-              list.push({ name: clean, isDir: !!f.dir, size, zipName: name });
-            }
-            archiveHandle = { zip };
-            setArchive(list, total, truncated);
-            return;
-          }
-          if (ext === "tar" || ext === "gz" || ext === "tgz") {
-            const isTarGz = ext === "tgz" || (ext === "gz" && /\.tar\.gz$/i.test(it.name));
-            let data = new Uint8Array(buf);
-            if (ext === "gz" || ext === "tgz") {
-              const pako = await loadLib("pako");
-              const unpacked = gzipUnpackedSize(data);
-              if (unpacked > PV_ARCHIVE_UNPACKED_MAX) {
-                throw new Error(tt.value.archiveTooBigUnpacked);
-              }
-              try {
-                data = pako.ungzip(data);
-              } catch {
-                throw new Error("gzip 数据损坏或不完整");
-              }
-            }
-            if (token !== previewToken) return;
-            let list = [];
-            if (ext === "tar" || isTarGz) list = parseTar(data);
-            if (!list.length && ext === "gz" && !isTarGz) {
-              // 单个 .gz 不是 tar:按一个文件展示,点击可下载解压后的内容。
-              list = [{ name: it.name.replace(/\.gz$/i, ""), isDir: false, size: data.length, offset: 0 }];
-            } else if (!list.length) {
-              throw new Error("不是可识别的 tar 包");
-            }
-            archiveHandle = { data };
-            const total = list.reduce((s, e) => s + (e.isDir ? 0 : e.size), 0);
-            setArchive(list.slice(0, 2000), total, list.length > 2000);
-            return;
-          }
-          preview.value.message = tt.value.archiveUnsupported;
+          const level = await parseArchiveBuffer(buf, it.name);
+          if (token !== previewToken || !preview.value) return;
+          preview.value.arc = { levels: [level], dir: "" };
+          preview.value.arcRoot = it;
+          preview.value.arcEntry = null;
           preview.value.loading = false;
         } catch (e) {
           failPreview(token, e);
         }
       }
 
-      function setArchive(entries, total, truncated) {
-        entries.sort((a, b) => {
-          if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
-          return a.name.localeCompare(b.name);
+      function arcOpen(row) {
+        const pvNow = preview.value;
+        if (!pvNow || !pvNow.arc || !row) return;
+        if (row.isDir) {
+          pvNow.arc.dir = row.fullName;
+          return;
+        }
+        const kind = archiveKindOf(row.base);
+        if (kind === "archive") {
+          if (!archiveFlavor(row.base)) {
+            toast(tt.value.archiveUnsupported, row.base, "err");
+            return;
+          }
+          enterNestedArchive(row);
+          return;
+        }
+        if (!kind) {
+          toast(tt.value.archiveEntryUnsupported, row.base, "err");
+          return;
+        }
+        arcPreview(row);
+      }
+
+      function arcGoUp() {
+        const arc = preview.value && preview.value.arc;
+        if (!arc) return;
+        if (arc.dir) {
+          const parts = arc.dir.split("/").filter(Boolean);
+          parts.pop();
+          arc.dir = parts.join("/");
+          return;
+        }
+        if (arc.levels.length > 1) arc.levels.pop();
+      }
+
+      function arcGoCrumb(index) {
+        const crumb = arcCrumbs.value[index];
+        const arc = preview.value && preview.value.arc;
+        if (!crumb || !arc) return;
+        arc.levels.splice(crumb.level + 1);
+        arc.dir = crumb.dir;
+      }
+
+      async function enterNestedArchive(row) {
+        const pvNow = preview.value;
+        const level = currentArcLevel();
+        if (!pvNow || !level || !row.entry) return;
+        if (row.size > PV_ARCHIVE_MAX) {
+          toast(tt.value.tooBigArchive, row.base, "err");
+          return;
+        }
+        const arcRef = pvNow.arc;
+        pvNow.loading = true;
+        try {
+          const bytes = await readArchiveEntry(level, row.entry);
+          if (!preview.value || preview.value.arc !== arcRef) return;
+          const nested = await parseArchiveBuffer(bytes, row.base);
+          if (!preview.value || preview.value.arc !== arcRef) return;
+          arcRef.levels.push(nested);
+          arcRef.dir = "";
+          pvNow.loading = false;
+        } catch (e) {
+          if (preview.value && preview.value.arc === arcRef) {
+            pvNow.loading = false;
+            toast(tt.value.archiveEntryFailed, String((e && e.message) || e), "err");
+          }
+        }
+      }
+
+      function beginArcEntry(row, kind) {
+        const pvNow = preview.value;
+        const level = currentArcLevel();
+        const entry = row.entry;
+        const virtual = {
+          name: row.base,
+          path: (level ? level.name : "") + "!/" + entry.name,
+          dir: false, size: entry.size || 0, mtime: entry.mtime || 0, contentType: "", _arc: true,
+        };
+        Object.assign(pvNow, {
+          entry: virtual, kind: kind || "none", url: "", text: "", lines: [], highlighted: "",
+          html: "", htmlSrcdoc: "", table: null, truncated: false, error: false, mediaError: false,
+          loading: false, message: "", page: 0, pages: 0, progress: -1, progressText: "",
+          decoded: false, pdfScale: 1,
+          arcEntry: { level, entry, base: row.base },
         });
+        pv.zoom = 1; pv.x = 0; pv.y = 0;
+        return virtual;
+      }
+
+      function applyTextPreview(kind, text, name) {
         const pvNow = preview.value;
         if (!pvNow) return;
-        pvNow.archive = entries;
-        pvNow.archiveSummary = tt.value.archiveSummary
-          .replace("{n}", entries.filter((e) => !e.isDir).length)
-          .replace("{size}", fmtSize(total));
-        pvNow.archiveTruncated = truncated;
+        const cut = text.length > PV_TEXT_MAX ? text.slice(0, PV_TEXT_MAX) : text;
+        pvNow.text = cut;
+        pvNow.truncated = text.length > PV_TEXT_MAX;
+        if (kind === "code") {
+          pvNow.highlighted = highlightText(cut, name);
+        } else if (kind === "csv") {
+          pvNow.table = parseDelimited(cut, extOf(name) === "tsv" ? "\t" : ",");
+        } else if (kind === "md") {
+          pvNow.html = renderMarkdown(cut);
+          pvNow.kind = "markdown";
+        } else {
+          pvNow.lines = cut.split("\n");
+        }
         pvNow.loading = false;
       }
 
+      function isTextKind(kind) {
+        return kind === "code" || kind === "text" || kind === "md" || kind === "csv";
+      }
+
+      async function arcPreview(row) {
+        const level = currentArcLevel();
+        if (!level || !row.entry) return;
+        const kind = archiveKindOf(row.base);
+        if (!kind) { toast(tt.value.archiveEntryUnsupported, row.base, "err"); return; }
+        if (kind === "archive") { enterNestedArchive(row); return; }
+
+        const token = ++previewToken;
+        disposePreviewResources();
+        const it = beginArcEntry(row, kind);
+
+        if (kind === "legacyDoc" || kind === "legacyPpt" || kind === "legacyXls") {
+          preview.value.message = tt.value[kind];
+          return;
+        }
+        if ((kind === "docx" || kind === "xlsx" || kind === "pptx") && row.size > PV_OFFICE_MAX) {
+          preview.value.message = tt.value.tooBigOffice;
+          return;
+        }
+        if (kind === "model" && row.size > PV_MODEL_MAX) {
+          preview.value.message = tt.value.tooBigModel;
+          return;
+        }
+        if ((kind === "psd" || kind === "tiff" || kind === "heic" || kind === "image") && row.size > PV_IMAGE_MAX) {
+          preview.value.message = tt.value.tooBigImage;
+          return;
+        }
+        if (isTextKind(kind) && row.size > PV_TEXT_MAX * 8) {
+          preview.value.message = tt.value.tooBigText;
+          return;
+        }
+
+        preview.value.loading = true;
+        try {
+          const bytes = await readArchiveEntry(level, row.entry);
+          if (token !== previewToken || !preview.value) return;
+          if (isTextKind(kind)) {
+            applyTextPreview(kind, new TextDecoder("utf-8").decode(bytes), row.base);
+            return;
+          }
+          if (kind === "html") {
+            preview.value.htmlSrcdoc = await archiveHTMLDoc(level, row.entry, bytes);
+            preview.value.loading = false;
+            return;
+          }
+
+          const url = URL.createObjectURL(new Blob([bytes], { type: mimeOf(row.base) }));
+          archiveObjectURLs.push(url);
+          it.url = url;
+          preview.value.url = url;
+
+          if (kind === "docx" || kind === "xlsx" || kind === "pptx") {
+            preview.value.loading = true;
+            await nextTick();
+            if (token !== previewToken) return;
+            const job = kind === "docx" ? mountDocx : kind === "xlsx" ? mountXlsx : mountPptx;
+            job(it, token).catch((e) => failPreview(token, e));
+            return;
+          }
+          if (kind === "model") {
+            preview.value.loading = true;
+            await nextTick();
+            if (token !== previewToken) return;
+            mountModel(it, token).catch((e) => failPreview(token, e));
+            return;
+          }
+          if (kind === "psd" || kind === "tiff" || kind === "heic") {
+            preview.value.loading = true;
+            await nextTick();
+            if (token !== previewToken) return;
+            mountDecodedImage(it, kind, token).catch((e) => failPreview(token, e));
+            return;
+          }
+          if (kind === "video" || kind === "audio") {
+            preview.value.loading = true;
+            return;
+          }
+          preview.value.loading = false;
+        } catch (e) {
+          failPreview(token, e);
+        }
+      }
+
+      function backToArchive() {
+        if (!preview.value || !preview.value.arcEntry) return;
+        previewToken += 1;
+        disposePreviewResources();
+        const pvNow = preview.value;
+        const root = pvNow.arcRoot || pvNow.entry;
+        Object.assign(pvNow, {
+          entry: root, kind: "archive", url: "", text: "", lines: [], highlighted: "", html: "", htmlSrcdoc: "",
+          table: null, truncated: false, error: false, mediaError: false, loading: false,
+          message: "", page: 0, pages: 0, progress: -1, progressText: "", decoded: false,
+          pdfScale: 1, arcEntry: null,
+        });
+        pv.zoom = 1; pv.x = 0; pv.y = 0;
+      }
+
+      // HTML 压缩包条目:把页面里的相对 CSS/JS/图片解出来内联成 data URL,
+      // 再用 srcdoc 交给 sandbox iframe。sandbox 没有 allow-same-origin,
+      // 不能加载父页面的 blob: URL,也不能读取本应用的 API/凭据。
+      async function archiveHTMLDoc(level, entry, bytes) {
+        try {
+          const html = new TextDecoder("utf-8").decode(bytes);
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          const baseDir = archiveDirname(entry.name);
+          const jobs = [];
+          const attrs = "img[src],script[src],source[src],video[src],audio[src],track[src],iframe[src],embed[src],input[src],link[href],object[data]";
+          for (const el of doc.querySelectorAll(attrs)) {
+            const attr = el.tagName === "OBJECT" ? "data" : el.tagName === "LINK" ? "href" : "src";
+            const ref = el.getAttribute(attr);
+            if (!ref) continue;
+            jobs.push(archiveResourceDataURL(level, baseDir, ref, 0).then((url) => {
+              if (url) el.setAttribute(attr, url);
+            }));
+          }
+          for (const el of doc.querySelectorAll("[srcset]")) {
+            const refs = String(el.getAttribute("srcset") || "").split(",").map((part) => {
+              const bits = part.trim().split(/\s+/);
+              return { ref: bits.shift() || "", descriptor: bits.join(" ") };
+            });
+            jobs.push(Promise.all(refs.map(async (item) => {
+              const url = await archiveResourceDataURL(level, baseDir, item.ref, 0);
+              return url ? url + (item.descriptor ? " " + item.descriptor : "") : item.ref + (item.descriptor ? " " + item.descriptor : "");
+            })).then((items) => el.setAttribute("srcset", items.join(", "))));
+          }
+          for (const el of doc.querySelectorAll("style")) {
+            const css = el.textContent || "";
+            jobs.push(rewriteArchiveCSS(level, baseDir, css, 0).then((next) => { el.textContent = next; }));
+          }
+          for (const el of doc.querySelectorAll("[style]")) {
+            const css = el.getAttribute("style") || "";
+            jobs.push(rewriteArchiveCSS(level, baseDir, css, 0).then((next) => { el.setAttribute("style", next); }));
+          }
+          await Promise.all(jobs);
+          const style = doc.createElement("style");
+          style.textContent = previewScrollbarCSS(theme.value);
+          (doc.head || doc.documentElement).appendChild(style);
+          return "<!doctype html>\n" + doc.documentElement.outerHTML;
+        } catch {
+          return new TextDecoder("utf-8").decode(bytes);
+        }
+      }
+
+      async function archiveResourceDataURL(level, baseDir, ref, depth) {
+        if (depth > 4) return "";
+        const clean = String(ref || "").trim();
+        if (!clean || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(clean)) return "";
+        let raw = clean.split("#")[0].split("?")[0];
+        if (!raw) return "";
+        try { raw = decodeURIComponent(raw); } catch { /* keep raw */ }
+        const joined = raw.startsWith("/") ? raw.replace(/^\/+/, "") : (baseDir ? baseDir + "/" : "") + raw;
+        const targetPath = normalizeArchivePath(joined);
+        if (!targetPath) return "";
+        const target = level.entries.find((e) => !e.isDir && e.name === targetPath);
+        if (!target) return "";
+        try {
+          const data = await readArchiveEntry(level, target);
+          if (/\.css$/i.test(target.name)) {
+            const css = await rewriteArchiveCSS(level, archiveDirname(target.name), new TextDecoder("utf-8").decode(data), depth + 1);
+            return dataURLFor(new TextEncoder().encode(css), "text/css;charset=utf-8");
+          }
+          return dataURLFor(data, mimeOf(target.name));
+        } catch {
+          return "";
+        }
+      }
+
+      async function rewriteArchiveCSS(level, baseDir, css, depth) {
+        if (!css || depth > 4) return css;
+        const re = /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi;
+        const refs = [];
+        let m;
+        while ((m = re.exec(css))) refs.push(m[2]);
+        const map = new Map();
+        for (const ref of refs) {
+          if (map.has(ref)) continue;
+          const url = await archiveResourceDataURL(level, baseDir, ref, depth + 1);
+          if (url) map.set(ref, url);
+        }
+        return css.replace(re, (whole, quote, ref) => {
+          const url = map.get(ref);
+          return url ? 'url("' + url + '")' : whole;
+        });
+      }
+
+      function dataURLFor(bytes, mime) {
+        let text = "";
+        const chunk = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunk) {
+          text += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+        }
+        return "data:" + (mime || "application/octet-stream") + ";base64," + btoa(text);
+      }
+
+      function archiveDirname(name) {
+        const s = String(name || "");
+        const i = s.lastIndexOf("/");
+        return i < 0 ? "" : s.slice(0, i);
+      }
+
+      function normalizeArchivePath(path) {
+        const out = [];
+        for (const part of String(path || "").replace(/\\/g, "/").split("/")) {
+          if (!part || part === ".") continue;
+          if (part === "..") out.pop();
+          else out.push(part);
+        }
+        return out.join("/");
+      }
+
+      function previewScrollbarCSS(themeName) {
+        const thumb = themeName === "dark" ? "rgba(255, 255, 255, 0.12)" : "rgba(18, 25, 38, 0.1)";
+        return "html{scrollbar-width:thin;scrollbar-color:" + thumb + " transparent}" +
+          "::-webkit-scrollbar{width:10px;height:10px}" +
+          "::-webkit-scrollbar-thumb{background:" + thumb + ";border-radius:5px;border:3px solid transparent;background-clip:content-box}" +
+          "::-webkit-scrollbar-corner{background:transparent}";
+      }
+
+      async function downloadArchiveEntry(row) {
+        const level = currentArcLevel();
+        if (!level || !row || !row.entry) return;
+        try {
+          const bytes = await readArchiveEntry(level, row.entry);
+          const blob = new Blob([bytes], { type: mimeOf(row.base) });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = row.base || "file";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 10000);
+        } catch (e) {
+          toast(tt.value.previewFailed, String((e && e.message) || e), "err");
+        }
+      }
+
+      function downloadCurrent() {
+        const pvNow = preview.value;
+        if (!pvNow) return;
+        if (pvNow.arcEntry) downloadArchiveEntry({ base: pvNow.arcEntry.base, entry: pvNow.arcEntry.entry });
+        else downloadEntry(pvNow.entry);
+      }
+
       function cleanArchiveName(name) {
-        return String(name || "").replace(/^\.\//, "").replace(/\/{2,}/g, "/");
+        let n = String(name || "").replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/{2,}/g, "/");
+        n = normalizeArchivePath(n);
+        return n;
       }
 
       function isArchiveJunk(name) {
@@ -2125,31 +2696,6 @@
         return out;
       }
 
-      async function downloadArchiveEntry(entry) {
-        try {
-          let blob = null;
-          if (archiveHandle && archiveHandle.zip) {
-            const f = archiveHandle.zip.file(entry.zipName || entry.name);
-            if (!f) throw new Error("条目不存在");
-            blob = await f.async("blob");
-          } else if (archiveHandle && archiveHandle.data) {
-            const slice = archiveHandle.data.subarray(entry.offset, entry.offset + entry.size);
-            blob = new Blob([slice]);
-          }
-          if (!blob) return;
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = entry.name.split("/").pop() || "file";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 10000);
-        } catch (e) {
-          toast(tt.value.previewFailed, String((e && e.message) || e), "err");
-        }
-      }
-
       function fitModelObject(THREE, root, camera, controls) {
         const box = new THREE.Box3().setFromObject(root);
         const center = box.getCenter(new THREE.Vector3());
@@ -2201,6 +2747,101 @@
           } catch { /* 退回未高亮 */ }
         }
         return code;
+      }
+
+      // ---- PDF.js 阅读器 ----
+      function pdfViewerURL(src) {
+        if (!src) return "";
+        let absolute = src;
+        try { absolute = new URL(src, location.href).href; } catch { /* keep as-is */ }
+        const q = new URLSearchParams({
+          file: absolute,
+          locale: String(lang.value || "").toLowerCase().startsWith("zh") ? "zh-CN" : "en-US",
+          theme: theme.value === "dark" ? "dark" : "light",
+        });
+        return "/lib/pdfjs/web/viewer.html?" + q.toString();
+      }
+
+      function pdfApplication() {
+        const win = pdfFrame.value && pdfFrame.value.contentWindow;
+        return win && win.PDFViewerApplication;
+      }
+
+      function unbindPdf() {
+        if (pdfPollTimer) { clearInterval(pdfPollTimer); pdfPollTimer = 0; }
+        if (pdfUnbind) {
+          try { pdfUnbind(); } catch { /* ignore */ }
+          pdfUnbind = null;
+        }
+      }
+
+      function onPdfLoad() {
+        unbindPdf();
+        const bind = () => {
+          const app = pdfApplication();
+          const viewer = app && app.pdfViewer;
+          if (!viewer || !app.eventBus) return false;
+          const update = () => {
+            if (!preview.value || preview.value.kind !== "pdf") return;
+            preview.value.page = viewer.currentPageNumber || 1;
+            preview.value.pages = viewer.pagesCount || 0;
+            preview.value.pdfScale = viewer.currentScale || 1;
+          };
+          const events = ["pagesinit", "pagechanging", "scalechanging", "documentloaded", "pagerendered"];
+          for (const name of events) app.eventBus.on(name, update);
+          pdfUnbind = () => {
+            for (const name of events) {
+              try { app.eventBus.off(name, update); } catch { /* ignore */ }
+            }
+          };
+          update();
+          return true;
+        };
+        if (bind()) return;
+        // PDF.js 是 ES module,iframe load 时 viewer 可能还没初始化完。
+        let tries = 0;
+        pdfPollTimer = setInterval(() => {
+          if (bind() || ++tries > 60) {
+            if (pdfPollTimer) { clearInterval(pdfPollTimer); pdfPollTimer = 0; }
+          }
+        }, 100);
+      }
+
+      function pdfGo(delta) {
+        const app = pdfApplication();
+        const viewer = app && app.pdfViewer;
+        if (!viewer || !preview.value) return;
+        const pages = preview.value.pages || viewer.pagesCount || 1;
+        const next = Math.min(pages, Math.max(1, (preview.value.page || viewer.currentPageNumber || 1) + delta));
+        viewer.currentPageNumber = next;
+        preview.value.page = next;
+      }
+
+      function pdfZoom(factor) {
+        const app = pdfApplication();
+        const viewer = app && app.pdfViewer;
+        if (!viewer || !preview.value) return;
+        const next = Math.min(8, Math.max(0.2, (viewer.currentScale || 1) * factor));
+        viewer.currentScale = next;
+        preview.value.pdfScale = next;
+      }
+
+      function pdfFit() {
+        const app = pdfApplication();
+        const viewer = app && app.pdfViewer;
+        if (!viewer) return;
+        viewer.currentScaleValue = "page-width";
+      }
+
+      function pdfSearch() {
+        const app = pdfApplication();
+        if (!app || !app.findBar) return;
+        app.findBar.toggle();
+        setTimeout(() => {
+          const win = pdfFrame.value && pdfFrame.value.contentWindow;
+          const input = win && win.document && win.document.getElementById("findInput");
+          if (input) { try { input.focus(); input.select(); } catch { /* ignore */ } }
+        }, 80);
       }
 
       function closePreview() {
@@ -2584,14 +3225,16 @@
       return {
         icons, tt, session, path, entries, loading, error, search, listMode, selected,
         dragOver, menu, dialog, picker, dlgInput, toasts, uploads, preview, quota, pv, version,
-        docxHost, xlsxHost, pptxHost, modelCanvas,
+        docxHost, xlsxHost, pptxHost, modelCanvas, pdfFrame,
         drawer, searchOpen, searchBox, theme, themeTitle,
         atRoot, crumbs, filtered, previewables, previewIndex, usedPct, quotaClass, connClass, connText, canLink,
+        arcRows, arcCrumbs, canArcUp, arcSummary, arcTruncated, pdfScalePct, pdfViewerURL, onPdfLoad,
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel, capsText,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
         go, goUp, setListMode, reload, open, openPreview, select, onCardClick, onPressStart, cancelPress,
         closePreview, stepPreview, zoom, resetZoom, toggleZoom, onWheel, onImgDown, onImgMove, onImgUp,
         onTouchStart, onTouchEnd, toggleTheme, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,
+        downloadCurrent, arcOpen, arcGoUp, arcGoCrumb, backToArchive, pdfGo, pdfZoom, pdfFit, pdfSearch,
         downloadEntry, askMkdir, renameEntry, deleteEntry, copyLink, openMenu, runMenu,
         pickFiles, onPicked, onDragOver, onDragLeave, onDrop, closeDialog, confirmDialog, toggleLang,
       };

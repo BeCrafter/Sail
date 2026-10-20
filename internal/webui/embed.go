@@ -133,6 +133,18 @@ func contentTypeOf(name string) string {
 		return "image/x-icon"
 	case ".woff2":
 		return "font/woff2"
+	case ".woff":
+		return "font/woff"
+	case ".ttf":
+		return "font/ttf"
+	case ".otf":
+		return "font/otf"
+	case ".wasm":
+		return "application/wasm"
+	case ".bcmap", ".pfb", ".icc":
+		return "application/octet-stream"
+	case ".ftl":
+		return "text/plain; charset=utf-8"
 	default:
 		return ""
 	}
