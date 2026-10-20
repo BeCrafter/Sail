@@ -164,6 +164,24 @@ button, input { font-family: inherit; }
 .side-note { font-size: 10.5px; line-height: 1.6; color: var(--fg-faint); padding: 0 2px; }
 .side-foot { margin-top: auto; padding: 8px 4px 0; font-size: 10.5px; color: var(--fg-faint); display: flex; align-items: center; gap: 6px; }
 .side-foot .grow { flex: 1; }
+.conn-btn {
+  appearance: none; display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--bg-soft);
+  color: var(--fg-dim); font-size: 10.5px; cursor: pointer; transition: background var(--dur), color var(--dur), border-color var(--dur);
+}
+.conn-btn:hover { background: var(--bg-hover); }
+.conn-btn:disabled { cursor: wait; opacity: .65; }
+.conn-btn .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: currentColor; }
+.conn-btn.ok { color: var(--ok); border-color: rgba(var(--ok-rgb), .35); background: rgba(var(--ok-rgb), .08); }
+.conn-btn.ok:hover { background: rgba(var(--ok-rgb), .14); }
+.conn-btn.err { color: var(--danger); border-color: rgba(var(--danger-rgb), .35); background: rgba(var(--danger-rgb), .08); }
+.conn-btn.err:hover { background: rgba(var(--danger-rgb), .14); }
+.repo-link {
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 4px; border-radius: 5px;
+  color: var(--fg-faint); text-decoration: none; white-space: nowrap;
+}
+.repo-link:hover { color: var(--accent); background: var(--bg-hover); }
+.repo-link svg { width: 13px; height: 13px; display: block; flex: none; }
 
 /* ---------- 主区 ---------- */
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -393,7 +411,9 @@ button, input { font-family: inherit; }
 .statusbar .item .txt { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .statusbar .item svg { width: 13px; height: 13px; flex: none; }
 .statusbar .app-nm { font-weight: 500; color: var(--fg-faint); white-space: nowrap; }
+.statusbar .sb-bucket { flex: none; }
 .statusbar .sb-usage { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.statusbar .sb-usage .k { color: var(--fg-faint); }
 .statusbar .sb-usage .quota-bar { width: 72px; }
 .statusbar .sb-link { display: inline-flex; align-items: center; gap: 5px; color: var(--fg-dim); padding: 2px 7px; border-radius: 6px; cursor: pointer; appearance: none; border: none; background: transparent; font-size: 11px; }
 .statusbar .sb-link:hover { background: var(--bg-hover); color: var(--accent); }
@@ -846,7 +866,10 @@ body.no-scroll { overflow: hidden; }
   .row-actions { gap: 2px; }
   .row-act-btn { width: 28px; height: 28px; }
   .statusbar { gap: 8px; padding: 4px 10px calc(4px + env(safe-area-inset-bottom)); }
-  .statusbar .item.src, .statusbar .sb-usage { display: none; }
+  .statusbar .app-nm { display: none; }
+  .statusbar .sb-bucket { flex: 1; min-width: 0; }
+  .statusbar .sb-bucket .txt { max-width: none; flex: 1; }
+  .statusbar .sb-usage .quota-bar { display: none; }
   .preview-top { gap: 6px; padding: calc(5px + env(safe-area-inset-top)) 8px 5px; }
   .preview-top .nm { font-size: 12px; }
   .preview-top .cnt:not(.pv-page) { display: none; }
