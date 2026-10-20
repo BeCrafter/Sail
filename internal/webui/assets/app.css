@@ -490,8 +490,8 @@ button, input { font-family: inherit; }
 /* HTML 与 Markdown 一样按阅读宽度居中,不在宽屏上铺满整行。 */
 .preview .stage .frame-wrap.html-frame { width: min(100%, 960px); max-width: 960px; margin: 0 auto; }
 .preview .stage .code-box {
-  width: 100%; height: 100%; margin: 0; overflow: auto; padding: 14px 18px; background: var(--surface-page);
-  font: 12.5px/1.65 var(--mono); color: var(--fg); text-align: left;
+  width: min(100%, 960px); max-width: 960px; height: 100%; margin: 0 auto; overflow: auto; padding: 14px 18px;
+  background: var(--surface-page); font: 12.5px/1.65 var(--mono); color: var(--fg); text-align: left;
 }
 .preview .stage .code-box .ln { display: inline-block; width: 3.2em; color: var(--fg-faint); user-select: none; text-align: right; padding-right: 12px; }
 .preview .stage .code-box .line { display: block; min-height: 1.65em; white-space: pre-wrap; word-break: break-all; }
@@ -505,7 +505,7 @@ button, input { font-family: inherit; }
 .hljs-attr, .hljs-attribute, .hljs-variable { color: var(--hl-attr); }
 .hljs-comment, .hljs-quote { color: var(--fg-faint); font-style: italic; }
 .hljs-meta, .hljs-symbol, .hljs-bullet { color: var(--hl-meta); }
-.preview .stage .table-wrap { width: 100%; height: 100%; overflow: auto; background: var(--surface-page); padding: 10px; }
+.preview .stage .table-wrap { width: min(100%, 960px); max-width: 960px; height: 100%; margin: 0 auto; overflow: auto; background: var(--surface-page); padding: 10px; }
 .preview .stage .table-wrap table { border-collapse: collapse; font-size: 12px; min-width: 100%; }
 .preview .stage .table-wrap th, .preview .stage .table-wrap td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; white-space: pre-wrap; }
 .preview .stage .table-wrap th { background: var(--bg-soft); position: sticky; top: 0; font-weight: 700; }
