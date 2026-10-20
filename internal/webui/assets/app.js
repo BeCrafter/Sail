@@ -6,6 +6,17 @@
 (() => {
   "use strict";
 
+  // 静态资源版本由 Go 端按嵌入内容计算并替换(见 internal/webui/embed.go)。
+  // 首屏引用和下面懒加载的库都带同一个 ?v=,升级二进制后浏览器不会继续
+  // 复用上一版的 app.js/app.css/预览库。
+  const ASSET_VERSION = "__SAIL_ASSET_V__";
+  // 拆分写,避免 Go 端替换真实版本时把“是否未注入”的判断也一起改掉。
+  const ASSET_VERSION_PLACEHOLDER = "__SAIL_" + "ASSET_V__";
+  function assetURL(p) {
+    if (!p || !ASSET_VERSION || ASSET_VERSION === ASSET_VERSION_PLACEHOLDER) return p;
+    return p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(ASSET_VERSION);
+  }
+
   const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
 
   // ---------------- 文案(中英) ----------------
@@ -315,7 +326,7 @@
         if (window[spec.global]) return window[spec.global];
         await new Promise((resolve, reject) => {
           const s = document.createElement("script");
-          s.src = spec.src;
+          s.src = assetURL(spec.src);
           s.onload = () => (window[spec.global] ? resolve() : reject(new Error("library failed: " + name)));
           s.onerror = () => { s.remove(); reject(new Error("library failed: " + name)); };
           document.head.appendChild(s);
@@ -332,7 +343,7 @@
   const moduleCache = new Map();
   function loadModule(path) {
     if (!moduleCache.has(path)) {
-      const p = import(new URL(path, location.origin).href);
+      const p = import(assetURL(path));
       p.catch(() => moduleCache.delete(path));
       moduleCache.set(path, p);
     }

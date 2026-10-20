@@ -60,7 +60,11 @@ go install github.com/BeCrafter/sail@latest
 ```bash
 git clone https://github.com/BeCrafter/sail.git
 cd sail && go build -o sail .
+# or: make build (also writes ./sail)
 ```
+
+The source build writes `./sail`; run it explicitly (`./sail serve web ...`) when an
+older npm-installed `sail` is earlier in your `PATH`.
 
 ## Config
 

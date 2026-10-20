@@ -10,6 +10,8 @@ import (
 	"github.com/BeCrafter/sail/internal/webui"
 )
 
+const assetVersionPlaceholder = "__SAIL_ASSET_V__"
+
 // fetch 发一次请求并读回响应体。
 func fetch(t *testing.T, h http.Handler, method, target string) (*http.Response, string) {
 	t.Helper()
@@ -37,6 +39,12 @@ func TestHandlerServesIndexAtRoot(t *testing.T) {
 	}
 	if !strings.Contains(body, `<div id="app"`) {
 		t.Error("GET / 未返回 SPA 挂载点")
+	}
+	if strings.Contains(body, assetVersionPlaceholder) {
+		t.Error("index.html 仍包含静态资源版本占位符")
+	}
+	if !strings.Contains(body, "/app.js?v=") || !strings.Contains(body, "/app.css?v=") {
+		t.Error("index.html 的首屏资源没有带版本号")
 	}
 	if got := resp.Header.Get("Cache-Control"); got != "no-cache" {
 		t.Errorf("index.html 必须 no-cache(升级即生效),实际 %q", got)
@@ -72,7 +80,8 @@ func TestHandlerServesAssetsWithTypes(t *testing.T) {
 	}
 	h := webui.Handler()
 	for _, c := range cases {
-		resp, body := fetch(t, h, http.MethodGet, c.path)
+		// 只有带版本号的 URL 才允许长缓存;无版本 URL 必须每次校验。
+		resp, body := fetch(t, h, http.MethodGet, c.path+"?v=test")
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("GET %s = %d,期望 200", c.path, resp.StatusCode)
 			continue
@@ -83,9 +92,16 @@ func TestHandlerServesAssetsWithTypes(t *testing.T) {
 		if body == "" {
 			t.Errorf("GET %s 返回空内容", c.path)
 		}
+		if strings.Contains(body, assetVersionPlaceholder) {
+			t.Errorf("GET %s 未替换版本占位符", c.path)
+		}
 		if got := resp.Header.Get("Cache-Control"); !strings.Contains(got, "immutable") {
 			t.Errorf("GET %s 应可长缓存,实际 Cache-Control=%q", c.path, got)
 		}
+	}
+	resp, _ := fetch(t, h, http.MethodGet, "/app.js")
+	if got := resp.Header.Get("Cache-Control"); got != "no-cache" {
+		t.Errorf("无版本 /app.js 必须 no-cache,实际 %q", got)
 	}
 }
 

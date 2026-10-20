@@ -1,7 +1,7 @@
 // ExcelJS workbook → 只读 HTML 网格（纯函数，可 node:test；不依赖浏览器 DOM）。
 // <vanor-file-preview> 挂载时调用 workbookToSheets / sheetsToHtml。
 
-import { evaluateWorkbookFormulas } from "./preview_xlsx_formula.js";
+import { evaluateWorkbookFormulas } from "./preview_xlsx_formula.js?v=__SAIL_ASSET_V__";
 
 export const XLSX_MAX_ROWS = 1000;
 export const XLSX_MAX_COLS = 64;

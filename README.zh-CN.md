@@ -60,7 +60,11 @@ go install github.com/BeCrafter/sail@latest
 ```bash
 git clone https://github.com/BeCrafter/sail.git
 cd sail && go build -o sail .
+# 或:make build(同样产出 ./sail)
 ```
+
+源码构建的产物是当前目录的 `./sail`;如果 PATH 里靠前的是旧版 npm 安装的
+`sail`,请显式运行 `./sail serve web ...`。
 
 ## 配置
 

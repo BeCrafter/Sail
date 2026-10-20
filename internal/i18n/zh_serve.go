@@ -266,8 +266,9 @@ Examples:
 		// serve_web.go — 命令帮助元信息
 		"Serve a browser UI for a bucket (built-in media library)": "以浏览器界面共享 bucket(内置媒体库)",
 		`Share a bucket with a browser: open http://host:port/ and you get a media library
-(thumbnail grid or list, upload/download, rename/delete, new folder, search, preview of common
-image/video/audio/PDF/CSV/Markdown/HTML/code formats, and a usage bar). Which bucket is served
+(thumbnail grid or list, upload/download, rename/delete, new folder, search, previews for images,
+video, audio, PDF, CSV, Markdown, HTML, code, Office documents, 3D models, archives and
+PSD/TIFF/HEIC, and a usage bar). Which bucket is served
 comes from the profile, so name it with --profile (the global --bucket flag and SAIL_BUCKET still
 override it when needed) — one process serves one bucket, exactly like serve webdav/smb.
 
@@ -293,15 +294,17 @@ Design boundaries:
     hides and which makes "copy public link" refuse (a presigned URL would return the manifest).
   - Directory listings are cached for --dir-cache-ttl; your own writes invalidate them at once,
     changes made elsewhere become visible within one TTL.
-  - Office documents, 3D models, archives and PSD/TIFF/HEIC files currently show a "coming in a
-    later release" placeholder and can still be downloaded; dedicated previewers are planned.
+  - Previewers ship in the binary and load on demand: images, video, audio, PDF, CSV, Markdown,
+    HTML and code; Office (DOCX/XLSX/XLSM/PPTX), 3D (GLB/GLTF/OBJ/STL), archives
+    (ZIP/TAR/TAR.GZ/TGZ/GZ), PSD, multi-page TIFF and HEIC/HEIF. XLSX formula results are
+    evaluated for display, and formats without a preview fall back to download.
 
 Examples:
   sail serve web --profile prod --listen :9090
   sail serve web --profile prod --prefix shared --require-auth \
     --user alice --password '***' --tls-cert c.pem --tls-key k.pem`: `用浏览器共享某个 bucket:打开 http://主机:端口/ 就是一个媒体库
-(缩略图网格或列表、上传/下载、重命名/删除、新建文件夹、搜索、常见图片/视频/音频/PDF/CSV/
-Markdown/HTML/代码格式预览,以及一条用量条)。共享哪个 bucket 由 profile 决定,用 --profile
+(缩略图网格或列表、上传/下载、重命名/删除、新建文件夹、搜索,以及图片/视频/音频/PDF/CSV/
+Markdown/HTML/代码、Office 文档、3D 模型、压缩包、PSD/TIFF/HEIC 预览和一条用量条)。共享哪个 bucket 由 profile 决定,用 --profile
 指定(全局 --bucket 与 SAIL_BUCKET 需要时仍可覆盖)—— 一个进程服务一个 bucket,与 serve
 webdav/smb 完全一致。
 
@@ -322,8 +325,9 @@ webdav/smb 完全一致。
     以保留前缀 .sail/ 下的分片存储,界面会隐藏它,且「复制公开链接」会拒绝
     (预签名 URL 只会给出 manifest)。
   - 目录列表按 --dir-cache-ttl 缓存;自己的写操作立即失效,别处做的改动最长一个 TTL 后可见。
-  - Office 文档、3D 模型、压缩包与 PSD/TIFF/HEIC 目前显示「后续版本提供」的占位提示,仍可
-    下载;专用预览器在计划中。
+  - 预览器随二进制内置、按需加载:图片、视频、音频、PDF、CSV、Markdown、HTML、代码,以及
+    Office(DOCX/XLSX/XLSM/PPTX)、3D(GLB/GLTF/OBJ/STL)、压缩包(ZIP/TAR/TAR.GZ/TGZ/GZ)、
+    PSD、多页 TIFF、HEIC/HEIF;XLSX 会计算结果,没有预览器的格式回退到下载。
 
 示例:
   sail serve web --profile prod --listen :9090
