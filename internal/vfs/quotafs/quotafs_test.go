@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/BeCrafter/sail/internal/client"
 	"github.com/BeCrafter/sail/internal/config"
@@ -231,5 +232,33 @@ func TestQuotaUnlimited(t *testing.T) {
 		}
 		w.Abort()
 		w.Close()
+	}
+}
+
+// 场景(不限配额也统计空间):配额为 0 时 QuotaUsage 的 ok=false,但
+// UsageSnapshot 仍应给出真实物理字节,供 Web 状态栏展示。
+func TestUsageSnapshotWithoutQuota(t *testing.T) {
+	e := newEnv(t, 0)
+	e.s3.Put(qbucket, "a.bin", make([]byte, 12), "")
+	e.s3.Put(qbucket, "dir/b.bin", make([]byte, 8), "")
+	if _, ready := e.qfs.UsageSnapshot(); ready {
+		t.Fatal("首次快照不应已就绪")
+	}
+	e.qfs.RefreshUsage(context.Background())
+	deadline := time.Now().Add(3 * time.Second)
+	var used int64
+	var ready bool
+	for time.Now().Before(deadline) {
+		used, ready = e.qfs.UsageSnapshot()
+		if ready {
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if !ready || used != 20 {
+		t.Fatalf("空间统计 = %d ready=%v, want 20/true", used, ready)
+	}
+	if qUsed, _, ok := e.qfs.QuotaUsage(); ok || qUsed != 20 {
+		t.Fatalf("QuotaUsage = %d ok=%v, want 20/false", qUsed, ok)
 	}
 }

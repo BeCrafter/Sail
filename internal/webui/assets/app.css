@@ -467,6 +467,7 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
 .statusbar .sb-bucket { flex: none; }
 .statusbar .sb-usage { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
 .statusbar .sb-usage .k { color: var(--fg-faint); }
+.statusbar .sb-pending { color: var(--fg-faint); font-style: italic; }
 .statusbar .sb-usage .quota-bar { width: 72px; }
 .statusbar .sb-link { display: inline-flex; align-items: center; gap: 5px; color: var(--fg-dim); padding: 2px 7px; border-radius: 6px; cursor: pointer; appearance: none; border: none; background: transparent; font-size: 11px; }
 .statusbar .sb-link:hover { color: var(--accent); }

@@ -52,14 +52,23 @@ func trimSlash(s string) string {
 
 // quotaJSON 组装配额快照。limit 是 used+avail,前端据此画进度条;
 // ok=false 表示这个后端没有配额口径(单用户不限量时也是 false)。
-func quotaJSON(used, avail int64, ok bool) map[string]any {
-	return map[string]any{"used": used, "avail": avail, "limit": used + avail, "ok": ok}
+func quotaJSON(used, avail int64, ok, ready bool) map[string]any {
+	limit := used + avail
+	if !ok {
+		// 不限配额时只播报已用空间;limit=0 让前端不要画配额进度条。
+		limit = 0
+	}
+	return map[string]any{"used": used, "avail": avail, "limit": limit, "ok": ok, "ready": ready}
 }
 
 // handleSession 返回当前会话的信息:谁、哪个仓、能不能上传、配额多少。
 // 前端首屏用它渲染侧栏与状态栏,不再需要「测试连接」这类探测。
 func (r *request) handleSession(w http.ResponseWriter) {
 	used, avail, ok := r.fs.QuotaUsage()
+	spaceUsed, spaceReady := r.fs.UsageSnapshot()
+	if !ok {
+		used = spaceUsed
+	}
 	user := r.user
 	if r.server.anonymous {
 		user = "" // 前端据 anonymous 显示本地化的「匿名」标签
@@ -74,7 +83,7 @@ func (r *request) handleSession(w http.ResponseWriter) {
 		"version":         r.server.version,
 		"maxUploadSize":   r.server.maxUploadSize,
 		"maxUploadText":   r.server.maxUploadText,
-		"quota":           quotaJSON(used, avail, ok),
+		"quota":           quotaJSON(used, avail, ok, spaceReady),
 		"listingCacheTTL": r.fs.listingTTLSeconds(),
 		"capabilities": map[string]bool{
 			"presign":   r.server.presign != nil,
@@ -130,10 +139,16 @@ func (r *request) handleStat(w http.ResponseWriter) {
 	writeJSON(w, http.StatusOK, map[string]any{"entry": entryJSON(fi)})
 }
 
-// handleUsage 返回配额口径的用量(已用/可用/上限)。
+// handleUsage 返回空间用量(已用/可用/上限),并在快照过期时触发后台刷新。
+// 不限配额时 ok=false,但 used/ready 仍然有效,Web UI 据此显示当前桶已用空间。
 func (r *request) handleUsage(w http.ResponseWriter) {
 	used, avail, ok := r.fs.QuotaUsage()
-	writeJSON(w, http.StatusOK, quotaJSON(used, avail, ok))
+	spaceUsed, spaceReady := r.fs.UsageSnapshot()
+	if !ok {
+		used = spaceUsed
+	}
+	r.fs.RefreshUsage(r.raw.Context())
+	writeJSON(w, http.StatusOK, quotaJSON(used, avail, ok, spaceReady))
 }
 
 // handleURL 生成外链:mode=public 走 CDN 域名,mode=presign 走预签名。

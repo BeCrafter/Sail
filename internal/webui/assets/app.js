@@ -24,7 +24,7 @@
     "zh-CN": {
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
-      source: "数据源", menu: "侧栏", sourceDefault: "默认", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
+      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
       profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
@@ -82,7 +82,7 @@
     en: {
       appTitle: "Sail Media",
       appSub: "S3 media library",
-      source: "Source", menu: "Sidebar", sourceDefault: "Default", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
+      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
       profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
@@ -695,8 +695,11 @@
         <span class="item sb-bucket" v-if="session"><span v-html="icons.home"></span><span class="txt">{{ bucketLabel }}</span></span>
         <span class="item sb-usage" v-if="quota" :title="tt.quotaNote">
           <span class="k">{{ tt.used }}</span>
-          <span>{{ fmtSize(quota.used) }}<template v-if="quota.limit > 0"> / {{ fmtSize(quota.limit) }}</template></span>
-          <span class="quota-bar" :class="quotaClass" v-if="quota.limit > 0"><i :style="{ width: usedPct + '%' }"></i></span>
+          <span v-if="quota.ready === false" class="sb-pending">{{ tt.usageCalculating }}</span>
+          <template v-else>
+            <span>{{ fmtSize(quota.used) }}<template v-if="quota.limit > 0"> / {{ fmtSize(quota.limit) }}</template></span>
+            <span class="quota-bar" :class="quotaClass" v-if="quota.limit > 0"><i :style="{ width: usedPct + '%' }"></i></span>
+          </template>
         </span>
         <span class="grow"></span>
         <span class="sb-right">
@@ -1339,13 +1342,26 @@
           return;
         }
         await load();
+        refreshUsage();
       }
 
-      async function refreshUsage() {
+      let usagePollTimer = 0;
+      let usagePollToken = 0;
+      async function refreshUsage(attempt = 0) {
+        const token = ++usagePollToken;
+        if (usagePollTimer) { clearTimeout(usagePollTimer); usagePollTimer = 0; }
         try {
           const q = await API.usage();
+          if (token !== usagePollToken) return;
           quota.value = q;
           if (session.value) session.value.quota = q;
+          // 首次统计可能比页面加载慢:先显示「计算中」,后台完成后自动刷新。
+          if (q && q.ready === false && attempt < 20) {
+            usagePollTimer = setTimeout(() => {
+              usagePollTimer = 0;
+              if (token === usagePollToken) refreshUsage(attempt + 1);
+            }, 1500);
+          }
         } catch { /* 用量刷新失败不打断浏览 */ }
       }
 

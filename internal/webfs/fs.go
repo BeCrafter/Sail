@@ -257,6 +257,21 @@ func (fs *FileSystem) QuotaUsage() (used, avail int64, ok bool) {
 	return 0, 0, false
 }
 
+// UsageSnapshot 取空间用量快照(不要求配置配额)。
+func (fs *FileSystem) UsageSnapshot() (used int64, ready bool) {
+	if r, ok := fs.core.(usageReporter); ok {
+		return r.UsageSnapshot()
+	}
+	return 0, false
+}
+
+// RefreshUsage 触发一次空间用量后台统计。
+func (fs *FileSystem) RefreshUsage(ctx context.Context) {
+	if r, ok := fs.core.(usageReporter); ok {
+		r.RefreshUsage(ctx)
+	}
+}
+
 // Invalidate 使写入影响到的目录列表缓存失效:目标路径的整棵子树,加上父目录
 // 与祖父目录。父目录的条目集合必然变了(新增/删除/改名都会反映在那里);祖父
 // 目录只在父目录整体出现/消失时才变——删掉某个目录下最后一个对象即是如此,
@@ -304,6 +319,12 @@ func (fs *FileSystem) withContentType(fi vfs.FileInfo) vfs.FileInfo {
 // quotaReporter 由内核可选实现(quotafs 满足),提供只读配额快照。
 type quotaReporter interface {
 	QuotaUsage() (used, avail int64, ok bool)
+}
+
+// usageReporter 提供不限配额也能读的空间用量快照。
+type usageReporter interface {
+	UsageSnapshot() (used int64, ready bool)
+	RefreshUsage(context.Context)
 }
 
 func notExist(logical string) error {

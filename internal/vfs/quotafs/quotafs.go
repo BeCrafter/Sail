@@ -141,18 +141,50 @@ func (fs *FS) logf(format string, args ...any) {
 func (fs *FS) QuotaUsage() (used, avail int64, ok bool) {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
-	if fs.limit <= 0 || fs.counter == nil {
+	if fs.counter == nil {
 		return 0, 0, false
 	}
 	used = fs.usage + fs.inflight
 	if used < 0 {
 		used = 0
 	}
+	if fs.limit <= 0 {
+		return used, 0, false
+	}
 	avail = fs.limit - used
 	if avail < 0 {
 		avail = 0
 	}
 	return used, avail, true
+}
+
+// UsageSnapshot 返回当前空间用量快照与「是否已成功统计过」。与 QuotaUsage
+// 不同,它不要求配置配额:Web 资源库即使不限量也要显示当前桶已用空间。
+// 读缓存,不触发后端列举;调用方可按需配合 RefreshUsage 做后台刷新。
+func (fs *FS) UsageSnapshot() (used int64, ready bool) {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	if fs.counter == nil {
+		return 0, false
+	}
+	if fs.usage < 0 {
+		return 0, fs.fresh
+	}
+	return fs.usage, fs.fresh
+}
+
+// RefreshUsage 在快照过期或从未成功时触发一次后台统计。单飞与失败退避由
+// startRefresh 负责;本方法只决定「现在要不要发起」。
+func (fs *FS) RefreshUsage(ctx context.Context) {
+	if fs.counter == nil {
+		return
+	}
+	fs.mu.Lock()
+	skip := fs.refreshing || fs.now().Before(fs.expires)
+	fs.mu.Unlock()
+	if !skip {
+		fs.startRefresh(ctx)
+	}
 }
 
 // Limit 返回当前配额上限(诊断用)。
