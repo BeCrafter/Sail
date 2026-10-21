@@ -76,7 +76,7 @@
       path: "路径", itemsCount: "共 {n} 项", selectHint: "右键或点 ⋯ 打开操作菜单",
       selectHintTouch: "点 ⋯ 打开操作菜单", detailEmpty: "选择一个文件,在这里查看详情",
       markdown: "Markdown", csv: "表格", table: "表格", code: "代码", htmlPreview: "网页预览",
-      folder: "文件夹", file: "文件", settings: "显示设置", language: "English",
+      folder: "文件夹", file: "文件", settings: "设置", language: "English",
       dropDisabled: "上传中,请稍候",
     },
     en: {
@@ -555,8 +555,9 @@
         <button class="conn-btn" :class="connClass" :title="connText" :disabled="loading" @click="reload">
           <i class="dot"></i><span>{{ connText }}</span>
         </button>
-        <span class="grow"></span>
-        <button v-if="canManageSources" class="side-gear side-gear-bottom" :title="tt.settings" @click="openSettings" v-html="icons.settings"></button>
+        <button v-if="canManageSources" class="side-gear side-gear-bottom" :title="tt.settings" @click="openSettings">
+          <span class="ico" v-html="icons.settings"></span><span class="lbl">{{ tt.settings }}</span>
+        </button>
       </div>
       <div class="side-resizer" :title="tt.resizeSidebar" @pointerdown="startSidebarResize"></div>
     </aside>
