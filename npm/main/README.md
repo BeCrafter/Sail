@@ -255,7 +255,8 @@ a media library over the same protocol-independent core as the other gateways, s
 quota, chunked storage and deletion behave identically. Every profile in the config is listed in
 the left data-source panel; `default-profile` is selected first (an explicit `--profile` wins).
 A local-only settings page can add, edit, delete and default profiles, writing changes atomically
-to `config.yaml`; restart to apply structural changes.
+to `config.yaml` and rebuilding the data-source list immediately (restart `serve web` if a rebuild
+fails).
 
 ```bash
 # Start (defaults to :9090; HTTPS recommended outside loopback)

@@ -610,8 +610,9 @@ sail serve smb --profile prod --listen :1445   # serve.users: alice、bob
 (不需要 Node、npm,也没有要部署的静态文件),并与其它网关共用同一套协议无关内核,因此
 前缀隔离、配额、分片存储与删除路径都只有一份实现,而不是三份。左侧数据源会列出配置里的
 全部 profile,默认选中 `default-profile`(显式 `--profile` 优先);切换源时各 profile 的
-bucket、凭据与 serve 布局都留在服务端。数据源标题右侧的齿轮按钮会打开仅限本机访问的设置
-页面,支持新增、编辑、删除和设为默认;保存会原子写入 `config.yaml`,结构性变更在重启后生效。
+bucket、凭据与 serve 布局都留在服务端。侧栏底部的齿轮按钮会打开仅限本机访问的设置页面,
+支持新增、编辑、删除和设为默认;保存会原子写入 `config.yaml`,并立即重建数据源列表
+(若重建失败,重启 `serve web` 后重试)。
 
 ```bash
 # 启动:默认 :9090、默认匿名访问——不需要配 user/password

@@ -101,12 +101,15 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	// 外链能力在 cmd 侧接线:预签名要 S3 客户端,公开链接要 CDN 配置,
 	// 两者都属于「命令行知道、协议壳不知道」的东西。随运行期一起传入:
 	// 网关在 newServeRuntimeWith 内就已用它们完成首次装配。
-	rt, err := newServeRuntimeWith(o, r, s, cmd.Flags().Changed, logger, webProtocolShell, serveRuntimeOptions{
-		presignUsing: func(s3c *s3.Client) func(context.Context, string, string, time.Duration) (string, error) {
-			return presignForServe(s3c, r.Bucket)
-		},
-		publicURL: publicURLForServe(r),
-	})
+	webOptions := func(rr *config.Resolved) serveRuntimeOptions {
+		return serveRuntimeOptions{
+			presignUsing: func(s3c *s3.Client) func(context.Context, string, string, time.Duration) (string, error) {
+				return presignForServe(s3c, rr.Bucket)
+			},
+			publicURL: publicURLForServe(rr),
+		}
+	}
+	rt, err := newServeRuntimeWith(o, r, s, cmd.Flags().Changed, logger, webProtocolShell, webOptions(r))
 	if err != nil {
 		return err
 	}
@@ -116,6 +119,25 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	sources := buildWebSources(cfg, o, cmd.Flags().Changed, rt, r, logger)
 	multi := newWebMultiHandler(sources, defaultWebSourceName(cfg, r.ProfileName), webui.Handler())
 	multi.settings = newSourceSettingsStore(serveWatchTarget())
+	// 设置页保存后立即重建全部数据源;配置文件的普通改动也走同一条路径。
+	multi.reload = func() ([]*webSource, string, error) {
+		r2, cfg2, err := loadResolved()
+		if err != nil {
+			return nil, "", err
+		}
+		if r2.Bucket == "" {
+			return nil, "", errors.New("no bucket to serve in the default profile")
+		}
+		s2, err := mergeServeWeb(o, r2, cmd.Flags().Changed)
+		if err != nil {
+			return nil, "", err
+		}
+		rt2, err := newServeRuntimeWith(o, r2, s2, cmd.Flags().Changed, logger, webProtocolShell, webOptions(r2))
+		if err != nil {
+			return nil, "", err
+		}
+		return buildWebSources(cfg2, o, cmd.Flags().Changed, rt2, r2, logger), defaultWebSourceName(cfg2, r2.ProfileName), nil
+	}
 	httpSrv := newServeHTTPServer(s.listen, multi)
 
 	scheme := "http"
@@ -143,7 +165,13 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	if serveUserFromFlags(cmd) {
 		fmt.Fprint(os.Stderr, i18n.T("  users come from --user/--password flags: config file changes will NOT hot-apply; restart to change users\n"))
 	} else if cfgFile := serveWatchTarget(); cfgFile != "" {
-		watchConfig(context.Background(), cfgFile, 500*time.Millisecond, watchRebuildBackoff, rt.reload, rt.logger)
+		watchConfig(context.Background(), cfgFile, 500*time.Millisecond, watchRebuildBackoff, func() {
+			if err := multi.reloadSources(); err != nil {
+				logger.Printf("config change detected: reloading data sources failed: %v", err)
+				return
+			}
+			logger.Print("config change detected: data sources reloaded")
+		}, logger)
 	} else {
 		fmt.Fprint(os.Stderr, i18n.T("  no config file path resolved: hot reload disabled\n"))
 	}

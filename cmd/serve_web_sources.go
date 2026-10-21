@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/BeCrafter/sail/internal/config"
@@ -51,10 +53,18 @@ type webSourcesResponse struct {
 
 // webMultiHandler 在多个已构建好的 webfs.Server 之间路由。静态资源和
 // /api/sources 由外壳处理,其余请求按 Cookie 选择数据源后原样交给对应网关。
+//
+// 设置页保存后可以通过 reload 回调重建全部数据源并原子换表;换表期间旧
+// 请求继续持有旧 handler,新请求立即看到新配置。
 type webMultiHandler struct {
-	sources  []*webSource
-	byID     map[string]*webSource
-	def      *webSource
+	mu      sync.RWMutex
+	sources []*webSource
+	byID    map[string]*webSource
+	def     *webSource
+
+	reloadMu sync.Mutex
+	reload   func() ([]*webSource, string, error)
+
 	static   http.Handler
 	settings *sourceSettingsStore
 }
@@ -88,7 +98,14 @@ func unavailableWebSource(name, reason string) *webSource {
 }
 
 func newWebMultiHandler(sources []*webSource, defaultName string, static http.Handler) *webMultiHandler {
-	h := &webMultiHandler{byID: make(map[string]*webSource, len(sources)), static: static}
+	h := &webMultiHandler{static: static}
+	h.replace(sources, defaultName)
+	return h
+}
+
+// replace 原子替换数据源表。排序、索引和默认源的选择都在锁外完成,
+// 最后一次性换指针,读路径只持读锁。
+func (h *webMultiHandler) replace(sources []*webSource, defaultName string) {
 	// 默认数据源排在最前面,其余按 profile 名字排序,侧栏顺序稳定。
 	sort.SliceStable(sources, func(i, j int) bool {
 		if sources[i].name == defaultName {
@@ -99,31 +116,58 @@ func newWebMultiHandler(sources []*webSource, defaultName string, static http.Ha
 		}
 		return sources[i].name < sources[j].name
 	})
-	h.sources = sources
+	byID := make(map[string]*webSource, len(sources))
 	for _, s := range sources {
-		h.byID[s.id] = s
+		byID[s.id] = s
 	}
-	if s := h.byID[sourceID(defaultName)]; s != nil && s.available {
-		h.def = s
+	var def *webSource
+	if s := byID[sourceID(defaultName)]; s != nil && s.available {
+		def = s
 	}
-	if h.def == nil {
+	if def == nil {
 		for _, s := range sources {
 			if s.available {
-				h.def = s
+				def = s
 				break
 			}
 		}
 	}
-	return h
+	h.mu.Lock()
+	h.sources = sources
+	h.byID = byID
+	h.def = def
+	h.mu.Unlock()
+}
+
+// reloadSources 调用启动时注入的构建器重建全部数据源并换表。构建器失败时
+// 保留旧表,调用方可以提示用户重启 serve web。
+func (h *webMultiHandler) reloadSources() error {
+	h.reloadMu.Lock()
+	defer h.reloadMu.Unlock()
+	h.mu.RLock()
+	reload := h.reload
+	h.mu.RUnlock()
+	if reload == nil {
+		return errors.New("data source reload is not configured")
+	}
+	sources, defaultName, err := reload()
+	if err != nil {
+		return err
+	}
+	h.replace(sources, defaultName)
+	return nil
 }
 
 func (h *webMultiHandler) selected(r *http.Request) *webSource {
+	h.mu.RLock()
+	byID, def := h.byID, h.def
+	h.mu.RUnlock()
 	if c, err := r.Cookie(sailSourceCookie); err == nil {
-		if s := h.byID[c.Value]; s != nil && s.available {
+		if s := byID[c.Value]; s != nil && s.available {
 			return s
 		}
 	}
-	return h.def
+	return def
 }
 
 func (h *webMultiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -170,13 +214,16 @@ func (h *webMultiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *webMultiHandler) authorized(w http.ResponseWriter, r *http.Request) bool {
-	if h.def == nil || h.def.server == nil {
+	h.mu.RLock()
+	def := h.def
+	h.mu.RUnlock()
+	if def == nil || def.server == nil {
 		return true
 	}
-	if h.def.server.CheckAuth(r) {
+	if def.server.CheckAuth(r) {
 		return true
 	}
-	h.def.server.WriteUnauthorized(w)
+	def.server.WriteUnauthorized(w)
 	return false
 }
 
@@ -210,7 +257,9 @@ func (h *webMultiHandler) handleSource(w http.ResponseWriter, r *http.Request) {
 		writeSourceJSONError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+	h.mu.RLock()
 	s := h.byID[in.ID]
+	h.mu.RUnlock()
 	if s == nil || !s.available {
 		writeSourceJSONError(w, http.StatusNotFound, "data source not found")
 		return
@@ -228,24 +277,27 @@ func (h *webMultiHandler) handleSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *webMultiHandler) writeSources(w http.ResponseWriter, r *http.Request, selected *webSource) {
+	h.mu.RLock()
+	sources, def := h.sources, h.def
+	h.mu.RUnlock()
 	if selected == nil {
-		selected = h.def
+		selected = def
 	}
 	defID := ""
-	if h.def != nil {
-		defID = h.def.id
+	if def != nil {
+		defID = def.id
 	}
 	selectedID := ""
 	if selected != nil {
 		selectedID = selected.id
 	}
-	out := webSourcesResponse{Default: defID, Selected: selectedID, Manage: h.canManage(r), Sources: make([]webSourceView, 0, len(h.sources))}
-	for _, s := range h.sources {
+	out := webSourcesResponse{Default: defID, Selected: selectedID, Manage: h.canManage(r), Sources: make([]webSourceView, 0, len(sources))}
+	for _, s := range sources {
 		out.Sources = append(out.Sources, webSourceView{
 			ID:        s.id,
 			Name:      s.name,
 			Bucket:    s.bucket,
-			Default:   h.def != nil && s.id == h.def.id,
+			Default:   def != nil && s.id == def.id,
 			Selected:  selectedID != "" && s.id == selectedID,
 			Available: s.available,
 			Error:     s.errText,

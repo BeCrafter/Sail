@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -168,6 +169,45 @@ func TestSettingsHTTPLocalOnly(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("remote status = %d, want 403", rec.Code)
+	}
+}
+
+func TestSettingsSaveReloadsSources(t *testing.T) {
+	store, _ := newSettingsStoreForTest(t, settingsTestConfig)
+	h := newWebMultiHandler([]*webSource{fakeWebSource("alpha", "bucket-a", "alpha", true)}, "alpha", nil)
+	h.settings = store
+	reloaded := 0
+	h.reload = func() ([]*webSource, string, error) {
+		reloaded++
+		return []*webSource{
+			fakeWebSource("alpha", "bucket-a", "alpha", true),
+			fakeWebSource("gamma", "bucket-g", "gamma", true),
+		}, "alpha", nil
+	}
+
+	body := `{"name":"gamma","endpoint":"https://g.example.com","bucket":"bucket-g","region":"us-west-2"}`
+	req := httptest.NewRequest(http.MethodPost, "/api/settings/sources", strings.NewReader(body))
+	req.RemoteAddr = "127.0.0.1:12345"
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("save status = %d body=%s", rec.Code, rec.Body.String())
+	}
+	if reloaded != 1 {
+		t.Fatalf("reload called %d times, want 1", reloaded)
+	}
+	if strings.Contains(rec.Body.String(), `"restartRequired":true`) {
+		t.Fatalf("save should reload immediately: %s", rec.Body.String())
+	}
+
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/sources", nil))
+	var got webSourcesResponse
+	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Sources) != 2 || got.Sources[1].Name != "gamma" {
+		t.Fatalf("sources after save = %+v", got.Sources)
 	}
 }
 

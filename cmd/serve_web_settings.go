@@ -371,7 +371,7 @@ func (h *webMultiHandler) handleSettingsSources(w http.ResponseWriter, r *http.R
 			writeSourceJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		writeSettingsJSON(w, http.StatusOK, map[string]any{"ok": true, "restartRequired": true})
+		h.finishSettingsMutation(w)
 	case http.MethodDelete:
 		name := strings.TrimSpace(r.URL.Query().Get("name"))
 		if name == "" {
@@ -382,7 +382,7 @@ func (h *webMultiHandler) handleSettingsSources(w http.ResponseWriter, r *http.R
 			writeSourceJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		writeSettingsJSON(w, http.StatusOK, map[string]any{"ok": true, "restartRequired": true})
+		h.finishSettingsMutation(w)
 	default:
 		w.Header().Set("Allow", "GET, POST, DELETE")
 		writeSourceJSONError(w, http.StatusMethodNotAllowed, "method not allowed")
@@ -440,7 +440,18 @@ func (h *webMultiHandler) handleSettingsDefault(w http.ResponseWriter, r *http.R
 		writeSourceJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	writeSettingsJSON(w, http.StatusOK, map[string]any{"ok": true, "restartRequired": true})
+	h.finishSettingsMutation(w)
+}
+
+// finishSettingsMutation 在配置落盘后立刻重建数据源表。重建失败不回滚
+// 配置文件(用户已经看到保存成功),而是明确告诉前端需要重启后重试。
+func (h *webMultiHandler) finishSettingsMutation(w http.ResponseWriter) {
+	out := map[string]any{"ok": true, "restartRequired": false}
+	if err := h.reloadSources(); err != nil {
+		out["restartRequired"] = true
+		out["reloadError"] = err.Error()
+	}
+	writeSettingsJSON(w, http.StatusOK, out)
 }
 
 func decodeSettingsJSON(w http.ResponseWriter, r *http.Request, dst any) error {

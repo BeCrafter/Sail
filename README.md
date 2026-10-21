@@ -667,8 +667,9 @@ protocol-independent core as the other gateways, so prefix isolation, quota, chu
 the delete path are one implementation, not three. The left data-source panel lists every profile
 in the config; `default-profile` is selected first (an explicit `--profile` wins), and switching
 sources keeps each profile's bucket, credentials and serve layout on the server side. A gear
-button opens a local-only settings page for adding, editing, deleting and defaulting profiles;
-saves are written atomically to `config.yaml`, with structural changes taking effect after a restart.
+button in the sidebar footer opens a local-only settings page for adding, editing, deleting and
+defaulting profiles; saves are written atomically to `config.yaml` and the data-source list is
+rebuilt immediately (if a rebuild fails, restart `serve web` to retry).
 
 ```bash
 # Start: defaults to :9090 and anonymous access — no user/password needed

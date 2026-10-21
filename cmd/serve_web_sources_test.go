@@ -100,3 +100,47 @@ func TestWebMultiHandlerRejectsMissingSource(t *testing.T) {
 		t.Fatalf("status = %d, want 404", rec.Code)
 	}
 }
+
+func TestWebMultiHandlerReloadSources(t *testing.T) {
+	h := newWebMultiHandler([]*webSource{fakeWebSource("alpha", "bucket-a", "alpha", true)}, "alpha", nil)
+	h.reload = func() ([]*webSource, string, error) {
+		return []*webSource{
+			fakeWebSource("alpha", "bucket-a", "alpha", true),
+			fakeWebSource("beta", "bucket-b", "beta", true),
+		}, "beta", nil
+	}
+	if err := h.reloadSources(); err != nil {
+		t.Fatal(err)
+	}
+
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/sources", nil))
+	var got webSourcesResponse
+	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Sources) != 2 || got.Sources[0].Name != "beta" || !got.Sources[0].Default {
+		t.Fatalf("after reload sources = %+v", got.Sources)
+	}
+
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/list", nil))
+	if body := rec.Body.String(); body != "beta:/api/list" {
+		t.Fatalf("reloaded default routed to %q", body)
+	}
+
+	h.reload = func() ([]*webSource, string, error) {
+		return nil, "", fmt.Errorf("boom")
+	}
+	if err := h.reloadSources(); err == nil {
+		t.Fatal("expected reload error")
+	}
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/sources", nil))
+	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Sources) != 2 || got.Sources[0].Name != "beta" {
+		t.Fatalf("failed reload should keep previous sources: %+v", got.Sources)
+	}
+}

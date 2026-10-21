@@ -24,7 +24,7 @@
     "zh-CN": {
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
-      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件;重启 serve web 后,数据源列表的变更才会在资源库中生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已写入配置文件,重启 serve web 后生效", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", settingsTest: "测试连接", settingsTesting: "测试中…", settingsTestOk: "连接成功", settingsTestFailed: "连接失败", settingsAdvanced: "高级配置", settingsCDNBucketPath: "CDN Bucket 路径", settingsAuto: "自动检测", settingsIncluded: "已包含", settingsNotIncluded: "不包含", settingsMaxUpload: "单文件上限", settingsBackendMax: "后端对象上限", settingsChunkSize: "分片大小", settingsDirCacheTTL: "目录缓存 TTL", settingsChunkedUpload: "启用分片上传", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
+      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件并刷新数据源;若刷新失败,重启 serve web 后生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已保存,数据源已刷新", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", settingsTest: "测试连接", settingsTesting: "测试中…", settingsTestOk: "连接成功", settingsTestFailed: "连接失败", settingsReloadFailed: "配置已保存,但数据源刷新失败,请重启 serve web", settingsAdvanced: "高级配置", settingsCDNBucketPath: "CDN Bucket 路径", settingsAuto: "自动检测", settingsIncluded: "已包含", settingsNotIncluded: "不包含", settingsMaxUpload: "单文件上限", settingsBackendMax: "后端对象上限", settingsChunkSize: "分片大小", settingsDirCacheTTL: "目录缓存 TTL", settingsChunkedUpload: "启用分片上传", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
       profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
@@ -82,7 +82,7 @@
     en: {
       appTitle: "Sail Media",
       appSub: "S3 media library",
-      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written to the config file immediately; restart serve web to apply structural changes to the library.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved to the config file; restart serve web to apply", settingsRequired: "Name, endpoint and bucket are required", settingsTest: "Test connection", settingsTesting: "Testing…", settingsTestOk: "Connected", settingsTestFailed: "Connection failed", settingsAdvanced: "Advanced", settingsCDNBucketPath: "CDN bucket path", settingsAuto: "Auto-detect", settingsIncluded: "Included", settingsNotIncluded: "Not included", settingsMaxUpload: "Max upload size", settingsBackendMax: "Backend object limit", settingsChunkSize: "Chunk size", settingsDirCacheTTL: "Directory cache TTL", settingsChunkedUpload: "Enable chunked uploads", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
+      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written immediately and the data source list is refreshed; restart serve web if the refresh fails.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved; data sources refreshed", settingsRequired: "Name, endpoint and bucket are required", settingsTest: "Test connection", settingsTesting: "Testing…", settingsTestOk: "Connected", settingsTestFailed: "Connection failed", settingsReloadFailed: "Saved, but refreshing data sources failed; restart serve web", settingsAdvanced: "Advanced", settingsCDNBucketPath: "CDN bucket path", settingsAuto: "Auto-detect", settingsIncluded: "Included", settingsNotIncluded: "Not included", settingsMaxUpload: "Max upload size", settingsBackendMax: "Backend object limit", settingsChunkSize: "Chunk size", settingsDirCacheTTL: "Directory cache TTL", settingsChunkedUpload: "Enable chunked uploads", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
       profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
@@ -1449,6 +1449,15 @@
         canManageSources.value = !!(r && r.manage);
       }
 
+      // 设置页保存后立即刷新侧栏,不必等整页重载。
+      async function refreshSources() {
+        try {
+          applySources(await API.sources());
+        } catch (e) {
+          // 旧服务没有 /api/sources 时保持单数据源模式,不打扰用户。
+        }
+      }
+
       function resetSettingsForm() {
         Object.assign(settingsForm, {
           name: "", endpoint: "", accessKey: "", secretKey: "", bucket: "",
@@ -1525,6 +1534,7 @@
       function closeSettings() {
         settingsOpen.value = false;
         settingsMode.value = "list";
+        void refreshSources();
       }
 
       function editSettingsSource(s) {
@@ -1595,7 +1605,7 @@
         }
         settingsSaving.value = true;
         try {
-          await API.saveSettingsSource({
+          const r = await API.saveSettingsSource({
             ...settingsConnectionPayload(),
             serve: {
               maxUploadSize: form.serveMaxUploadSize.trim(), backendMaxSize: form.serveBackendMaxSize.trim(),
@@ -1603,9 +1613,14 @@
               chunkedUpload: !!form.serveChunkedUpload,
             },
           });
-          toast(tt.value.settingsSaved, form.name.trim(), "ok");
+          if (r && r.restartRequired) {
+            toast(tt.value.settingsReloadFailed, r.reloadError || "", "warn");
+          } else {
+            toast(tt.value.settingsSaved, form.name.trim(), "ok");
+          }
           settingsMode.value = "list";
           await loadSettings(false, true);
+          await refreshSources();
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         } finally {
@@ -1616,9 +1631,14 @@
       async function deleteSettingsSource(s) {
         if (!s || !(await confirmDialogBox(tt.value.confirmDel, s.name))) return;
         try {
-          await API.deleteSettingsSource(s.name);
-          toast(tt.value.deleted, s.name, "ok");
+          const r = await API.deleteSettingsSource(s.name);
+          if (r && r.restartRequired) {
+            toast(tt.value.settingsReloadFailed, r.reloadError || "", "warn");
+          } else {
+            toast(tt.value.deleted, s.name, "ok");
+          }
           await loadSettings(false, true);
+          await refreshSources();
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         }
@@ -1627,9 +1647,14 @@
       async function setDefaultSettingsSource(s) {
         if (!s || s.default) return;
         try {
-          await API.setDefaultSettingsSource(s.name);
-          toast(tt.value.settingsSaved, s.name, "ok");
+          const r = await API.setDefaultSettingsSource(s.name);
+          if (r && r.restartRequired) {
+            toast(tt.value.settingsReloadFailed, r.reloadError || "", "warn");
+          } else {
+            toast(tt.value.settingsSaved, s.name, "ok");
+          }
           await loadSettings(false, true);
+          await refreshSources();
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         }
