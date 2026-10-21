@@ -32,3 +32,8 @@ clean: ## 清理本地构建产物
 	rm -f $(BINARY)
 	rm -rf npm/darwin-*/bin npm/linux-*/bin
 	rm -rf dist
+
+cache-clear: ## 清理 Go 构建缓存并删除本地二进制(强制全量重编译)
+	go clean -cache
+	rm -f $(BINARY)
+	@echo "Go build cache cleared. Run 'make build', restart 'sail serve web', then hard-refresh the browser."

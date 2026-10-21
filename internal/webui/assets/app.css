@@ -165,6 +165,8 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
   background: transparent; color: var(--fg-faint); cursor: pointer; margin: -3px -3px -3px 0;
 }
 .side-gear:hover { color: var(--fg); background: var(--bg-hover); }
+.side-gear.disabled { opacity: 0.5; cursor: not-allowed; }
+.side-gear.disabled:hover { color: var(--fg-faint); background: transparent; }
 .side-gear svg { width: 14px; height: 14px; display: block; }
 .profile-item {
   display: flex; align-items: center; gap: 8px; padding: 8px 9px; border-radius: 9px;

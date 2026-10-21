@@ -555,7 +555,7 @@
         <button class="conn-btn" :class="connClass" :title="connText" :disabled="loading" @click="reload">
           <i class="dot"></i><span>{{ connText }}</span>
         </button>
-        <button v-if="canManageSources" class="side-gear side-gear-bottom" :title="tt.settings" @click="openSettings">
+        <button class="side-gear side-gear-bottom" :class="{ disabled: !canManageSources }" :title="canManageSources ? tt.settings : tt.settingsLocalOnly" @click="openSettings">
           <span class="ico" v-html="icons.settings"></span><span class="lbl">{{ tt.settings }}</span>
         </button>
       </div>
@@ -1508,6 +1508,10 @@
       }
 
       async function openSettings() {
+        if (!canManageSources.value) {
+          toast(tt.value.settingsLocalOnly);
+          return;
+        }
         drawer.value = false;
         settingsOpen.value = true;
         settingsMode.value = "list";
