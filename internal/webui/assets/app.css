@@ -209,9 +209,8 @@ body.col-resizing .detail-resizer::after { background: var(--accent); opacity: .
   border-top: 1px solid var(--line); font-size: 11px; color: var(--fg-faint);
 }
 .side-foot .grow { flex: 1; }
-.side-gear-bottom { width: auto; height: 22px; margin: 0; padding: 0 5px; gap: 5px; color: var(--fg-dim); }
+.side-gear-bottom { width: 22px; height: 22px; margin: 0 -4px 0 0; padding: 0; color: var(--fg-dim); }
 .side-gear-bottom .ico { display: inline-flex; }
-.side-gear-bottom .lbl { font-size: 11px; line-height: 1; white-space: nowrap; }
 .conn-btn {
   appearance: none; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
   padding: 0; border: 0; background: transparent; color: var(--fg-dim);

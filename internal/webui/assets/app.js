@@ -555,8 +555,9 @@
         <button class="conn-btn" :class="connClass" :title="connText" :disabled="loading" @click="reload">
           <i class="dot"></i><span>{{ connText }}</span>
         </button>
+        <span class="grow"></span>
         <button class="side-gear side-gear-bottom" :class="{ disabled: !canManageSources }" :title="canManageSources ? tt.settings : tt.settingsLocalOnly" @click="openSettings">
-          <span class="ico" v-html="icons.settings"></span><span class="lbl">{{ tt.settings }}</span>
+          <span class="ico" v-html="icons.settings"></span>
         </button>
       </div>
       <div class="side-resizer" :title="tt.resizeSidebar" @pointerdown="startSidebarResize"></div>
