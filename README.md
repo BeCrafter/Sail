@@ -87,8 +87,9 @@ Interactively generates or updates `~/.config/sail/config.yaml` (`--reset` reset
   require-auth on. An existing `serve` block defaults to "keep" —
   choose to append users to the existing table, reconfigure it, or remove it; a service you do not select
   keeps its configured values untouched; multi-user tables are validated as you enter them (duplicate names,
-  nested prefixes, quota syntax), and the fields the wizard does not ask (size limits, `dir-cache-ttl`,
-  `prewarm`) are kept as configured
+  nested prefixes, quota syntax). When Web is selected, the shared layer also asks the limits exposed by the
+  Web settings page — `backend-max-object-size`, `max-upload-size`, `chunk-size` when chunked upload is on,
+  and `dir-cache-ttl`; `prewarm` is still kept as configured
 - Inputs are normalized where possible: a bare port gets its colon (`8443` → `:8443`), a URL without a
   scheme gets `https://`, single-letter quota units become `MB`/`GB`/`TB`, `~` is expanded in paths, and
   y/n answers accept `yes`/`true`/`1`/`on`; invalid values are re-prompted with an explanation

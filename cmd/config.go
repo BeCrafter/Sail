@@ -39,8 +39,9 @@ setup wizard notes:
     place (duplicate names, nested prefixes, quota syntax —
     quota accepts MB/GB/TB). An existing serve block defaults to "keep" — choose append to add users to the
     existing table, reconfigure to edit it, or remove to drop it. A service that is not selected is left as
-    configured, never cleared. Size limits, dir-cache-ttl and prewarm are not asked here; edit the config file
-    to change them
+    configured, never cleared. When Web is selected, the shared layer also asks the limits exposed by the Web
+    settings page (backend-max-object-size, max-upload-size, chunk-size when chunked upload is on, and
+    dir-cache-ttl); prewarm is still not asked, edit the config file to change it
   - inputs are normalized where possible: a bare port gets its colon (8443 -> :8443), a URL without a
     scheme gets https://, single-letter quota units become MB/GB/TB, ~ is expanded in paths, and yes/no
     answers accept yes/true/1/on (the service and auth-mode choices take their own keywords); invalid values
@@ -711,7 +712,7 @@ func setupSummary(prof string, isDefault bool, p config.Profile) string {
 		fmt.Fprintf(&b, "  serve:      %s\n", i18n.T("(unset; the serve commands use flag defaults)"))
 	}
 	if !serveBlockEmpty(p.Serve) {
-		b.WriteString(i18n.T("note: backend-max-object-size / max-upload-size / chunk-size / dir-cache-ttl / prewarm are kept as configured (not asked here); edit the config file to change them") + "\n")
+		b.WriteString(i18n.T("note: prewarm is kept as configured (not asked here); backend-max-object-size / max-upload-size / chunk-size / dir-cache-ttl are asked only when Web is selected") + "\n")
 	}
 
 	var missing []string

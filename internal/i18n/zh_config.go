@@ -23,8 +23,9 @@ setup wizard notes:
     place (duplicate names, nested prefixes, quota syntax —
     quota accepts MB/GB/TB). An existing serve block defaults to "keep" — choose append to add users to the
     existing table, reconfigure to edit it, or remove to drop it. A service that is not selected is left as
-    configured, never cleared. Size limits, dir-cache-ttl and prewarm are not asked here; edit the config file
-    to change them
+    configured, never cleared. When Web is selected, the shared layer also asks the limits exposed by the Web
+    settings page (backend-max-object-size, max-upload-size, chunk-size when chunked upload is on, and
+    dir-cache-ttl); prewarm is still not asked, edit the config file to change it
   - inputs are normalized where possible: a bare port gets its colon (8443 -> :8443), a URL without a
     scheme gets https://, single-letter quota units become MB/GB/TB, ~ is expanded in paths, and yes/no
     answers accept yes/true/1/on (the service and auth-mode choices take their own keywords); invalid values
@@ -44,7 +45,8 @@ setup 向导要点:
     (WebDAV: listen、TLS;SMB: listen、share、server-name;Web: listen、require-auth、TLS)。Web 默认
     匿名;只选 Web 且不要求登录时,向导会跳过凭据提问。多用户表就地校验(重名、前缀嵌套、quota 语法——
     quota 支持 MB/GB/TB)。已有 serve 块默认保留,可选追加用户、重新配置或删除。未被选中的服务按原配置保留,
-    绝不会被清空。尺寸上限、dir-cache-ttl 与 prewarm 不在向导内提问,如需修改请编辑配置文件
+    绝不会被清空。选中 Web 时,共享层还会询问 Web 设置页暴露的尺寸/缓存项(backend-max-object-size、
+    max-upload-size、开启分片时的 chunk-size、dir-cache-ttl);prewarm 仍不在向导内提问,如需修改请编辑配置文件
   - 输入会尽量归一化: 裸端口补冒号(8443 -> :8443)、URL 缺协议头补 https://、quota 单字母单位
     补全为 MB/GB/TB、路径里的 ~ 自动展开、yes/no 回答接受 yes/true/1/on(服务与认证模式选择有各自的
     关键字);非法值会说明原因后重问
@@ -146,6 +148,11 @@ setup 向导要点:
 		"tls-key (path to the private key; required together with tls-cert)":                                           "tls-key (私钥路径;与 tls-cert 需成对提供)",
 		"chunked-upload (store files over chunk-size as chunks + a manifest)?":                                         "是否启用 chunked-upload (超过 chunk-size 的文件按分片+manifest 存储)?",
 		"staging-dir (write staging directory; empty = the system temp dir)":                                           "staging-dir (写入暂存目录;留空=系统临时目录)",
+		"advanced settings (shared by all services)":                                                                   "高级设置(各服务共用)",
+		"backend-max-object-size (declared backend limit; empty = flag default 5TiB)":                                  "backend-max-object-size (声明的后端单对象上限;留空=flag 默认 5TiB)",
+		"max-upload-size (request body limit; empty = follow backend-max-object-size)":                                 "max-upload-size (请求体上限;留空=跟随 backend-max-object-size)",
+		"chunk-size (5MiB ~ 5GiB; empty = flag default 4GiB)":                                                          "chunk-size (5MiB ~ 5GiB;留空=flag 默认 4GiB)",
+		"dir-cache-ttl (listing cache TTL, e.g. 60s, 10m; 0 disables; empty = flag default 60s)":                       "dir-cache-ttl (目录列表缓存时长,如 60s、10m;0 关闭;留空=flag 默认 60s)",
 		"(unset; the serve commands use flag defaults)":                                                                "(未配置,serve 各命令使用 flag 默认值)",
 		"%d user(s)":     "%d 名用户",
 		"single user %s": "单用户 %s",
@@ -154,12 +161,12 @@ setup 向导要点:
 		"unrecognized answer %q; please answer webdav, smb, web, both or all\n":                           "无法识别的回答 %q;请输入 webdav、smb、web、both 或 all\n",
 		"note: Web listen/TLS keep their configured values; they are not asked while Web is not selected": "注意: Web 资源库的 listen/TLS 按原配置保留;未选中 Web 时不会提问这两项",
 		"Web settings": "Web 设置",
-		"note: WebDAV listen/TLS keep their configured values; they are not asked while WebDAV is not selected":                                                               "注意: WebDAV 的 listen/TLS 按原配置保留;未选中 WebDAV 时不会提问这两项",
-		"note: SMB listen/share/server-name keep their configured values; they are not asked while SMB is not selected":                                                       "注意: SMB 的 listen/share/server-name 按原配置保留;未选中 SMB 时不会提问这三项",
-		"SMB share name for single-user mode (empty = flag default %s)":                                                                                                       "SMB 共享名(单用户模式;留空=flag 默认 %s)",
-		"SMB server name (the name this server calls itself in the NTLM challenge; empty = flag default %s)":                                                                  "SMB 服务端名(NTLM 挑战里服务端自称的名字,客户端界面会显示;留空=flag 默认 %s)",
-		"invalid share name %q: SMB share names must not contain a path separator\n":                                                                                          "共享名 %q 不合法:SMB 共享名里不能含路径分隔符\n",
-		"note: backend-max-object-size / max-upload-size / chunk-size / dir-cache-ttl / prewarm are kept as configured (not asked here); edit the config file to change them": "注意: backend-max-object-size / max-upload-size / chunk-size / dir-cache-ttl / prewarm 保留原配置(不在向导内提问);如需修改请编辑配置文件",
+		"note: WebDAV listen/TLS keep their configured values; they are not asked while WebDAV is not selected":                                                            "注意: WebDAV 的 listen/TLS 按原配置保留;未选中 WebDAV 时不会提问这两项",
+		"note: SMB listen/share/server-name keep their configured values; they are not asked while SMB is not selected":                                                    "注意: SMB 的 listen/share/server-name 按原配置保留;未选中 SMB 时不会提问这三项",
+		"SMB share name for single-user mode (empty = flag default %s)":                                                                                                    "SMB 共享名(单用户模式;留空=flag 默认 %s)",
+		"SMB server name (the name this server calls itself in the NTLM challenge; empty = flag default %s)":                                                               "SMB 服务端名(NTLM 挑战里服务端自称的名字,客户端界面会显示;留空=flag 默认 %s)",
+		"invalid share name %q: SMB share names must not contain a path separator\n":                                                                                       "共享名 %q 不合法:SMB 共享名里不能含路径分隔符\n",
+		"note: prewarm is kept as configured (not asked here); backend-max-object-size / max-upload-size / chunk-size / dir-cache-ttl are asked only when Web is selected": "注意: prewarm 保留原配置(不在向导内提问);backend-max-object-size / max-upload-size / chunk-size / dir-cache-ttl 仅在选中 Web 时提问",
 
 		// users.go — serve.users validation
 		"serve.users[%d]: name is required":                                                                "serve.users[%d]: 缺少 name",

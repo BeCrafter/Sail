@@ -404,6 +404,9 @@ func TestCollectServeWebOnly(t *testing.T) {
 		"",      // prefix(通用)
 		"",      // chunked-upload
 		"",      // staging-dir
+		"",      // backend-max-object-size
+		"",      // max-upload-size
+		"",      // dir-cache-ttl
 		":9191", // web listen
 		"",      // tls-cert 空
 	}
@@ -428,6 +431,34 @@ func TestCollectServeWebOnly(t *testing.T) {
 	}
 }
 
+// Web 被选中时,共享层会继续问 Web 设置页暴露的高级字段;分片开启时
+// 才追问 chunk-size,关闭时保留原值。
+func TestCollectServeWebAdvancedSettings(t *testing.T) {
+	in := []string{
+		"y", "web",
+		"",      // anonymous
+		"",      // prefix
+		"y",     // chunked-upload
+		"",      // staging-dir
+		"10TiB", // backend-max-object-size
+		"1TiB",  // max-upload-size
+		"8GiB",  // chunk-size
+		"5m",    // dir-cache-ttl
+		":9191", // web listen
+		"",      // tls-cert 空
+	}
+	got, err := collectServeConfig(newReader(in...), config.ServeConfig{})
+	if err != nil {
+		t.Fatalf("不应报错: %v", err)
+	}
+	if got.BackendMaxSize != "10TiB" || got.MaxUploadSize != "1TiB" || got.ChunkSize != "8GiB" || got.DirCacheTTL != "5m" {
+		t.Errorf("高级字段不符: %+v", got)
+	}
+	if !got.ChunkedUpload {
+		t.Errorf("chunked-upload 应落库: %+v", got)
+	}
+}
+
 // 只配 Web 但要求登录:仍走进共享认证提问,require-auth 落库。
 func TestCollectServeWebOnlyWithAuth(t *testing.T) {
 	in := []string{
@@ -437,6 +468,7 @@ func TestCollectServeWebOnlyWithAuth(t *testing.T) {
 		"single", // 认证模式
 		"alice", "pw",
 		"", "", // chunked-upload / staging-dir
+		"", "", "", // backend-max / max-upload / dir-cache-ttl
 		":9191", // web listen
 		"",      // tls-cert 空
 	}

@@ -84,8 +84,9 @@ sail config setup
   chunked-upload、staging-dir),最后逐个服务问各自的专属设置(WebDAV:listen、TLS;SMB:listen、share、
   server-name;Web:listen、require-auth、TLS)。Web 默认匿名;只选 Web 且不要求登录时,向导会跳过凭据提问。
   已有 `serve` 块默认保留,可选追加用户、重新配置或删除;未被选中的服务按原配置保留、不会被清空;
-  多用户表随输入即校验(重名、前缀嵌套、quota 语法);向导不提问的字段(尺寸上限、`dir-cache-ttl`、
-  `prewarm`)原样保留
+  多用户表随输入即校验(重名、前缀嵌套、quota 语法)。选中 Web 时,共享层还会询问 Web 设置页暴露的
+  尺寸/缓存项 —— `backend-max-object-size`、`max-upload-size`、开启分片时的 `chunk-size`、`dir-cache-ttl`;
+  `prewarm` 仍按原配置保留
 - 输入会尽量归一化:裸端口自动补冒号(`8443` → `:8443`)、URL 缺协议头补 `https://`、quota 单字母单位
   补全为 `MB`/`GB`/`TB`、路径中的 `~` 自动展开、y/n 回答接受 `yes`/`true`/`1`/`on`;非法值会说明原因后重问
 - 写盘后输出配置摘要,空字段明确标注,便于核对缺失项

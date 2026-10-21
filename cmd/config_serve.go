@@ -114,7 +114,7 @@ func collectServeParams(r *bufio.Reader, existing config.ServeConfig) (config.Se
 		s.Web.RequireAuth = promptWebRequireAuth(r, existing.Web.RequireAuth)
 		webAuthAsked = true
 	}
-	if err := collectSharedParams(r, &s, existing, webOnly && !s.Web.RequireAuth); err != nil {
+	if err := collectSharedParams(r, &s, existing, webOnly && !s.Web.RequireAuth, p.web); err != nil {
 		return config.ServeConfig{}, err
 	}
 	if p.webdav {
@@ -151,7 +151,10 @@ func serveSection(title string) {
 // collectSharedParams 收集各服务共用的参数:前缀、认证、分片与暂存目录。
 // 需要 existing 单参:认证选定模式后会清空另一侧,得先拿原始用户表当 seed。
 // skipAuth 用于「只配 Web 且匿名」:此时不需要任何凭据,直接跳过认证提问。
-func collectSharedParams(r *bufio.Reader, s *config.ServeConfig, existing config.ServeConfig, skipAuth bool) error {
+// webSelected 为 true 时顺带问 Web 设置页暴露的尺寸/缓存字段;这些字段虽然
+// 属于 serve 共享层,但不在 WebDAV/SMB 向导里展开,避免把可选的高级项塞进
+// 每个协议的最小流程。
+func collectSharedParams(r *bufio.Reader, s *config.ServeConfig, existing config.ServeConfig, skipAuth, webSelected bool) error {
 	serveSection(i18n.T("shared settings (used by all services)"))
 	s.Prefix = promptReader(r, i18n.T("shared prefix mapped to / (empty = the whole bucket)"), existing.Prefix)
 	if skipAuth {
@@ -161,7 +164,23 @@ func collectSharedParams(r *bufio.Reader, s *config.ServeConfig, existing config
 	}
 	s.ChunkedUpload = promptBoolReader(r, i18n.T("chunked-upload (store files over chunk-size as chunks + a manifest)?"), existing.ChunkedUpload)
 	s.StagingDir = promptPath(r, i18n.T("staging-dir (write staging directory; empty = the system temp dir)"), existing.StagingDir, false)
+	if webSelected {
+		collectServeAdvancedParams(r, s)
+	}
 	return nil
+}
+
+// collectServeAdvancedParams 收集 Web 设置页「高级配置」里的共享 serve 字段。
+// 只问 Web 被选中的流程;WebDAV/SMB 仍走原有的精简向导。字段留空表示沿用
+// 启动 flag 默认值,与配置文件里注释掉的字段语义一致。
+func collectServeAdvancedParams(r *bufio.Reader, s *config.ServeConfig) {
+	serveSection(i18n.T("advanced settings (shared by all services)"))
+	s.BackendMaxSize = promptReader(r, i18n.T("backend-max-object-size (declared backend limit; empty = flag default 5TiB)"), s.BackendMaxSize)
+	s.MaxUploadSize = promptReader(r, i18n.T("max-upload-size (request body limit; empty = follow backend-max-object-size)"), s.MaxUploadSize)
+	if s.ChunkedUpload {
+		s.ChunkSize = promptReader(r, i18n.T("chunk-size (5MiB ~ 5GiB; empty = flag default 4GiB)"), s.ChunkSize)
+	}
+	s.DirCacheTTL = promptReader(r, i18n.T("dir-cache-ttl (listing cache TTL, e.g. 60s, 10m; 0 disables; empty = flag default 60s)"), s.DirCacheTTL)
 }
 
 // collectWebdavParams 收集 WebDAV 专属参数:监听地址与 TLS 对(成对才有意义)。
