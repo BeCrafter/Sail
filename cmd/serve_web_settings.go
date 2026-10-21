@@ -91,7 +91,7 @@ func (s *sourceSettingsStore) load() (*config.Config, error) {
 	if s.path == "" {
 		return nil, errors.New("config file path is unavailable")
 	}
-	cfg, err := config.Load(s.path)
+	cfg, err := config.LoadOptional(s.path)
 	if err != nil {
 		return nil, err
 	}

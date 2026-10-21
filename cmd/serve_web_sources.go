@@ -322,20 +322,23 @@ func writeSourceJSONError(w http.ResponseWriter, status int, message string) {
 
 // buildWebSources 为配置文件里的每个 profile 构建一个 Web 数据源。
 // 默认数据源构建失败不影响其它源;失败的 profile 仍会出现在列表里并标记
-// available=false,便于用户看到配置存在但暂时不可用。
+// available=false,便于用户看到配置存在但暂时不可用。没有任何可用 profile
+// 时返回空列表,Web 外壳仍会提供静态页面与设置接口。
 func buildWebSources(cfg *config.Config, o serveFlags, changed func(string) bool, active *serveRuntime, activeResolved *config.Resolved, logger *log.Logger) []*webSource {
-	activeName := activeResolved.ProfileName
-	names := make([]string, 0)
-	if cfg != nil {
-		names = make([]string, 0, len(cfg.Profiles)+1)
-		for name := range cfg.Profiles {
-			names = append(names, name)
-		}
+	if cfg == nil {
+		cfg = &config.Config{Profiles: map[string]config.Profile{}}
 	}
-	if len(names) == 0 {
-		names = append(names, activeName)
-	} else {
-		// 配置文件存在但当前 profile 不在其中(例如用 flag 临时指定),仍要展示。
+	activeName := ""
+	if activeResolved != nil {
+		activeName = activeResolved.ProfileName
+	}
+	names := make([]string, 0, len(cfg.Profiles)+1)
+	for name := range cfg.Profiles {
+		names = append(names, name)
+	}
+	// 配置文件里没有当前 profile(例如用 flag 临时指定),仍要展示它;
+	// 完全没有 profile 时不要凭空造一个空名字的数据源。
+	if activeName != "" {
 		found := false
 		for _, name := range names {
 			if name == activeName {
@@ -351,39 +354,26 @@ func buildWebSources(cfg *config.Config, o serveFlags, changed func(string) bool
 
 	sources := make([]*webSource, 0, len(names))
 	for _, name := range names {
-		if cfg != nil {
-			if p, ok := cfg.Profiles[name]; ok && p.Disabled {
-				logger.Printf("data source %q is disabled", name)
-				continue
-			}
+		if p, ok := cfg.Profiles[name]; ok && p.Disabled {
+			logger.Printf("data source %q is disabled", name)
+			continue
 		}
-		if name == activeName {
+		if active != nil && name == activeName {
 			sources = append(sources, newWebSource(name, activeResolved.Bucket, active))
 			continue
 		}
-		pr, err := cfg.Resolve(name)
+		pr, err := cfg.ResolveLoose(name)
 		if err != nil {
 			logger.Printf("data source %q unavailable: %v", name, err)
 			sources = append(sources, unavailableWebSource(name, err.Error()))
 			continue
 		}
-		if pr.Bucket == "" {
-			logger.Printf("data source %q unavailable: bucket is not configured", name)
-			sources = append(sources, unavailableWebSource(name, "bucket is not configured"))
+		if problem := webResolvedProblem(pr); problem != "" {
+			logger.Printf("data source %q unavailable: %s", name, problem)
+			sources = append(sources, unavailableWebSource(name, problem))
 			continue
 		}
-		ps, err := mergeServeWeb(o, pr, changed)
-		if err != nil {
-			logger.Printf("data source %q unavailable: %v", name, err)
-			sources = append(sources, unavailableWebSource(name, err.Error()))
-			continue
-		}
-		prt, err := newServeRuntimeWith(o, pr, ps, changed, logger, webProtocolShell, serveRuntimeOptions{
-			presignUsing: func(s3c *s3.Client) func(context.Context, string, string, time.Duration) (string, error) {
-				return presignForServe(s3c, pr.Bucket)
-			},
-			publicURL: publicURLForServe(pr),
-		})
+		prt, err := newWebRuntimeForResolved(o, pr, changed, logger)
 		if err != nil {
 			logger.Printf("data source %q unavailable: %v", name, err)
 			sources = append(sources, unavailableWebSource(name, err.Error()))
@@ -392,6 +382,36 @@ func buildWebSources(cfg *config.Config, o serveFlags, changed func(string) bool
 		sources = append(sources, newWebSource(name, pr.Bucket, prt))
 	}
 	return sources
+}
+
+// webResolvedProblem 返回 Web 数据源不可用的原因;空串表示可以建运行期。
+// Validate 给出缺 endpoint / 密钥的既有错误文案,bucket 是 Web 的额外要求。
+func webResolvedProblem(r *config.Resolved) string {
+	if r == nil {
+		return "profile is not configured"
+	}
+	if err := r.Validate(); err != nil {
+		return err.Error()
+	}
+	if strings.TrimSpace(r.Bucket) == "" {
+		return "bucket is not configured"
+	}
+	return ""
+}
+
+// newWebRuntimeForResolved 为一个已通过 webResolvedProblem 的数据源装配
+// S3 client、用户栈与网关。外链能力与启动路径共用同一份接线。
+func newWebRuntimeForResolved(o serveFlags, r *config.Resolved, changed func(string) bool, logger *log.Logger) (*serveRuntime, error) {
+	s, err := mergeServeWeb(o, r, changed)
+	if err != nil {
+		return nil, err
+	}
+	return newServeRuntimeWith(o, r, s, changed, logger, webProtocolShell, serveRuntimeOptions{
+		presignUsing: func(s3c *s3.Client) func(context.Context, string, string, time.Duration) (string, error) {
+			return presignForServe(s3c, r.Bucket)
+		},
+		publicURL: publicURLForServe(r),
+	})
 }
 
 func defaultWebSourceName(cfg *config.Config, activeName string) string {

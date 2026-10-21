@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -70,11 +71,11 @@ Examples:
 
 func runServeWeb(cmd *cobra.Command, _ []string) error {
 	o := serveWebOpts
-	r, cfg, err := loadResolved()
+	cfg, err := loadWebConfig()
 	if err != nil {
 		return err
 	}
-	r, err = enabledWebResolved(cfg, r)
+	r, err := webStartupResolved(cfg)
 	if err != nil {
 		return err
 	}
@@ -82,69 +83,40 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	// 与 WebDAV/SMB 同一条理由:Web 资源库展示的是整桶内容,没有桶就无从展示。
-	if r.Bucket == "" {
-		return errors.New(i18n.Tf(
-			"no bucket to serve: pass --bucket, set SAIL_BUCKET, or add \"bucket\" to profile %q in the config file — the web library serves a whole bucket, and without one there is nothing to show",
-			r.ProfileName))
-	}
 
 	// 先绑定再建运行期:与 WebDAV 共用同一套端口探测,横幅与 URL 使用
-	// 实际端口(原端口被占用时会向后找一个空闲端口)。
+	// 实际端口(原端口被占用时会向后找一个空闲端口)。即使没有任何可用
+	// 数据源也要先监听:设置页本身要能打开,用户才能补全配置。
 	ln, listenAddr, err := listenWithProbe(s.listen)
 	if err != nil {
 		return err
 	}
 	defer ln.Close()
-	if listenAddr != s.listen {
+	if listenAddr != s.listen && !strings.HasSuffix(s.listen, ":0") {
 		fmt.Fprint(os.Stderr, i18n.Tf("  listen %s is in use; using %s\n", s.listen, listenAddr))
 	}
 	s.listen = listenAddr
 
 	logger := log.New(os.Stderr, "", log.LstdFlags)
-	// 外链能力在 cmd 侧接线:预签名要 S3 客户端,公开链接要 CDN 配置,
-	// 两者都属于「命令行知道、协议壳不知道」的东西。随运行期一起传入:
-	// 网关在 newServeRuntimeWith 内就已用它们完成首次装配。
-	webOptions := func(rr *config.Resolved) serveRuntimeOptions {
-		return serveRuntimeOptions{
-			presignUsing: func(s3c *s3.Client) func(context.Context, string, string, time.Duration) (string, error) {
-				return presignForServe(s3c, rr.Bucket)
-			},
-			publicURL: publicURLForServe(rr),
-		}
-	}
-	rt, err := newServeRuntimeWith(o, r, s, cmd.Flags().Changed, logger, webProtocolShell, webOptions(r))
-	if err != nil {
-		return err
-	}
 
 	// 一个进程展示配置里的全部 profile;浏览器用 Cookie 选择当前数据源,
 	// 未选择时落到 default-profile(--profile 显式指定时以它为准)。
-	sources := buildWebSources(cfg, o, cmd.Flags().Changed, rt, r, logger)
+	// 缺失凭据/bucket 的 profile 会以 available=false 出现在列表里,
+	// 不再阻止进程启动。
+	sources := buildWebSources(cfg, o, cmd.Flags().Changed, nil, r, logger)
 	multi := newWebMultiHandler(sources, defaultWebSourceName(cfg, r.ProfileName), webui.Handler())
 	multi.settings = newSourceSettingsStore(serveWatchTarget())
 	// 设置页保存后立即重建全部数据源;配置文件的普通改动也走同一条路径。
 	multi.reload = func() ([]*webSource, string, error) {
-		r2, cfg2, err := loadResolved()
+		cfg2, err := loadWebConfig()
 		if err != nil {
 			return nil, "", err
 		}
-		r2, err = enabledWebResolved(cfg2, r2)
+		r2, err := webStartupResolved(cfg2)
 		if err != nil {
 			return nil, "", err
 		}
-		if r2.Bucket == "" {
-			return nil, "", errors.New("no bucket to serve in the default profile")
-		}
-		s2, err := mergeServeWeb(o, r2, cmd.Flags().Changed)
-		if err != nil {
-			return nil, "", err
-		}
-		rt2, err := newServeRuntimeWith(o, r2, s2, cmd.Flags().Changed, logger, webProtocolShell, webOptions(r2))
-		if err != nil {
-			return nil, "", err
-		}
-		return buildWebSources(cfg2, o, cmd.Flags().Changed, rt2, r2, logger), defaultWebSourceName(cfg2, r2.ProfileName), nil
+		return buildWebSources(cfg2, o, cmd.Flags().Changed, nil, r2, logger), defaultWebSourceName(cfg2, r2.ProfileName), nil
 	}
 	httpSrv := newServeHTTPServer(s.listen, multi)
 
@@ -152,10 +124,16 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	if s.tlsCert != "" {
 		scheme = "https"
 	}
-	fmt.Fprint(os.Stderr, i18n.Tf(
-		"sail web started: %s://%s  bucket=%s profile=%s%s user=%s max-object-size=%s chunked=%s\n",
-		scheme, s.listen, r.Bucket, r.ProfileName, exposePrefix(s.prefix), usersBanner(s),
-		humanSize(s.maxUpload), chunkedText(s.chunkedUpload, s.chunkSize)))
+	if r.ProfileName == "" {
+		fmt.Fprint(os.Stderr, i18n.Tf(
+			"sail web started: %s://%s  no data source configured; open the settings page to add one  user=%s max-object-size=%s chunked=%s\n",
+			scheme, s.listen, usersBanner(s), humanSize(s.maxUpload), chunkedText(s.chunkedUpload, s.chunkSize)))
+	} else {
+		fmt.Fprint(os.Stderr, i18n.Tf(
+			"sail web started: %s://%s  bucket=%s profile=%s%s user=%s max-object-size=%s chunked=%s\n",
+			scheme, s.listen, r.Bucket, r.ProfileName, exposePrefix(s.prefix), usersBanner(s),
+			humanSize(s.maxUpload), chunkedText(s.chunkedUpload, s.chunkSize)))
+	}
 	for _, line := range userSpaceLines(s) {
 		fmt.Fprint(os.Stderr, line)
 	}
@@ -173,6 +151,9 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	if serveUserFromFlags(cmd) {
 		fmt.Fprint(os.Stderr, i18n.T("  users come from --user/--password flags: config file changes will NOT hot-apply; restart to change users\n"))
 	} else if cfgFile := serveWatchTarget(); cfgFile != "" {
+		// 首次安装还没有配置目录:设置页保存时会创建它。这里先建目录,
+		// 让 fsnotify 能直接监听,而不是启动时先报一条 “cannot watch”。
+		_ = os.MkdirAll(filepath.Dir(cfgFile), 0o700)
 		watchConfig(context.Background(), cfgFile, 500*time.Millisecond, watchRebuildBackoff, func() {
 			if err := multi.reloadSources(); err != nil {
 				logger.Printf("config change detected: reloading data sources failed: %v", err)
@@ -190,9 +171,66 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	return httpSrv.Serve(ln)
 }
 
+// loadWebConfig 加载 Web 启动配置。首次安装还没有配置文件时返回空配置,
+// 让设置页可以启动;文件存在但格式非法时仍然报错,不吞掉用户写坏的 YAML。
+func loadWebConfig() (*config.Config, error) {
+	cfg, err := config.LoadOptional(cfgPath)
+	if err != nil {
+		return nil, err
+	}
+	if cfg.Profiles == nil {
+		cfg.Profiles = map[string]config.Profile{}
+	}
+	return cfg, nil
+}
+
+// webStartupResolved 选择启动时的「当前数据源」。它比 CLI 的 loadResolved
+// 宽松:profile 存在但 endpoint / 密钥 / bucket 还没填完时也返回该 profile,
+// 由 buildWebSources 标记为不可用;完全没有可用配置时返回一个零值,
+// 让 Web 以「无数据源 + 设置页」模式启动。
+func webStartupResolved(cfg *config.Config) (*config.Resolved, error) {
+	if cfg == nil {
+		return &config.Resolved{}, nil
+	}
+	name := profile
+	explicit := name != ""
+	if name == "" {
+		name = cfg.DefaultProfile
+	}
+	if name == "" {
+		name = firstEnabledProfile(cfg, "")
+	}
+	if name == "" {
+		return &config.Resolved{}, nil
+	}
+	if _, ok := cfg.Profiles[name]; !ok {
+		if explicit {
+			// 显式 --profile 指向不存在的 profile:仍展示它并标记不可用,
+			// 用户可以在设置页新建同名数据源。
+			return &config.Resolved{ProfileName: name}, nil
+		}
+		name = firstEnabledProfile(cfg, "")
+		if name == "" {
+			return &config.Resolved{}, nil
+		}
+	}
+	r, err := cfg.ResolveLoose(name)
+	if err != nil {
+		return nil, err
+	}
+	if cfgEndpoint != "" {
+		r.Endpoint = cfgEndpoint
+	}
+	if cfgBucket != "" {
+		r.Bucket = cfgBucket
+	}
+	return enabledWebResolved(cfg, r)
+}
+
 // enabledWebResolved 处理「默认数据源被禁用」的手工配置:没有显式 --profile
 // 时自动落到按名字排序的第一个启用 profile;显式指定禁用 profile 则报错,
-// 避免用户以为自己在看某个 bucket,实际却切到了另一个。
+// 避免用户以为自己在看某个 bucket,实际却切到了另一个。所有数据源都被
+// 禁用时返回零值,Web 仍可启动并通过设置页重新启用。
 func enabledWebResolved(cfg *config.Config, r *config.Resolved) (*config.Resolved, error) {
 	if cfg == nil || r == nil {
 		return r, nil
@@ -206,9 +244,9 @@ func enabledWebResolved(cfg *config.Config, r *config.Resolved) (*config.Resolve
 	}
 	name := firstEnabledProfile(cfg, "")
 	if name == "" {
-		return nil, errors.New("all data sources are disabled; enable one in the config file or settings")
+		return &config.Resolved{}, nil
 	}
-	nr, err := cfg.Resolve(name)
+	nr, err := cfg.ResolveLoose(name)
 	if err != nil {
 		return nil, err
 	}

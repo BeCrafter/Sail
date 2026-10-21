@@ -365,6 +365,51 @@ profiles:
 	}
 }
 
+func TestLoadOptionalMissingAndEmpty(t *testing.T) {
+	cfg, err := LoadOptional(filepath.Join(t.TempDir(), "missing.yaml"))
+	if err != nil {
+		t.Fatalf("缺失文件应返回空配置: %v", err)
+	}
+	if cfg == nil || len(cfg.Profiles) != 0 {
+		t.Fatalf("缺失文件配置 = %+v", cfg)
+	}
+
+	empty := filepath.Join(t.TempDir(), "empty.yaml")
+	if err := os.WriteFile(empty, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err = LoadOptional(empty)
+	if err != nil || cfg == nil || len(cfg.Profiles) != 0 {
+		t.Fatalf("空文件配置 = %+v err=%v", cfg, err)
+	}
+
+	if _, err := LoadOptional(writeConfig(t, ":\n  bad: [yaml")); err == nil {
+		t.Fatal("非法 YAML 仍应报错")
+	}
+}
+
+func TestResolveLooseAllowsIncompleteProfile(t *testing.T) {
+	cfg := &Config{
+		DefaultProfile: "app",
+		Profiles: map[string]Profile{
+			"app": {Bucket: "bucket-app"},
+		},
+	}
+	if _, err := cfg.Resolve("app"); err == nil {
+		t.Fatal("严格 Resolve 应拒绝缺 endpoint/密钥的 profile")
+	}
+	r, err := cfg.ResolveLoose("app")
+	if err != nil {
+		t.Fatalf("ResolveLoose: %v", err)
+	}
+	if r.ProfileName != "app" || r.Bucket != "bucket-app" || !r.PathStyle {
+		t.Fatalf("ResolveLoose = %+v", r)
+	}
+	if err := r.Validate(); err == nil || !strings.Contains(err.Error(), "endpoint") {
+		t.Fatalf("Validate 应指出缺 endpoint: %v", err)
+	}
+}
+
 // TestLoadErrors 校验 Load 对缺失文件 / 非法 YAML 的报错。
 func TestLoadErrors(t *testing.T) {
 	if _, err := Load(filepath.Join(t.TempDir(), "nope.yaml")); err == nil {

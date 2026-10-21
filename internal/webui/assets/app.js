@@ -1461,7 +1461,7 @@
         try {
           const prev = activeSource.value;
           applySources(await API.sources());
-          if (reloadIfChanged && prev && activeSource.value !== prev) {
+          if (reloadIfChanged && activeSource.value !== prev) {
             if (preview.value) closePreview();
             selected.value = null;
             menu.value = null;
@@ -1733,12 +1733,22 @@
 
       async function boot() {
         path.value = pathFromHash();
+        let sourcesLoaded = false;
         try {
           try {
             applySources(await API.sources());
+            sourcesLoaded = true;
           } catch (e) {
             // 兼容旧服务:没有 /api/sources 时仍按单数据源继续。
             if (e.status !== 404) throw e;
+          }
+          if (sourcesLoaded && !sources.value.some((s) => s.available)) {
+            // 首次安装或配置尚未填完:没有可浏览的数据源时直接打开设置页,
+            // 不要用 /api/session 的 503 把整个 Web UI 拦在错误页。
+            loading.value = false;
+            error.value = "";
+            if (canManageSources.value) await openSettings();
+            return;
           }
           session.value = await API.session();
           quota.value = session.value.quota || null;

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -183,6 +184,41 @@ func legacyHint(usedPath string) string {
 	return i18n.Tf(" (note: an older config still exists at %s; the default location is now %s — move it over to keep your profiles)", old, def)
 }
 
+// LoadOptional 与 Load 相同,但配置文件不存在或为空文件时返回一个
+// 可写的空配置。Web 设置页用它在首次安装(还没有 config.yaml)时启动;
+// 其它命令仍走 Load,缺配置时继续 fail-loud。
+func LoadOptional(path string) (*Config, error) {
+	if path == "" {
+		p, err := ConfigPath()
+		if err != nil {
+			return nil, err
+		}
+		path = p
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return emptyConfig(), nil
+		}
+		return nil, fmt.Errorf(i18n.T("read config %s failed: %w"), path, err)
+	}
+	if info.Size() == 0 {
+		return emptyConfig(), nil
+	}
+	c, err := Load(path)
+	if err != nil {
+		return nil, err
+	}
+	if c.Profiles == nil {
+		c.Profiles = map[string]Profile{}
+	}
+	return c, nil
+}
+
+func emptyConfig() *Config {
+	return &Config{Profiles: map[string]Profile{}}
+}
+
 // Load 从给定路径加载配置;path 为空则用默认路径。
 // 返回未解析环境变量的原始 Config。
 func Load(path string) (*Config, error) {
@@ -210,8 +246,42 @@ func Load(path string) (*Config, error) {
 }
 
 // Resolve 根据 profile 名解析出最终配置。优先级:环境变量 > 配置文件。
-// profile 为空时取 default-profile。
+// profile 为空时取 default-profile。缺失 endpoint / 密钥时报错;Web 启动
+// 需要展示「配置存在但尚未填完」的数据源,用 ResolveLoose。
 func (c *Config) Resolve(profile string) (*Resolved, error) {
+	r, err := c.resolve(profile)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.Validate(); err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+// ResolveLoose 与 Resolve 相同,但不校验 endpoint / 密钥是否为空。
+// 仅用于 `serve web` 启动:空配置或尚未填完的 profile 也应能打开设置页,
+// 而不是在监听端口前退出。调用方用 Resolved.Validate 判断数据源是否可用。
+func (c *Config) ResolveLoose(profile string) (*Resolved, error) {
+	return c.resolve(profile)
+}
+
+// Validate 校验连接 S3 所需的最小字段。bucket 不在这里校验:CLI 命令可以
+// 用 s3://bucket/key 显式指定,Web 数据源则另有整桶要求。
+func (r *Resolved) Validate() error {
+	if r == nil {
+		return errors.New(i18n.T("profile is not configured"))
+	}
+	if r.Endpoint == "" {
+		return fmt.Errorf(i18n.T("profile %q missing endpoint"), r.ProfileName)
+	}
+	if r.AccessKey == "" || r.SecretKey == "" {
+		return fmt.Errorf(i18n.T("profile %q missing access-key/secret-key"), r.ProfileName)
+	}
+	return nil
+}
+
+func (c *Config) resolve(profile string) (*Resolved, error) {
 	if profile == "" {
 		profile = c.DefaultProfile
 		if profile == "" {
@@ -288,12 +358,6 @@ func (c *Config) Resolve(profile string) (*Resolved, error) {
 		r.CDNDomain = v
 	}
 
-	if r.Endpoint == "" {
-		return nil, fmt.Errorf(i18n.T("profile %q missing endpoint"), profile)
-	}
-	if r.AccessKey == "" || r.SecretKey == "" {
-		return nil, fmt.Errorf(i18n.T("profile %q missing access-key/secret-key"), profile)
-	}
 	// path-style 默认 true (自建 S3 兼容服务常用)
 	if !r.PathStyle {
 		r.PathStyle = true

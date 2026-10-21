@@ -13,6 +13,7 @@ import (
 
 	"github.com/BeCrafter/sail/internal/config"
 	"github.com/BeCrafter/sail/internal/fakes3"
+	"github.com/BeCrafter/sail/internal/webui"
 )
 
 func newSettingsStoreForTest(t *testing.T, body string) (*sourceSettingsStore, string) {
@@ -120,6 +121,52 @@ func TestSettingsStoreListAndSave(t *testing.T) {
 	}
 	if got.Default != "gamma" || len(got.Sources) != 3 {
 		t.Fatalf("after create = %+v", got)
+	}
+}
+
+func TestSettingsStoreMissingConfig(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.yaml")
+	store := newSourceSettingsStore(path)
+	got, err := store.list()
+	if err != nil {
+		t.Fatalf("缺失配置应可列出空数据源: %v", err)
+	}
+	if got.Path != path || got.Default != "" || len(got.Sources) != 0 {
+		t.Fatalf("空配置 list = %+v", got)
+	}
+	if err := store.save(settingsSourceInput{
+		Name: "app", Endpoint: "https://app.example.com", Bucket: "bucket-app",
+	}); err != nil {
+		t.Fatalf("首次保存应创建配置文件: %v", err)
+	}
+	cfg, err := config.Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.DefaultProfile != "app" || cfg.Profiles["app"].Bucket != "bucket-app" {
+		t.Fatalf("首次保存后的配置 = %+v", cfg)
+	}
+}
+
+func TestSettingsOnlyShellWithoutSources(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.yaml")
+	h := newWebMultiHandler(nil, "", webui.Handler())
+	h.settings = newSourceSettingsStore(path)
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.RemoteAddr = "127.0.0.1:12345"
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), `<div id="app"`) {
+		t.Fatalf("没有数据源时 GET / = %d,未返回内置前端: %s", rec.Code, rec.Body.String())
+	}
+
+	req = httptest.NewRequest(http.MethodGet, "/api/settings/sources", nil)
+	req.RemoteAddr = "127.0.0.1:12345"
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), `"sources":[]`) {
+		t.Fatalf("空设置列表 = %d %s", rec.Code, rec.Body.String())
 	}
 }
 

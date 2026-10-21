@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -152,35 +154,101 @@ func TestPhysicalKey(t *testing.T) {
 
 // ---- 启动前校验 --------------------------------------------------------
 
-// 与 WebDAV 同一条边界:没有桶就没有可展示的内容;凭据不可匿名。
-// 只走错误分支,成功路径会真的开始监听。
-func TestServeWebRequiresBucketAndCredentials(t *testing.T) {
+// 首次安装没有配置文件时也要能启动 Web;缺凭据/缺桶的 profile 只标记为
+// 不可用,由设置页补全,而不是在监听端口前退出。
+func TestServeWebStartupAllowsIncompleteConfig(t *testing.T) {
+	origPath, origProfile, origBucket, origEndpoint := cfgPath, profile, cfgBucket, cfgEndpoint
 	origOpts := serveWebOpts
-	t.Cleanup(func() { serveWebOpts = origOpts })
+	t.Cleanup(func() {
+		cfgPath, profile, cfgBucket, cfgEndpoint = origPath, origProfile, origBucket, origEndpoint
+		serveWebOpts = origOpts
+	})
+	profile, cfgBucket, cfgEndpoint = "", "", ""
+	noFlags := func(string) bool { return false }
+	logger := log.New(io.Discard, "", 0)
 
-	writeServeConfig(t, "")
-	t.Setenv("SAIL_BUCKET", "")
-	cfgBucket = ""
-	serveWebOpts = serveFlags{backendMaxSize: "5TiB", listen: ":9090", user: "alice", password: "s3cret"}
-	err := runServeWeb(serveWebCmd, nil)
-	if err == nil {
-		t.Fatal("缺少 bucket 应报错")
+	// 配置文件不存在:空配置 + 零个数据源。
+	cfgPath = filepath.Join(t.TempDir(), "missing.yaml")
+	cfg, err := loadWebConfig()
+	if err != nil {
+		t.Fatalf("缺失配置不应阻止 Web 启动: %v", err)
 	}
-	for _, want := range []string{"--bucket", "SAIL_BUCKET", "bucket"} {
-		if !strings.Contains(err.Error(), want) {
-			t.Errorf("缺桶错误未提到 %q:%v", want, err)
-		}
+	if len(cfg.Profiles) != 0 {
+		t.Fatalf("空配置 profiles = %+v", cfg.Profiles)
+	}
+	r, err := webStartupResolved(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.ProfileName != "" {
+		t.Fatalf("空配置的启动 profile = %q, want empty", r.ProfileName)
+	}
+	if sources := buildWebSources(cfg, serveWebOpts, noFlags, nil, r, logger); len(sources) != 0 {
+		t.Fatalf("空配置不应生成数据源: %+v", sources)
+	}
+	settings, err := mergeServeWeb(serveFlags{backendMaxSize: "5TiB", listen: ":9090"}, r, noFlags)
+	if err != nil || !settings.anonymous {
+		t.Fatalf("空配置应匿名启动,settings=%+v err=%v", settings, err)
+	}
+
+	// 空文件同样按空配置处理。
+	cfgPath = filepath.Join(t.TempDir(), "empty.yaml")
+	if err := os.WriteFile(cfgPath, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if cfg, err = loadWebConfig(); err != nil || len(cfg.Profiles) != 0 {
+		t.Fatalf("空文件配置 = %+v err=%v", cfg, err)
+	}
+
+	// profile 存在但缺凭据/桶:启动 profile 仍是它,数据源标记 unavailable。
+	cfgPath = filepath.Join(t.TempDir(), "incomplete.yaml")
+	body := "default-profile: app\nprofiles:\n  app:\n    endpoint: https://app.example.com\n"
+	if err := os.WriteFile(cfgPath, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if cfg, err = loadWebConfig(); err != nil {
+		t.Fatal(err)
+	}
+	r, err = webStartupResolved(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.ProfileName != "app" {
+		t.Fatalf("启动 profile = %q, want app", r.ProfileName)
+	}
+	sources := buildWebSources(cfg, serveWebOpts, noFlags, nil, r, logger)
+	if len(sources) != 1 || sources[0].available {
+		t.Fatalf("缺凭据的 profile 应保留但不可用: %+v", sources)
+	}
+	if !strings.Contains(sources[0].errText, "access-key/secret-key") {
+		t.Fatalf("不可用原因 = %q", sources[0].errText)
+	}
+
+	// 有凭据但缺 bucket:同样是不可用数据源,不是启动错误。
+	body = "default-profile: app\nprofiles:\n  app:\n    endpoint: https://app.example.com\n" +
+		"    access-key: ak\n    secret-key: sk\n"
+	if err := os.WriteFile(cfgPath, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err = loadWebConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, _ = webStartupResolved(cfg)
+	sources = buildWebSources(cfg, serveWebOpts, noFlags, nil, r, logger)
+	if len(sources) != 1 || sources[0].available || !strings.Contains(sources[0].errText, "bucket") {
+		t.Fatalf("缺桶的 profile 应保留但不可用: %+v", sources)
 	}
 
 	// 有桶但无凭据:Web 默认匿名启动(不要求用户配置)。
 	writeServeConfig(t, "mybucket")
 	serveWebOpts = serveFlags{backendMaxSize: "5TiB", listen: ":9090"}
-	r, _, err := loadResolved()
+	r, _, err = loadResolved()
 	if err != nil {
 		t.Fatalf("读取配置失败: %v", err)
 	}
 	noAuth := func(string) bool { return false }
-	settings, err := mergeServeWeb(serveWebOpts, r, noAuth)
+	settings, err = mergeServeWeb(serveWebOpts, r, noAuth)
 	if err != nil {
 		t.Fatalf("Web 默认应匿名启动,实际报错: %v", err)
 	}
