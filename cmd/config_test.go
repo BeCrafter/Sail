@@ -76,6 +76,13 @@ func TestRenderProfileEnvPlaceholder(t *testing.T) {
 	if out = renderProfile("prod", empty); strings.Contains(out, "${SAIL_TEST_ACCESS_KEY}") {
 		t.Errorf("prod 不应引用 test 的占位符:\n%s", out)
 	}
+	if strings.Contains(out, "disabled:") {
+		t.Errorf("enabled profile should not render disabled:\n%s", out)
+	}
+	empty.Disabled = true
+	if out = renderProfile("test", empty); !strings.Contains(out, "    disabled: true\n") {
+		t.Errorf("disabled profile should render disabled: true:\n%s", out)
+	}
 }
 
 // TestRenderConfigFile 校验多 profile 渲染:保留所有 profile、default-profile、

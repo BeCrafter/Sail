@@ -96,6 +96,45 @@ func TestMergeServeWebSettings(t *testing.T) {
 	})
 }
 
+func TestEnabledWebResolved(t *testing.T) {
+	origProfile, origBucket, origEndpoint := profile, cfgBucket, cfgEndpoint
+	t.Cleanup(func() {
+		profile, cfgBucket, cfgEndpoint = origProfile, origBucket, origEndpoint
+	})
+	profile, cfgBucket, cfgEndpoint = "", "", ""
+
+	cfg := &config.Config{
+		DefaultProfile: "off",
+		Profiles: map[string]config.Profile{
+			"off": {
+				Endpoint: "https://off.example.com", AccessKey: "ak", SecretKey: "sk",
+				Bucket: "off-bucket", Disabled: true,
+			},
+			"on": {
+				Endpoint: "https://on.example.com", AccessKey: "ak", SecretKey: "sk",
+				Bucket: "on-bucket",
+			},
+		},
+	}
+	r, err := cfg.Resolve("off")
+	if err != nil {
+		t.Fatal(err)
+	}
+	profile = ""
+	got, err := enabledWebResolved(cfg, r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.ProfileName != "on" || got.Bucket != "on-bucket" {
+		t.Fatalf("fallback = %+v, want on/on-bucket", got)
+	}
+
+	profile = "off"
+	if _, err := enabledWebResolved(cfg, r); err == nil {
+		t.Fatal("explicit disabled profile should be rejected")
+	}
+}
+
 func TestPhysicalKey(t *testing.T) {
 	cases := []struct{ prefix, logical, want string }{
 		{"", "/hello.txt", "hello.txt"},

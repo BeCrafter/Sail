@@ -48,6 +48,7 @@ type settingsSourceView struct {
 	CDNDomain     string            `json:"cdnDomain"`
 	CDNBucketPath string            `json:"cdnBucketPath"`
 	Serve         settingsServeView `json:"serve"`
+	Enabled       bool              `json:"enabled"`
 	Default       bool              `json:"default"`
 }
 
@@ -134,7 +135,7 @@ func (s *sourceSettingsStore) list() (settingsSourcesResponse, error) {
 			Name: name, Endpoint: p.Endpoint, AccessKey: p.AccessKey,
 			HasSecret: p.SecretKey != "", Bucket: p.Bucket, Region: p.Region,
 			PathStyle: p.PathStyle, CDNDomain: p.CDNDomain, CDNBucketPath: cdp,
-			Default: cfg.DefaultProfile == name,
+			Enabled: !p.Disabled, Default: cfg.DefaultProfile == name,
 			Serve: settingsServeView{
 				MaxUploadSize: p.Serve.MaxUploadSize, BackendMaxSize: p.Serve.BackendMaxSize,
 				ChunkSize: p.Serve.ChunkSize, DirCacheTTL: p.Serve.DirCacheTTL,
@@ -195,21 +196,51 @@ func (s *sourceSettingsStore) save(in settingsSourceInput) error {
 		p.Serve.DirCacheTTL = strings.TrimSpace(in.Serve.DirCacheTTL)
 		p.Serve.ChunkedUpload = in.Serve.ChunkedUpload
 	}
-	cfg.Profiles[name] = p
 	if in.Default || cfg.DefaultProfile == "" {
+		// 默认数据源必须可用;编辑一个已禁用 profile 时勾选默认会自动启用它。
+		p.Disabled = false
 		cfg.DefaultProfile = name
-	} else if cfg.DefaultProfile == name && len(cfg.Profiles) > 1 {
-		// 取消当前默认项的勾选时,自动选一个其它 profile,避免留下空的默认值。
-		names := make([]string, 0, len(cfg.Profiles))
-		for n := range cfg.Profiles {
-			if n != name {
-				names = append(names, n)
-			}
-		}
-		sort.Strings(names)
-		cfg.DefaultProfile = names[0]
 	}
+	cfg.Profiles[name] = p
+	if cfg.DefaultProfile == name && !in.Default && len(cfg.Profiles) > 1 {
+		// 取消当前默认项的勾选时,自动选一个其它已启用的 profile。
+		fallback := firstEnabledProfile(cfg, name)
+		if fallback == "" {
+			return errors.New("at least one enabled data source is required")
+		}
+		cfg.DefaultProfile = fallback
+	}
+	ensureEnabledDefault(cfg)
 	return s.write(cfg)
+}
+
+func firstEnabledProfile(cfg *config.Config, exclude string) string {
+	if cfg == nil {
+		return ""
+	}
+	names := make([]string, 0, len(cfg.Profiles))
+	for name := range cfg.Profiles {
+		if name != exclude && !cfg.Profiles[name].Disabled {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	if len(names) == 0 {
+		return ""
+	}
+	return names[0]
+}
+
+func ensureEnabledDefault(cfg *config.Config) {
+	if cfg == nil {
+		return
+	}
+	if p, ok := cfg.Profiles[cfg.DefaultProfile]; ok && !p.Disabled {
+		return
+	}
+	if name := firstEnabledProfile(cfg, ""); name != "" {
+		cfg.DefaultProfile = name
+	}
 }
 
 // test 用表单里尚未保存的参数建一个临时 S3 client,执行一次最小列举。
@@ -280,18 +311,20 @@ func (s *sourceSettingsStore) remove(name string) error {
 	if _, ok := cfg.Profiles[name]; !ok {
 		return errors.New("data source not found")
 	}
+	if profile != "" && name == profile {
+		return errors.New("the profile this server was started with cannot be deleted")
+	}
 	if len(cfg.Profiles) <= 1 {
 		return errors.New("the last data source cannot be deleted")
 	}
+	if firstEnabledProfile(cfg, name) == "" {
+		return errors.New("at least one enabled data source is required")
+	}
 	delete(cfg.Profiles, name)
 	if cfg.DefaultProfile == name {
-		names := make([]string, 0, len(cfg.Profiles))
-		for n := range cfg.Profiles {
-			names = append(names, n)
-		}
-		sort.Strings(names)
-		cfg.DefaultProfile = names[0]
+		cfg.DefaultProfile = firstEnabledProfile(cfg, "")
 	}
+	ensureEnabledDefault(cfg)
 	return s.write(cfg)
 }
 
@@ -302,10 +335,47 @@ func (s *sourceSettingsStore) setDefault(name string) error {
 	if err != nil {
 		return err
 	}
-	if _, ok := cfg.Profiles[name]; !ok {
+	p, ok := cfg.Profiles[name]
+	if !ok {
 		return errors.New("data source not found")
 	}
+	if p.Disabled {
+		return errors.New("enable the data source before making it default")
+	}
 	cfg.DefaultProfile = name
+	return s.write(cfg)
+}
+
+// setEnabled 切换 profile 的启用状态。禁用默认数据源时自动改选一个仍启用的
+// profile;不允许把最后一个启用项也关掉,否则服务端会没有任何可展示的 bucket。
+func (s *sourceSettingsStore) setEnabled(name string, enabled bool) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	cfg, err := s.load()
+	if err != nil {
+		return err
+	}
+	p, ok := cfg.Profiles[name]
+	if !ok {
+		return errors.New("data source not found")
+	}
+	if !enabled {
+		if profile != "" && name == profile {
+			return errors.New("the profile this server was started with cannot be disabled")
+		}
+		if firstEnabledProfile(cfg, name) == "" {
+			return errors.New("at least one enabled data source is required")
+		}
+		if cfg.DefaultProfile == name {
+			cfg.DefaultProfile = firstEnabledProfile(cfg, name)
+		}
+	}
+	p.Disabled = !enabled
+	cfg.Profiles[name] = p
+	if cfg.DefaultProfile == "" && enabled {
+		cfg.DefaultProfile = name
+	}
+	ensureEnabledDefault(cfg)
 	return s.write(cfg)
 }
 
@@ -437,6 +507,35 @@ func (h *webMultiHandler) handleSettingsDefault(w http.ResponseWriter, r *http.R
 		return
 	}
 	if err := h.settings.setDefault(strings.TrimSpace(in.Name)); err != nil {
+		writeSourceJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	h.finishSettingsMutation(w)
+}
+
+func (h *webMultiHandler) handleSettingsEnabled(w http.ResponseWriter, r *http.Request) {
+	if !h.canManage(r) {
+		writeSourceJSONError(w, http.StatusForbidden, "settings are only available from localhost")
+		return
+	}
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		writeSourceJSONError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	if h.settings == nil {
+		writeSourceJSONError(w, http.StatusServiceUnavailable, "settings store is unavailable")
+		return
+	}
+	var in struct {
+		Name    string `json:"name"`
+		Enabled bool   `json:"enabled"`
+	}
+	if err := decodeSettingsJSON(w, r, &in); err != nil {
+		writeSourceJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := h.settings.setEnabled(strings.TrimSpace(in.Name), in.Enabled); err != nil {
 		writeSourceJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}

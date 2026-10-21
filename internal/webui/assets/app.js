@@ -24,7 +24,7 @@
     "zh-CN": {
       appTitle: "Sail 资源库",
       appSub: "S3 多媒体资源库",
-      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件并刷新数据源;若刷新失败,重启 serve web 后生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已保存,数据源已刷新", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", settingsTest: "测试连接", settingsTesting: "测试中…", settingsTestOk: "连接成功", settingsTestFailed: "连接失败", settingsReloadFailed: "配置已保存,但数据源刷新失败,请重启 serve web", settingsAdvanced: "高级配置", settingsCDNBucketPath: "CDN Bucket 路径", settingsAuto: "自动检测", settingsIncluded: "已包含", settingsNotIncluded: "不包含", settingsMaxUpload: "单文件上限", settingsBackendMax: "后端对象上限", settingsChunkSize: "分片大小", settingsDirCacheTTL: "目录缓存 TTL", settingsChunkedUpload: "启用分片上传", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
+      source: "数据源", menu: "侧栏", sourceDefault: "默认", usageCalculating: "计算中…", settings: "设置", settingsTitle: "数据源设置", settingsSub: "管理连接配置与默认数据源", settingsBack: "返回资源库", settingsNew: "新建数据源", settingsEdit: "编辑数据源", settingsConfigPath: "配置文件", settingsRestartNote: "保存会立即写入配置文件并刷新数据源;若刷新失败,重启 serve web 后生效。", settingsName: "名称", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "已保存,留空保持不变", settingsSecretHint: "可留空,将写入环境变量占位符", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN 域名", settingsDefaultSource: "设为默认数据源", settingsSave: "保存", settingsNoSources: "还没有配置数据源", settingsLocalOnly: "设置仅允许从本机访问", settingsSaved: "已保存,数据源已刷新", settingsRequired: "名称、Endpoint 和 Bucket 为必填项", settingsTest: "测试连接", settingsTesting: "测试中…", settingsTestOk: "连接成功", settingsTestFailed: "连接失败", settingsReloadFailed: "配置已保存,但数据源刷新失败,请重启 serve web", settingsEnabled: "已启用", settingsDisabled: "已禁用", settingsEnable: "启用", settingsDisable: "禁用", settingsAdvanced: "高级配置", settingsCDNBucketPath: "CDN Bucket 路径", settingsAuto: "自动检测", settingsIncluded: "已包含", settingsNotIncluded: "不包含", settingsMaxUpload: "单文件上限", settingsBackendMax: "后端对象上限", settingsChunkSize: "分片大小", settingsDirCacheTTL: "目录缓存 TTL", settingsChunkedUpload: "启用分片上传", resizeSidebar: "拖动调整宽度", openSource: "开源地址", sourceUnavailable: "不可用", sourceSwitchBusy: "有上传任务进行中,完成后再切换数据源", sourceSwitchFailed: "切换数据源失败",
       profile: "Profile", bucket: "Bucket", user: "用户", prefix: "空间前缀", anonymous: "匿名",
       used: "已用", unlimited: "不限量", quotaNote: "配额由 serve.users 的 quota 字段决定",
       maxUpload: "单文件上限", cacheNote: "目录列表缓存 {ttl}s:自己写入立即生效,别处的改动最长 {ttl}s 后可见",
@@ -82,7 +82,7 @@
     en: {
       appTitle: "Sail Media",
       appSub: "S3 media library",
-      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written immediately and the data source list is refreshed; restart serve web if the refresh fails.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved; data sources refreshed", settingsRequired: "Name, endpoint and bucket are required", settingsTest: "Test connection", settingsTesting: "Testing…", settingsTestOk: "Connected", settingsTestFailed: "Connection failed", settingsReloadFailed: "Saved, but refreshing data sources failed; restart serve web", settingsAdvanced: "Advanced", settingsCDNBucketPath: "CDN bucket path", settingsAuto: "Auto-detect", settingsIncluded: "Included", settingsNotIncluded: "Not included", settingsMaxUpload: "Max upload size", settingsBackendMax: "Backend object limit", settingsChunkSize: "Chunk size", settingsDirCacheTTL: "Directory cache TTL", settingsChunkedUpload: "Enable chunked uploads", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
+      source: "Source", menu: "Sidebar", sourceDefault: "Default", usageCalculating: "Calculating…", settings: "Settings", settingsTitle: "Data sources", settingsSub: "Manage connection profiles and the default source", settingsBack: "Back to library", settingsNew: "New data source", settingsEdit: "Edit data source", settingsConfigPath: "Config file", settingsRestartNote: "Changes are written immediately and the data source list is refreshed; restart serve web if the refresh fails.", settingsName: "Name", settingsEndpoint: "Endpoint", settingsAccessKey: "Access Key", settingsSecret: "Secret Key", settingsSecretKeep: "Saved; leave blank to keep", settingsSecretHint: "Optional; an environment placeholder will be written", settingsBucket: "Bucket", settingsRegion: "Region", settingsPathStyle: "Path style", settingsCDN: "CDN domain", settingsDefaultSource: "Set as default source", settingsSave: "Save", settingsNoSources: "No data sources configured", settingsLocalOnly: "Settings are available from localhost only", settingsSaved: "Saved; data sources refreshed", settingsRequired: "Name, endpoint and bucket are required", settingsTest: "Test connection", settingsTesting: "Testing…", settingsTestOk: "Connected", settingsTestFailed: "Connection failed", settingsReloadFailed: "Saved, but refreshing data sources failed; restart serve web", settingsEnabled: "Enabled", settingsDisabled: "Disabled", settingsEnable: "Enable", settingsDisable: "Disable", settingsAdvanced: "Advanced", settingsCDNBucketPath: "CDN bucket path", settingsAuto: "Auto-detect", settingsIncluded: "Included", settingsNotIncluded: "Not included", settingsMaxUpload: "Max upload size", settingsBackendMax: "Backend object limit", settingsChunkSize: "Chunk size", settingsDirCacheTTL: "Directory cache TTL", settingsChunkedUpload: "Enable chunked uploads", resizeSidebar: "Drag to resize", openSource: "Open source", sourceUnavailable: "Unavailable", sourceSwitchBusy: "Wait for uploads to finish before switching sources", sourceSwitchFailed: "Could not switch data source",
       profile: "Profile", bucket: "Bucket", user: "User", prefix: "Prefix", anonymous: "Anonymous",
       used: "Used", unlimited: "Unlimited", quotaNote: "Quota comes from the serve.users quota field",
       maxUpload: "Max file size", cacheNote: "Listings are cached for {ttl}s: your own writes apply at once, changes elsewhere take up to {ttl}s",
@@ -168,6 +168,7 @@
     trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/><path d="M10 11v5M14 11v5"/></svg>',
     more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
     eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a16 16 0 0 1-2.3 3.1"/><path d="M6.6 6.6C4.1 8.2 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 4.2-.9"/></svg>',
     zoomIn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-3.5-3.5"/></svg>',
     zoomOut: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-3.5-3.5"/></svg>',
     reset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4v6h6"/><path d="M4.5 13a8 8 0 1 0 1.8-6.4L4 10"/></svg>',
@@ -376,6 +377,7 @@
     saveSettingsSource: (body) => request("/api/settings/sources", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
     deleteSettingsSource: (name) => request("/api/settings/sources?name=" + encPath(name), { method: "DELETE" }),
     setDefaultSettingsSource: (name) => request("/api/settings/default", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) }),
+    setSettingsSourceEnabled: (name, enabled) => request("/api/settings/enabled", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, enabled }) }),
     testSettingsSource: (body) => request("/api/settings/test", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
     session: () => request("/api/session"),
     list: (p) => request("/api/list?path=" + encPath(p)),
@@ -810,13 +812,14 @@
         <div v-if="settingsLoading" class="settings-loading"><span class="spin"></span>{{ tt.loadingPreview }}</div>
         <template v-else-if="settingsMode === 'list'">
           <div class="settings-cards" v-if="settingsList.length">
-            <article v-for="s in settingsList" :key="s.name" class="settings-card" :class="{ def: s.default }">
+            <article v-for="s in settingsList" :key="s.name" class="settings-card" :class="{ def: s.default, disabled: !s.enabled }">
               <div class="settings-card-head">
                 <div class="settings-card-title">
                   <div class="nm">{{ s.name }}</div>
                   <div class="ep">{{ s.endpoint }}</div>
                 </div>
-                <span v-if="s.default" class="src-badge">{{ tt.sourceDefault }}</span>
+                <span v-if="!s.enabled" class="src-badge off">{{ tt.settingsDisabled }}</span>
+                <span v-else-if="s.default" class="src-badge">{{ tt.sourceDefault }}</span>
               </div>
               <div class="settings-meta">
                 <div><span>Bucket</span><b>{{ s.bucket }}</b></div>
@@ -826,7 +829,10 @@
               </div>
               <div class="settings-card-actions">
                 <button class="btn" @click="editSettingsSource(s)"><span v-html="icons.edit"></span>{{ tt.edit }}</button>
-                <button v-if="!s.default" class="btn" @click="setDefaultSettingsSource(s)">{{ tt.sourceDefault }}</button>
+                <button class="btn settings-enable" :class="{ off: !s.enabled }" @click="toggleSettingsSource(s)">
+                  <span v-html="s.enabled ? icons.eyeOff : icons.eye"></span>{{ s.enabled ? tt.settingsDisable : tt.settingsEnable }}
+                </button>
+                <button v-if="s.enabled && !s.default" class="btn" @click="setDefaultSettingsSource(s)">{{ tt.sourceDefault }}</button>
                 <button class="detail-danger settings-delete" @click="deleteSettingsSource(s)">
                   <span v-html="icons.trash"></span>{{ tt.del }}
                 </button>
@@ -1449,10 +1455,27 @@
         canManageSources.value = !!(r && r.manage);
       }
 
-      // 设置页保存后立即刷新侧栏,不必等整页重载。
-      async function refreshSources() {
+      // 设置页保存后立即刷新侧栏,不必等整页重载。当前数据源被禁用或删除时,
+      // 服务端会回退到另一个源;此时一并重置路径并重新加载资源列表。
+      async function refreshSources(reloadIfChanged = false) {
         try {
+          const prev = activeSource.value;
           applySources(await API.sources());
+          if (reloadIfChanged && prev && activeSource.value !== prev) {
+            if (preview.value) closePreview();
+            selected.value = null;
+            menu.value = null;
+            search.value = "";
+            searchOpen.value = false;
+            drawer.value = false;
+            path.value = "/";
+            syncHash("/");
+            session.value = await API.session();
+            quota.value = session.value.quota || null;
+            version.value = session.value.version || "";
+            await load();
+            refreshUsage();
+          }
         } catch (e) {
           // 旧服务没有 /api/sources 时保持单数据源模式,不打扰用户。
         }
@@ -1534,7 +1557,7 @@
       function closeSettings() {
         settingsOpen.value = false;
         settingsMode.value = "list";
-        void refreshSources();
+        void refreshSources(true);
       }
 
       function editSettingsSource(s) {
@@ -1620,7 +1643,7 @@
           }
           settingsMode.value = "list";
           await loadSettings(false, true);
-          await refreshSources();
+          await refreshSources(true);
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         } finally {
@@ -1638,7 +1661,7 @@
             toast(tt.value.deleted, s.name, "ok");
           }
           await loadSettings(false, true);
-          await refreshSources();
+          await refreshSources(true);
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         }
@@ -1654,7 +1677,24 @@
             toast(tt.value.settingsSaved, s.name, "ok");
           }
           await loadSettings(false, true);
-          await refreshSources();
+          await refreshSources(true);
+        } catch (e) {
+          toast(tt.value.settingsTitle, errText(e), "err");
+        }
+      }
+
+      async function toggleSettingsSource(s) {
+        if (!s) return;
+        const enabled = !s.enabled;
+        try {
+          const r = await API.setSettingsSourceEnabled(s.name, enabled);
+          if (r && r.restartRequired) {
+            toast(tt.value.settingsReloadFailed, r.reloadError || "", "warn");
+          } else {
+            toast(enabled ? tt.value.settingsEnabled : tt.value.settingsDisabled, s.name, "ok");
+          }
+          await loadSettings(false, true);
+          await refreshSources(true);
         } catch (e) {
           toast(tt.value.settingsTitle, errText(e), "err");
         }
@@ -3787,7 +3827,7 @@
         drawerMode, crumbCompact, tiny, coarse, versionLabel, bucketLabel, rootLabel, currentLabel,
         fmtSize, fmtTime, iconFor, thumbClass, badgeOf, kindLabel, pathLabel,
         go, goUp, setListMode, reload, open, openPreview, select, switchSource, openSettings, closeSettings,
-        editSettingsSource, newSettingsSource, testSettingsConnection, saveSettingsSource, deleteSettingsSource, setDefaultSettingsSource,
+        editSettingsSource, newSettingsSource, testSettingsConnection, saveSettingsSource, deleteSettingsSource, setDefaultSettingsSource, toggleSettingsSource,
         onCardClick, onPressStart, cancelPress,
         closePreview, stepPreview, zoom, resetZoom, toggleZoom, onWheel, onImgDown, onImgMove, onImgUp,
         onTouchStart, onTouchEnd, toggleTheme, startSidebarResize, startArchiveResize, startDetailResize, pptxGo, previewGo, decodedGo, resetModelCamera, downloadArchiveEntry,

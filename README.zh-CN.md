@@ -124,6 +124,8 @@ profiles:
 
 向导中留空 `access-key`/`secret-key` 时,会自动写入按 profile 派生的占位符 `SAIL_<PROFILE>_(ACCESS|SECRET)_KEY`(profile 名大写、连字符等非字母数字字符转下划线,清洗后为空则回退 `SAIL_ACCESS_KEY` 全局名);配置文件中也可手动改为任意 `${VAR}`。
 
+在 profile 下加 `disabled: true` 可在不删除凭据的情况下把它从 `serve web` 的数据源列表里隐藏。其它 CLI 命令仍可通过显式 `--profile` 使用它;`serve web` 会拒绝禁用的 profile,始终要求至少有一个启用项,也不会把禁用项选为默认。
+
 ### serve 块
 
 `serve webdav` 的全部参数都可固化在 profile 下的 `serve:` 块里,启动时不用每次手打;命令行 flag 仍保留,并作为最高优先级覆盖配置。优先级:`flag(显式设置) > profile.serve.* > flag 默认值`。
@@ -608,11 +610,12 @@ sail serve smb --profile prod --listen :1445   # serve.users: alice、bob
 
 在浏览器里打开一个 bucket。`sail serve web` 提供一套自包含的媒体库:界面已编译进二进制
 (不需要 Node、npm,也没有要部署的静态文件),并与其它网关共用同一套协议无关内核,因此
-前缀隔离、配额、分片存储与删除路径都只有一份实现,而不是三份。左侧数据源会列出配置里的
-全部 profile,默认选中 `default-profile`(显式 `--profile` 优先);切换源时各 profile 的
+前缀隔离、配额、分片存储与删除路径都只有一份实现,而不是三份。左侧数据源会列出配置里
+所有已启用的 profile,默认选中 `default-profile`(显式 `--profile` 优先);切换源时各 profile 的
 bucket、凭据与 serve 布局都留在服务端。侧栏底部的齿轮按钮会打开仅限本机访问的设置页面,
-支持新增、编辑、删除和设为默认;保存会原子写入 `config.yaml`,并立即重建数据源列表
-(若重建失败,重启 `serve web` 后重试)。
+支持新增、编辑、删除、禁用和设为默认;保存会原子写入 `config.yaml`,并立即重建数据源列表
+(若重建失败,重启 `serve web` 后重试)。禁用的 profile 仍保留在配置文件中,但不会出现在
+浏览器数据源列表里;至少要保留一个启用项。
 
 ```bash
 # 启动:默认 :9090、默认匿名访问——不需要配 user/password

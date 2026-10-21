@@ -123,6 +123,61 @@ func TestSettingsStoreListAndSave(t *testing.T) {
 	}
 }
 
+func TestSettingsStoreEnableDisable(t *testing.T) {
+	store, path := newSettingsStoreForTest(t, settingsTestConfig)
+	origProfile := profile
+	t.Cleanup(func() { profile = origProfile })
+	profile = "alpha"
+	if err := store.setEnabled("alpha", false); err == nil || !strings.Contains(err.Error(), "started with") {
+		t.Fatalf("explicit active profile should not be disabled: %v", err)
+	}
+	if err := store.remove("alpha"); err == nil || !strings.Contains(err.Error(), "started with") {
+		t.Fatalf("explicit active profile should not be deleted: %v", err)
+	}
+	profile = ""
+
+	if err := store.setEnabled("beta", false); err != nil {
+		t.Fatal(err)
+	}
+	got, err := store.list()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Sources[1].Name != "beta" || got.Sources[1].Enabled {
+		t.Fatalf("beta should be disabled: %+v", got.Sources)
+	}
+	if err := store.setDefault("beta"); err == nil {
+		t.Fatal("disabled source should not become default")
+	}
+	if err := store.setEnabled("alpha", false); err == nil {
+		t.Fatal("disabling the last enabled source should fail")
+	}
+
+	if err := store.setEnabled("beta", true); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.setEnabled("alpha", false); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := config.Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.DefaultProfile != "beta" || !cfg.Profiles["alpha"].Disabled || cfg.Profiles["beta"].Disabled {
+		t.Fatalf("after disabling default: default=%q alpha=%+v beta=%+v", cfg.DefaultProfile, cfg.Profiles["alpha"], cfg.Profiles["beta"])
+	}
+	got, err = store.list()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Default != "beta" || got.Sources[0].Enabled || !got.Sources[1].Enabled {
+		t.Fatalf("list after disable = %+v", got)
+	}
+	if err := store.setEnabled("beta", false); err == nil {
+		t.Fatal("disabling the last enabled source should fail")
+	}
+}
+
 func TestSettingsStoreDeleteAndDefault(t *testing.T) {
 	store, path := newSettingsStoreForTest(t, settingsTestConfig)
 	if err := store.remove("alpha"); err != nil {
@@ -208,6 +263,42 @@ func TestSettingsSaveReloadsSources(t *testing.T) {
 	}
 	if len(got.Sources) != 2 || got.Sources[1].Name != "gamma" {
 		t.Fatalf("sources after save = %+v", got.Sources)
+	}
+}
+
+func TestSettingsEnableReloadsSources(t *testing.T) {
+	store, path := newSettingsStoreForTest(t, settingsTestConfig)
+	h := newWebMultiHandler([]*webSource{
+		fakeWebSource("alpha", "bucket-a", "alpha", true),
+		fakeWebSource("beta", "bucket-b", "beta", true),
+	}, "alpha", nil)
+	h.settings = store
+	h.reload = func() ([]*webSource, string, error) {
+		return []*webSource{fakeWebSource("alpha", "bucket-a", "alpha", true)}, "alpha", nil
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/api/settings/enabled", strings.NewReader(`{"name":"beta","enabled":false}`))
+	req.RemoteAddr = "127.0.0.1:12345"
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("disable status = %d body=%s", rec.Code, rec.Body.String())
+	}
+	cfg, err := config.Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cfg.Profiles["beta"].Disabled {
+		t.Fatal("beta should be disabled in the config file")
+	}
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/sources", nil))
+	var got webSourcesResponse
+	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Sources) != 1 || got.Sources[0].Name != "alpha" {
+		t.Fatalf("disabled source should disappear: %+v", got.Sources)
 	}
 }
 

@@ -128,6 +128,8 @@ profiles:
 
 Leaving `access-key`/`secret-key` empty in the wizard automatically writes per-profile placeholders `SAIL_<PROFILE>_(ACCESS|SECRET)_KEY` (profile name uppercased, non-alphanumeric characters such as hyphens converted to underscores; if the sanitized name is empty, falls back to the global `SAIL_ACCESS_KEY` name). You can also manually change it to any `${VAR}` in the config file.
 
+Add `disabled: true` under a profile to hide it from `serve web`'s data-source list without deleting its credentials. Other CLI commands can still target it with an explicit `--profile`; `serve web` rejects a disabled profile, always requires at least one enabled profile, and will not select a disabled one as default.
+
 ### serve block
 
 All `serve webdav` parameters can be pinned in a `serve:` block under a profile, so you don't re-type them on every launch; the CLI flags remain and override config as the highest priority. Precedence: `flag (explicitly set) > profile.serve.* > flag default`.
@@ -664,12 +666,14 @@ delete path are the same code, and swapping the SMB library touches nothing belo
 Open a bucket in a browser. `sail serve web` serves a self-contained media library: the UI is
 compiled into the binary (no Node, no npm, no static files to deploy) and talks to the same
 protocol-independent core as the other gateways, so prefix isolation, quota, chunked storage and
-the delete path are one implementation, not three. The left data-source panel lists every profile
+the delete path are one implementation, not three. The left data-source panel lists every enabled profile
 in the config; `default-profile` is selected first (an explicit `--profile` wins), and switching
 sources keeps each profile's bucket, credentials and serve layout on the server side. A gear
-button in the sidebar footer opens a local-only settings page for adding, editing, deleting and
-defaulting profiles; saves are written atomically to `config.yaml` and the data-source list is
-rebuilt immediately (if a rebuild fails, restart `serve web` to retry).
+button in the sidebar footer opens a local-only settings page for adding, editing, deleting,
+disabling and defaulting profiles; saves are written atomically to `config.yaml` and the
+data-source list is rebuilt immediately (if a rebuild fails, restart `serve web` to retry).
+Disabled profiles stay in the config file but are hidden from the browser source list; at least
+one profile must stay enabled.
 
 ```bash
 # Start: defaults to :9090 and anonymous access — no user/password needed

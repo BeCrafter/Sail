@@ -343,6 +343,11 @@ func renderProfile(name string, p config.Profile) string {
 	if p.PathStyle {
 		ps = "true"
 	}
+	// disabled 只在显式禁用时输出,保持旧配置与默认启用的渲染不变。
+	disabled := ""
+	if p.Disabled {
+		disabled = "    disabled: true\n"
+	}
 	// cdn-bucket-path 仅在配置了 cdn-domain 时才有意义:
 	// 未配置 CDN 域名则整行不输出(避免冗余);配置了则带说明注释,
 	// 注释行(自动检测)或显式 true/false 值由 p.CDNBucketPath 决定。
@@ -364,10 +369,10 @@ func renderProfile(name string, p config.Profile) string {
     bucket: %s
     region: %s
     path-style: %s
-    cdn-domain: %s
+%s    cdn-domain: %s
 %s%s`,
 		yamlScalar(name), yamlScalar(p.Endpoint), yamlScalar(ak), yamlScalar(sk),
-		yamlScalar(p.Bucket), yamlScalar(p.Region), ps, yamlScalar(p.CDNDomain),
+		yamlScalar(p.Bucket), yamlScalar(p.Region), ps, disabled, yamlScalar(p.CDNDomain),
 		cdp, serveBlock(p.Serve))
 }
 

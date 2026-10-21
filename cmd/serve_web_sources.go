@@ -184,6 +184,9 @@ func (h *webMultiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/api/settings/default":
 		h.handleSettingsDefault(w, r)
 		return
+	case "/api/settings/enabled":
+		h.handleSettingsEnabled(w, r)
+		return
 	case "/api/settings/test":
 		h.handleSettingsTest(w, r)
 		return
@@ -348,6 +351,12 @@ func buildWebSources(cfg *config.Config, o serveFlags, changed func(string) bool
 
 	sources := make([]*webSource, 0, len(names))
 	for _, name := range names {
+		if cfg != nil {
+			if p, ok := cfg.Profiles[name]; ok && p.Disabled {
+				logger.Printf("data source %q is disabled", name)
+				continue
+			}
+		}
 		if name == activeName {
 			sources = append(sources, newWebSource(name, activeResolved.Bucket, active))
 			continue
@@ -391,7 +400,7 @@ func defaultWebSourceName(cfg *config.Config, activeName string) string {
 		return activeName
 	}
 	if cfg != nil && cfg.DefaultProfile != "" {
-		if _, ok := cfg.Profiles[cfg.DefaultProfile]; ok {
+		if p, ok := cfg.Profiles[cfg.DefaultProfile]; ok && !p.Disabled {
 			return cfg.DefaultProfile
 		}
 	}

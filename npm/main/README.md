@@ -254,9 +254,10 @@ The same bucket opened in a browser. The UI is compiled into the binary (no Node
 a media library over the same protocol-independent core as the other gateways, so prefix isolation,
 quota, chunked storage and deletion behave identically. Every profile in the config is listed in
 the left data-source panel; `default-profile` is selected first (an explicit `--profile` wins).
-A local-only settings page can add, edit, delete and default profiles, writing changes atomically
-to `config.yaml` and rebuilding the data-source list immediately (restart `serve web` if a rebuild
-fails).
+A local-only settings page can add, edit, delete, disable and default profiles, writing changes
+atomically to `config.yaml` and rebuilding the data-source list immediately (restart `serve web` if
+a rebuild fails). Disabled profiles stay in the config but are hidden from the browser; at least one
+profile must stay enabled.
 
 ```bash
 # Start (defaults to :9090; HTTPS recommended outside loopback)

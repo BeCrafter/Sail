@@ -28,7 +28,7 @@ var serveWebCmd = &cobra.Command{
 	Long: `Share a bucket with a browser: open http://host:port/ and you get a media library
 (thumbnail grid or list, upload/download, rename/delete, new folder, search, previews for images,
 video, audio, PDF, CSV, Markdown, HTML, code, Office documents, 3D models, archives and
-PSD/TIFF/HEIC, and a usage bar). The sidebar lists every profile in the config and starts on
+PSD/TIFF/HEIC, and a usage bar). The sidebar lists every enabled profile in the config and starts on
 default-profile (an explicit --profile wins); each source keeps its own bucket, credentials and
 serve layout, and switching is handled by the browser without exposing storage credentials.
 
@@ -71,6 +71,10 @@ Examples:
 func runServeWeb(cmd *cobra.Command, _ []string) error {
 	o := serveWebOpts
 	r, cfg, err := loadResolved()
+	if err != nil {
+		return err
+	}
+	r, err = enabledWebResolved(cfg, r)
 	if err != nil {
 		return err
 	}
@@ -122,6 +126,10 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 	// 设置页保存后立即重建全部数据源;配置文件的普通改动也走同一条路径。
 	multi.reload = func() ([]*webSource, string, error) {
 		r2, cfg2, err := loadResolved()
+		if err != nil {
+			return nil, "", err
+		}
+		r2, err = enabledWebResolved(cfg2, r2)
 		if err != nil {
 			return nil, "", err
 		}
@@ -180,6 +188,37 @@ func runServeWeb(cmd *cobra.Command, _ []string) error {
 		return httpSrv.ServeTLS(ln, s.tlsCert, s.tlsKey)
 	}
 	return httpSrv.Serve(ln)
+}
+
+// enabledWebResolved 处理「默认数据源被禁用」的手工配置:没有显式 --profile
+// 时自动落到按名字排序的第一个启用 profile;显式指定禁用 profile 则报错,
+// 避免用户以为自己在看某个 bucket,实际却切到了另一个。
+func enabledWebResolved(cfg *config.Config, r *config.Resolved) (*config.Resolved, error) {
+	if cfg == nil || r == nil {
+		return r, nil
+	}
+	p, ok := cfg.Profiles[r.ProfileName]
+	if !ok || !p.Disabled {
+		return r, nil
+	}
+	if profile != "" {
+		return nil, fmt.Errorf("profile %q is disabled; enable it or choose another profile", r.ProfileName)
+	}
+	name := firstEnabledProfile(cfg, "")
+	if name == "" {
+		return nil, errors.New("all data sources are disabled; enable one in the config file or settings")
+	}
+	nr, err := cfg.Resolve(name)
+	if err != nil {
+		return nil, err
+	}
+	if cfgEndpoint != "" {
+		nr.Endpoint = cfgEndpoint
+	}
+	if cfgBucket != "" {
+		nr.Bucket = cfgBucket
+	}
+	return nr, nil
 }
 
 // mergeServeWeb 在共用参数之外补 Web 专属部分:监听地址、TLS 对与认证开关。

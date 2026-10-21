@@ -19,6 +19,10 @@ type Profile struct {
 	Bucket    string `mapstructure:"bucket"`
 	Region    string `mapstructure:"region"`
 	PathStyle bool   `mapstructure:"path-style"`
+	// Disabled 为 true 时,该 profile 仍保留在配置文件里,但不参与 Web
+	// 数据源列表,也不会成为默认数据源。其它 CLI 命令仍可用显式 --profile
+	// 指定它;serve web 会拒绝禁用的 profile。
+	Disabled  bool   `mapstructure:"disabled"`
 	CDNDomain string `mapstructure:"cdn-domain"`
 	// CDNBucketPath 显式声明 cdn-domain 是否已含 bucket 路径。
 	// nil = 自动检测;true = 已含(不再追加);false = 未含(总是追加)。
