@@ -1,6 +1,8 @@
 package webui_test
 
 import (
+	"bytes"
+	"compress/gzip"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -153,6 +155,61 @@ func TestIndexReferencesBundledLibraries(t *testing.T) {
 	for _, want := range []string{"/app.js", "/app.css", "/lib/vue.global.prod.js", "/lib/highlight.min.js"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("index.html 未引用 %s", want)
+		}
+	}
+}
+
+// 文本类静态资源在客户端声明 gzip 时必须压缩,并带上 Vary;解压后内容与
+// 未压缩响应完全一致。已压缩格式(GIF 等)不重复压缩。
+func TestHandlerGzipCompressesTextAssets(t *testing.T) {
+	h := webui.Handler()
+	req := httptest.NewRequest(http.MethodGet, "/app.js?v=test", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	resp := rec.Result()
+	defer resp.Body.Close()
+	if enc := resp.Header.Get("Content-Encoding"); enc != "gzip" {
+		t.Fatalf("app.js Content-Encoding = %q,期望 gzip", enc)
+	}
+	if vary := resp.Header.Get("Vary"); !strings.Contains(vary, "Accept-Encoding") {
+		t.Errorf("缺少 Vary: Accept-Encoding,实际 %q", vary)
+	}
+	zr, err := gzip.NewReader(resp.Body)
+	if err != nil {
+		t.Fatalf("gzip 解压失败: %v", err)
+	}
+	decoded, err := io.ReadAll(zr)
+	if err != nil {
+		t.Fatalf("读取解压内容失败: %v", err)
+	}
+	zr.Close()
+	_, raw := fetch(t, h, http.MethodGet, "/app.js?v=test")
+	if !bytes.Equal(decoded, []byte(raw)) {
+		t.Error("gzip 解压后的 app.js 与未压缩响应不一致")
+	}
+	if len(decoded) <= len(rec.Body.Bytes()) {
+		t.Errorf("压缩后体积未变小: raw=%d gzip=%d", len(decoded), rec.Body.Len())
+	}
+}
+
+func TestHandlerSkipsGzipWhenDeclinedOrIncompressible(t *testing.T) {
+	h := webui.Handler()
+	for _, tc := range []struct {
+		name, target, encoding string
+	}{
+		{"q=0", "/app.js?v=test", "gzip;q=0"},
+		{"brotli only", "/app.js?v=test", "br"},
+		{"gif", "/lib/pdfjs/web/images/loading-icon.gif?v=test", "gzip"},
+	} {
+		req := httptest.NewRequest(http.MethodGet, tc.target, nil)
+		req.Header.Set("Accept-Encoding", tc.encoding)
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		resp := rec.Result()
+		resp.Body.Close()
+		if enc := resp.Header.Get("Content-Encoding"); enc != "" {
+			t.Errorf("%s: Content-Encoding = %q,期望不压缩", tc.name, enc)
 		}
 	}
 }

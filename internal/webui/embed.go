@@ -7,12 +7,14 @@ package webui
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"embed"
 	"encoding/hex"
 	"io/fs"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -28,6 +30,10 @@ const assetVersionPlaceholder = "__SAIL_ASSET_V__"
 var (
 	assetVersionOnce  sync.Once
 	assetVersionValue string
+
+	// gzipCache 按文件名缓存首次压缩结果。嵌入资源在进程生命周期内不会变化,
+	// 缓存命中后同一资源只付一次压缩成本;浏览器侧还有 immutable 长缓存。
+	gzipCache sync.Map // string -> []byte
 )
 
 // assetVersion 对全部嵌入资源做一次内容哈希;只在 Handler 第一次输出时计算。
@@ -112,7 +118,97 @@ func serveAsset(w http.ResponseWriter, r *http.Request, root fs.FS, name string)
 		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 	}
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	// 同一 URL 会根据 Accept-Encoding 返回不同表示,必须声明 Vary,
+	// 否则中间缓存可能把压缩体发给不支持的客户端(或反过来)。
+	w.Header().Add("Vary", "Accept-Encoding")
+	if len(data) >= 1024 && isCompressibleAsset(name) && acceptsGzip(r) {
+		if gz := gzipAsset(name, data); gz != nil {
+			data = gz
+			w.Header().Set("Content-Encoding", "gzip")
+		}
+	}
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 	_, _ = w.Write(data)
+}
+
+// isCompressibleAsset 只压缩文本/脚本/字体/CMap/WASM 这类还有明显收益的资源;
+// PNG/GIF/WOFF/WOFF2 等已经压缩过的格式不再二次压缩。
+func isCompressibleAsset(name string) bool {
+	switch strings.ToLower(path.Ext(name)) {
+	case ".html", ".css", ".js", ".mjs", ".json", ".svg", ".ftl", ".md", ".wasm", ".ttf", ".otf", ".bcmap":
+		return true
+	default:
+		return false
+	}
+}
+
+// gzipAsset 返回缓存的 gzip 表示;压缩无收益或失败时返回 nil。嵌入资源
+// 不可变,按文件名缓存即可;并发首次请求最多重复压缩一次,LoadOrStore
+// 保证大家拿到同一份数据。空切片是「不值得压缩」的缓存哨兵。
+func gzipAsset(name string, data []byte) []byte {
+	if v, ok := gzipCache.Load(name); ok {
+		if b := v.([]byte); len(b) > 0 {
+			return b
+		}
+		return nil
+	}
+	var buf bytes.Buffer
+	zw, err := gzip.NewWriterLevel(&buf, gzip.DefaultCompression)
+	if err != nil {
+		gzipCache.Store(name, []byte{})
+		return nil
+	}
+	if _, err := zw.Write(data); err != nil {
+		gzipCache.Store(name, []byte{})
+		return nil
+	}
+	if err := zw.Close(); err != nil {
+		gzipCache.Store(name, []byte{})
+		return nil
+	}
+	out := buf.Bytes()
+	if len(out) >= len(data) {
+		gzipCache.Store(name, []byte{})
+		return nil
+	}
+	actual, _ := gzipCache.LoadOrStore(name, out)
+	if b := actual.([]byte); len(b) > 0 {
+		return b
+	}
+	return nil
+}
+
+// acceptsGzip 解析 Accept-Encoding,正确处理 gzip;q=0 与通配符。
+// 显式 gzip 的 q 值优先于 *。
+func acceptsGzip(r *http.Request) bool {
+	header := r.Header.Get("Accept-Encoding")
+	if header == "" {
+		return false
+	}
+	gzipQ, wildcardQ := -1.0, -1.0
+	for _, part := range strings.Split(header, ",") {
+		fields := strings.Split(strings.TrimSpace(part), ";")
+		coding := strings.ToLower(strings.TrimSpace(fields[0]))
+		q := 1.0
+		for _, param := range fields[1:] {
+			param = strings.TrimSpace(param)
+			if strings.HasPrefix(strings.ToLower(param), "q=") {
+				if v, err := strconv.ParseFloat(strings.TrimSpace(param[2:]), 64); err == nil {
+					q = v
+				}
+			}
+		}
+		switch coding {
+		case "gzip", "x-gzip":
+			gzipQ = q
+		case "*":
+			wildcardQ = q
+		}
+	}
+	if gzipQ >= 0 {
+		return gzipQ > 0
+	}
+	return wildcardQ > 0
 }
 
 func contentTypeOf(name string) string {
